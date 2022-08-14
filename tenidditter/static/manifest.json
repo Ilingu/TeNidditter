@@ -1,28 +1,28 @@
 {
 	"name": "TeReTwiNidditter",
 	"short_name": "TeNidditter",
-	"description": "🔒 TeNidditter - Secure Nitter and Tereddit Feed Generator",
+	"description": "🔒 TeNidditter - Secure Nitter and Teddit Feed Generator",
 	"icons": [
 		{
 			"src": "/favicon.ico",
-			"sizes": "32x32",
+			"sizes": "64x64",
 			"type": "image/x-icon"
 		},
 		{
-			"src": "/icons/IconTNDT192.png",
+			"src": "/icons/IconTNDT192.webp",
 			"sizes": "192x192",
-			"type": "image/png"
+			"type": "image/webp"
 		},
 		{
-			"src": "/icons/MaskableTNDT.png",
+			"src": "/icons/IconTNDT192.webp",
 			"sizes": "192x192",
-			"type": "image/png",
+			"type": "image/webp",
 			"purpose": "maskable"
 		},
 		{
-			"src": "/icons/IconTNDT.png",
+			"src": "/icons/IconTNDT512.webp",
 			"sizes": "512x512",
-			"type": "image/png"
+			"type": "image/webp"
 		}
 	],
 	"start_url": ".",

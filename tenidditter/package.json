@@ -1,7 +1,7 @@
 {
 	"private": true,
 	"name": "tenidditter",
-	"description": "🔒 TeNidditter - Secure Nitter and Tereddit Feed Generator",
+	"description": "🔒 TeNidditter - Secure Nitter and Teddit Feed Generator",
 	"version": "0.0.1-alpha",
 	"author": {
 		"name": "@Ilingu",
@@ -12,7 +12,7 @@
 	"packageManager": "pnpm@7.5.0",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/Ilingu/x.git"
+		"url": "https://github.com/Ilingu/TeNidditter.git"
 	},
 	"keywords": [
 		"TeNidditter",

@@ -2,7 +2,7 @@
 	import { onMount } from "svelte";
 
 	export let title = "TeNidditter";
-	export let description = "🔒 TeNidditter - Secure Nitter and Tereddit Feed Generator";
+	export let description = "🔒 TeNidditter - Secure Nitter and Teddit Feed Generator";
 	export let icon = "/favicon.ico";
 	export let routePath = false;
 
