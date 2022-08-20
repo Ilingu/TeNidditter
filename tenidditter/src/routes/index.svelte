@@ -1,5 +1,5 @@
 <script context="module">
-	import Hero from "$lib/components/pages/Main/Hero.svelte";
+	import Hero from "$lib/components/pages/main/Hero.svelte";
 
 	export const prerender = true;
 </script>

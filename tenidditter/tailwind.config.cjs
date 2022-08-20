@@ -2,7 +2,17 @@
 module.exports = {
 	content: ["./src/**/*.{html,js,svelte,ts}"],
 	theme: {
-		extend: {}
+		extend: {
+			colors: {
+				teddit: "#FF4500",
+				nitter: "#1DA1F2"
+			},
+			fontFamily: {
+				normal: ["Fira"],
+				nerd: ["Silkscreen"],
+				fancy: ["Pacifico"]
+			}
+		}
 	},
 
 	plugins: [require("daisyui")],

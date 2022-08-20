@@ -1,12 +1,10 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
 * {
 	scroll-behavior: smooth;
 	box-sizing: border-box;
-}
-
-body {
 	font-family: "Fira", monospace;
 }
 
@@ -14,11 +12,13 @@ body {
 	font-family: "Pacifico";
 	src: url("/Assets/fonts/Pacifico/Pacifico-Regular.ttf") format("truetype");
 }
+
 @font-face {
 	font-family: "Silkscreen";
 	src: url("/Assets/fonts/Silkscreen/Silkscreen-Regular.ttf") format("truetype"),
 		url("/Assets/fonts/Silkscreen/Silkscreen-Bold.ttf") format("truetype");
 }
+
 @font-face {
 	font-family: "Fira";
 	src: url("/Assets/fonts/Fira/FiraMono-Regular.ttf") format("truetype"),
