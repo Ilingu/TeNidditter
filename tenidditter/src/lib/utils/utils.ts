@@ -1,4 +1,3 @@
-import { goto as naviguate } from "$app/navigation";
 import type { AlertShape } from "$lib/types/interfaces";
 import type { AlertTypes, Themes } from "$lib/types/types";
 
@@ -11,11 +10,10 @@ export const isValidUrl = (url: string): boolean => {
 		return false;
 	}
 };
-
-export const pushRoute = (url: string) => {
-	if (!isValidUrl(url)) return;
-	naviguate(url, { noscroll: true });
-};
+export const isMobile = () =>
+	/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Windows Phone/i.test(
+		navigator.userAgent
+	);
 
 export const changeAppTheme = (theme: Themes) =>
 	document.documentElement.setAttribute("data-theme", theme);
