@@ -2,7 +2,7 @@
 	import Link from "$lib/components/design/Link.svelte";
 </script>
 
-<header class="hero min-h-[70vh]">
+<header class="hero min-h-[70vh]  ">
 	<div class="hero-overlay">
 		<div class="flex justify-center w-full h-full">
 			<div class="flex flex-col justify-center items-center w-3/4">
@@ -20,7 +20,7 @@
 
 					<h1
 						id="HeadlineHero"
-						class="mb-5 text-5xl font-fancy text-primary tracking-wider leading-snug"
+						class="scrollAnimate light mb-5 text-5xl font-fancy text-primary tracking-wider leading-snug"
 					>
 						Use <span class="text-nitter font-bold">Twitter</span> and
 						<span class="text-teddit font-bold">Reddit</span>

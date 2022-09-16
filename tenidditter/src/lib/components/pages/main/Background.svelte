@@ -49,11 +49,12 @@
 	});
 
 	const Move = () => {
-		images = images.map((image, i) => {
+		images = images.map((image) => {
 			const { x, y, z } = image;
 
 			let NewYCoord: number = y + 0.5 * z;
-			let NewXCoord = i % 2 == 0 ? x - 0.1 : x + 0.1;
+			let NewXCoord =
+				x + Math.cos((NewYCoord * 2 * Math.PI) / 360) * parseFloat(Math.random().toFixed(1));
 
 			if (NewYCoord > ViewportHeight || NewYCoord <= -1) NewYCoord = 0;
 			if (NewXCoord > ViewportWidth || NewXCoord <= -1)
@@ -62,7 +63,7 @@
 			return {
 				...image,
 				y: NewYCoord,
-				x: x + Math.cos((NewYCoord * 2 * Math.PI) / 360) * parseFloat(Math.random().toFixed(1))
+				x: NewXCoord
 			};
 		});
 	};
@@ -90,7 +91,7 @@
 		const ScTo = window.pageYOffset;
 		images = images.map((image) => ({
 			...image,
-			y: ScTo > lastSrTo ? image.y - 0.2 : image.y + 0.2
+			y: ScTo > lastSrTo ? image.y - 0.5 : image.y + 0.5
 		}));
 
 		lastSrTo = ScTo;

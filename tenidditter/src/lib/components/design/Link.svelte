@@ -5,4 +5,4 @@
 	export let classStyle = "";
 </script>
 
-<a sveltekit:prefetch {href} class={classStyle} on:click={dispatchRouting}><slot /></a>
+<a {href} class={classStyle} on:click={dispatchRouting}><slot /></a>

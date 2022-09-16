@@ -15,6 +15,8 @@ export const isMobile = () =>
 		navigator.userAgent
 	);
 
+export const Sleep = (dur: number) => new Promise((res) => setTimeout(res, dur));
+
 export const changeAppTheme = (theme: Themes) =>
 	document.documentElement.setAttribute("data-theme", theme);
 
