@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from "svelte";
+	import { page } from "$app/stores";
 
 	export let title = "TeNidditter";
 	export let description = "🔒 TeNidditter - Secure Nitter and Teddit Feed Generator";
@@ -9,6 +10,8 @@
 	onMount(() => {
 		if (routePath) title += location.pathname;
 	});
+
+	console.log($page);
 </script>
 
 <svelte:head>
