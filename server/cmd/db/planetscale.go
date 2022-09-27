@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -93,3 +94,5 @@ func (*dbManager) Disconnect() bool {
 func dsn() string {
 	return fmt.Sprintf("%s:%s@tcp(%s)/%s?tls=true", os.Getenv("DB_USERNAME"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_HOST"), os.Getenv("DATABASE_NAME"))
 }
+
+var ErrDbNotFound = errors.New("no db connected")
