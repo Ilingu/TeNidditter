@@ -2,6 +2,7 @@ package db
 
 import (
 	"errors"
+	"log"
 	"strings"
 	"teniditter-server/cmd/global/utils"
 
@@ -10,7 +11,7 @@ import (
 
 var ErrRegister = errors.New("failed to register")
 
-func CreateAccount(username string, password string) (*accountModel, error) {
+func CreateAccount(username string, password string) (*AccountModel, error) {
 	db := DBManager.Connect()
 	if db == nil {
 		return nil, ErrDbNotFound
@@ -38,7 +39,7 @@ func CreateAccount(username string, password string) (*accountModel, error) {
 	return nil, nil
 }
 
-func (u *accountModel) DeleteAccount() error {
+func (u *AccountModel) DeleteAccount() error {
 	db := DBManager.Connect()
 	if db == nil {
 		return ErrDbNotFound
@@ -51,11 +52,11 @@ func (u *accountModel) DeleteAccount() error {
 	return nil
 }
 
-func (u *accountModel) SignOut() bool {
+func (u *AccountModel) SignOut() bool {
 	return false
 }
 
-func GetUserByUsername(username string) (*accountModel, error) {
+func GetUserByUsername(username string) (*AccountModel, error) {
 	db := DBManager.Connect()
 	if db == nil {
 		return nil, ErrDbNotFound
@@ -66,17 +67,18 @@ func GetUserByUsername(username string) (*accountModel, error) {
 		return nil, errors.New("cannot get user")
 	}
 
-	var user accountModel
+	var user AccountModel
 
-	err := db.QueryRow("SELECT * FROM Account WHERE username LIKE ?;", username).Scan(&user.AccountId, &user.Username, &user.Password, &user.CreatedAt)
-	if err != nil || user.Username != username {
+	err := db.QueryRow("SELECT * FROM Account WHERE username LIKE ?", username).Scan(&user.AccountId, &user.Username, &user.Password, &user.CreatedAt)
+	if err != nil || user.AccountId == 0 || user.Username != username {
+		log.Println(err)
 		return nil, errors.New("cannot fetch user")
 	}
 
 	return &user, nil
 }
 
-func (u *accountModel) PasswordMatch(passwordInput string) bool {
+func (u *AccountModel) PasswordMatch(passwordInput string) bool {
 	err := bcrypt.CompareHashAndPassword(u.Password, []byte(passwordInput))
 	return err == nil
 }

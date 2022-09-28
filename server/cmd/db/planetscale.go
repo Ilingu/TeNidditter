@@ -20,7 +20,7 @@ var DBManager = &databaseManager{}
 var sqlConn *sql.DB
 
 func openDB() (*sql.DB, error) {
-	db, err := sql.Open("mysql", os.Getenv("DSN"))
+	db, err := sql.Open("mysql", os.Getenv("DSN")+"&parseTime=true")
 	if err != nil {
 		panic(err)
 	}

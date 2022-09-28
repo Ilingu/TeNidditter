@@ -2,6 +2,7 @@ package auth_routes
 
 import (
 	"net/http"
+	"teniditter-server/cmd/api/jwt"
 	"teniditter-server/cmd/api/routes"
 	"teniditter-server/cmd/db"
 	"teniditter-server/cmd/global/console"
@@ -17,23 +18,46 @@ type RegisterPayload struct {
 func AuthHandler(g *echo.Group) {
 	console.Log("AuthHandler Registered ✅", console.Success)
 
-	g.POST("/register", func(c echo.Context) error {
+	g.POST("/", func(c echo.Context) error {
 		res := routes.EchoWrapper{Context: c}
 
-		info := new(RegisterPayload)
-		if err := c.Bind(info); err != nil {
+		userInfo := new(RegisterPayload)
+		if err := c.Bind(userInfo); err != nil {
 			return res.HandleResp(http.StatusBadRequest)
 		}
 
-		account, err := db.CreateAccount(info.Username, info.Password)
-		if err != nil {
-			return res.HandleResp(http.StatusInternalServerError)
+		account, err := db.GetUserByUsername(userInfo.Username)
+
+		if err != nil || account == nil {
+			return register(res, userInfo.Username, userInfo.Password)
 		}
-
-		return res.HandleResp(http.StatusCreated, account)
+		return login(res, account, userInfo.Password)
 	})
 
-	g.POST("/login", func(c echo.Context) error {
-		return nil
+	g.DELETE("/erase", func(c echo.Context) error {
+		return c.String(http.StatusNotImplemented, "Not Implemented Yet")
 	})
+
+}
+
+func register(res routes.EchoWrapper, username, password string) error {
+	account, err := db.CreateAccount(username, password)
+	if err != nil {
+		return res.HandleResp(http.StatusInternalServerError)
+	}
+
+	return res.HandleResp(http.StatusCreated, account)
+}
+
+func login(res routes.EchoWrapper, account *db.AccountModel, password string) error {
+	if authenticated := account.PasswordMatch(password); !authenticated {
+		return res.HandleResp(http.StatusForbidden, "Wrong Credentials")
+	}
+
+	token, err := jwt.GenerateToken(account.Username)
+	if err != nil {
+		return res.HandleResp(http.StatusInternalServerError, "Couldn't Generate JWT token")
+	}
+
+	return res.HandleResp(http.StatusAccepted, token)
 }
