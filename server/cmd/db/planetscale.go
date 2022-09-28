@@ -12,15 +12,15 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-type dbManager struct {
+type databaseManager struct {
 }
 
-var DBManager = &dbManager{}
+var DBManager = &databaseManager{}
 
 var sqlConn *sql.DB
 
 func openDB() (*sql.DB, error) {
-	db, err := sql.Open("mysql", dsn())
+	db, err := sql.Open("mysql", os.Getenv("DSN"))
 	if err != nil {
 		panic(err)
 	}
@@ -57,7 +57,7 @@ func connectToDB() *sql.DB {
 }
 
 // Create a new
-func (*dbManager) NewDB() *sql.DB {
+func (*databaseManager) NewDB() *sql.DB {
 	if sqlConn != nil {
 		return sqlConn
 	}
@@ -71,11 +71,11 @@ func (*dbManager) NewDB() *sql.DB {
 }
 
 // Connect to an already existing DB
-func (*dbManager) Connect() *sql.DB {
+func (*databaseManager) Connect() *sql.DB {
 	return sqlConn
 }
 
-func (*dbManager) Disconnect() bool {
+func (*databaseManager) Disconnect() bool {
 	if sqlConn == nil {
 		return false
 	}
@@ -89,10 +89,6 @@ func (*dbManager) Disconnect() bool {
 	}
 
 	return err == nil
-}
-
-func dsn() string {
-	return fmt.Sprintf("%s:%s@tcp(%s)/%s?tls=true", os.Getenv("DB_USERNAME"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_HOST"), os.Getenv("DATABASE_NAME"))
 }
 
 var ErrDbNotFound = errors.New("no db connected")

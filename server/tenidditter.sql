@@ -10,3 +10,5 @@ create table Account (
   PRIMARY KEY (account_id)
 );
 
+-- @block
+CREATE INDEX username_index ON Account(username);
