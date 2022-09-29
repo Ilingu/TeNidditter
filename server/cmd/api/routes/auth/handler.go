@@ -1,6 +1,7 @@
 package auth_routes
 
 import (
+	"encoding/json"
 	"net/http"
 	"teniditter-server/cmd/api/jwt"
 	"teniditter-server/cmd/api/routes"
@@ -35,18 +36,23 @@ func AuthHandler(g *echo.Group) {
 	})
 
 	g.DELETE("/erase", func(c echo.Context) error {
-		return c.String(http.StatusNotImplemented, "Not Implemented Yet")
+		res := routes.EchoWrapper{Context: c}
+		return res.HandleResp(http.StatusNotImplemented, "Not Implemented Yet")
 	})
-
 }
 
 func register(res routes.EchoWrapper, username, password string) error {
 	account, err := db.CreateAccount(username, password)
 	if err != nil {
-		return res.HandleResp(http.StatusInternalServerError)
+		return res.HandleResp(http.StatusInternalServerError, err.Error())
 	}
 
-	return res.HandleResp(http.StatusCreated, account)
+	blob, err := json.Marshal(account)
+	if err != nil {
+		return res.HandleResp(http.StatusCreated, "Account Created But Nothing Returned")
+	}
+
+	return res.HandleRespBlob(http.StatusCreated, blob)
 }
 
 func login(res routes.EchoWrapper, account *db.AccountModel, password string) error {

@@ -3,6 +3,8 @@ package utils
 import (
 	"strings"
 	"unicode"
+
+	"github.com/nbutton23/zxcvbn-go"
 )
 
 func IsEmptyString(str any) bool {
@@ -19,4 +21,13 @@ func FormatString(str string) string {
 	}
 
 	return strings.ToLower(strings.TrimSpace(formattedStr))
+}
+
+func IsStrongPassword(password string) bool {
+	if IsEmptyString(password) {
+		return false
+	}
+
+	result := zxcvbn.PasswordStrength(password, []string{})
+	return result.Score >= 3
 }

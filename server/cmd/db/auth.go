@@ -3,7 +3,6 @@ package db
 import (
 	"errors"
 	"log"
-	"strings"
 	"teniditter-server/cmd/global/utils"
 
 	"golang.org/x/crypto/bcrypt"
@@ -18,12 +17,11 @@ func CreateAccount(username string, password string) (*AccountModel, error) {
 	}
 
 	username = utils.FormatString(username)
-	password = strings.TrimSpace(password)
-	if utils.IsEmptyString(username) || utils.IsEmptyString(password) {
-		return nil, ErrRegister
+	if utils.IsEmptyString(username) || len(username) < 3 || len(username) > 15 {
+		return nil, errors.New("invalid username")
 	}
-	if len(username) < 3 || len(username) > 15 || len(password) < 15 || len(password) >= 128 {
-		return nil, ErrRegister
+	if !utils.IsStrongPassword(password) {
+		return nil, errors.New("password too weak")
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 12)
