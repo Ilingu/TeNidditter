@@ -7,6 +7,7 @@ import (
 	"teniditter-server/cmd/api/routes"
 	"teniditter-server/cmd/db"
 	"teniditter-server/cmd/global/console"
+	"teniditter-server/cmd/global/utils"
 
 	"github.com/labstack/echo/v4"
 )
@@ -33,6 +34,23 @@ func AuthHandler(g *echo.Group) {
 			return register(res, userInfo.Username, userInfo.Password)
 		}
 		return login(res, account, userInfo.Password)
+	})
+
+	g.GET("/available", func(c echo.Context) error {
+		res := routes.EchoWrapper{Context: c}
+
+		username := c.QueryParam("username")
+		username = utils.FormatUsername(username)
+
+		if utils.IsEmptyString(username) {
+			return res.HandleResp(http.StatusBadRequest, "invalid username")
+		}
+
+		account, err := db.GetUserByUsername(username)
+		if err != nil || account == nil {
+			return res.HandleResp(200, true)
+		}
+		return res.HandleResp(200, false)
 	})
 
 	g.DELETE("/erase", func(c echo.Context) error {

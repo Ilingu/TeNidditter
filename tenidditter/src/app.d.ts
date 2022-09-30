@@ -5,7 +5,9 @@ declare namespace App {
 	// interface Locals {}
 	// interface Platform {}
 	// interface PrivateEnv {}
-	// interface PublicEnv {}
+	interface PublicEnv {
+		PUBLIC_API_URL: string;
+	}
 	// interface Session {}
 	// interface Stuff {}
 }

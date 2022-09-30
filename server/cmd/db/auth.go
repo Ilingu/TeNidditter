@@ -2,7 +2,6 @@ package db
 
 import (
 	"errors"
-	"log"
 	"teniditter-server/cmd/global/utils"
 
 	"golang.org/x/crypto/bcrypt"
@@ -69,7 +68,6 @@ func GetUserByUsername(username string) (*AccountModel, error) {
 
 	err := db.QueryRow("SELECT * FROM Account WHERE username LIKE ?", username).Scan(&user.AccountId, &user.Username, &user.Password, &user.CreatedAt)
 	if err != nil || user.AccountId == 0 || user.Username != username {
-		log.Println(err)
 		return nil, errors.New("cannot fetch user")
 	}
 

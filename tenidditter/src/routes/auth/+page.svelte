@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { callApi } from "$lib/utils/server";
 	import { FormatUsername, pushAlert } from "$lib/utils/utils";
 
 	import { GetZxcvbn, ScoreToColor, ScoreToText } from "$lib/utils/zxcvbn";
@@ -17,9 +18,21 @@
 	let PswStrenghtReport: PswReport | null,
 		UsernameError = false;
 
-	let AuthBtn: HTMLButtonElement;
 	let loading = false;
 
+	const HeadlineText = [
+		"Privacy comes first.",
+		"Encrypted, private, secure.",
+		"❤️ = 🔒 + 🕊",
+		"Social Medias with freedom."
+	];
+	const DescText = [
+		`Are you looking for an more privacy friendly alternative to <span class="text-teddit">reddit</span> or <span class="text-nitter">twitter</span>?`,
+		`Tenidditter app is what social medias should have become <span class="font-bold">long ago</span>.`,
+		`Tenidditter app act as a proxy between twitter/reddit's datas and you, you never directly speak to them, therefore you can keep <span class="font-bold">entertaining yourself without seeing your freedom being stolen</span>.`
+	];
+
+	/* App Start */
 	onMount(() => {
 		document.querySelectorAll("input").forEach((inp) => {
 			inp.addEventListener("focusin", () => PlacehoverAnimate(inp, "add"));
@@ -32,10 +45,10 @@
 	});
 
 	/* INPUTS */
-
 	const Authenticate = async () => {
 		// Username check
-		const nameLen = Username.trim().length;
+		const username = FormatUsername(Username.trim());
+		const nameLen = username.length;
 		if (nameLen < 3 || nameLen > 15)
 			return (UsernameError = true) && pushAlert("Username invalid!", "warning");
 
@@ -44,7 +57,14 @@
 		const passwordStrenght = zxcvbn(Password);
 		if (passwordStrenght.score < 3) return pushAlert("Password is too weak! Like you", "warning");
 
-		// NEXT: db endpoint to see if username overlap
+		// TODO: db endpoint to see if username overlap
+		const { success, data } = await callApi<boolean>({
+			uri: `/auth/available?username=${encodeURI(username)}`,
+			method: "GET"
+		});
+		if (!success || !data) return pushAlert("This Username is already taken.", "warning", 6000);
+
+		console.log(data);
 	};
 
 	let debounce: NodeJS.Timeout;
@@ -90,6 +110,7 @@
 
 		for (let lineID = 0; lineID < linesNumbers; lineID++) {
 			const h = Math.round(Math.random() * canvas.height);
+			// const a = Math.round(Math.random()) + 0.5;
 			// const f = Math.round(Math.random() * 2) + 1;
 
 			// Filled sinwave
@@ -167,8 +188,7 @@
 
 			<button
 				disabled={loading || (PswStrenghtReport && PswStrenghtReport?.score.number < 3)}
-				bind:this={AuthBtn}
-				class={`btn btn-wide flex gap-2 btn-sm md:btn-md ${loading ? "loading" : ""}`}
+				class={`btn btn-wide bg-base-300 flex gap-2 btn-sm md:btn-md ${loading ? "loading" : ""}`}
 				type="submit"><span class="fas fa-user" /> Login/Sign Up</button
 			>
 		</form>
@@ -176,7 +196,12 @@
 	<aside class="col-span-4 relative">
 		<canvas id="LinesCanvas" class="w-full h-full" />
 		<div class="quote mockup-window border bg-base-300 absolute bottom-0 w-3/4">
-			<div class="flex justify-center px-4 py-16 bg-base-200">Hello!</div>
+			<div class="font-mono px-4 pt-2 h-32 bg-base-200">
+				<h2 class="font-nerd text-2xl font-semibold text-primary">
+					{HeadlineText[Math.round(Math.random() * (HeadlineText.length - 1))]}
+				</h2>
+				<p class="mt-3">{@html DescText[Math.round(Math.random() * (DescText.length - 1))]}</p>
+			</div>
 		</div>
 	</aside>
 </section>

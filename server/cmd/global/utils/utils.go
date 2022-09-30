@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"net/url"
 	"strings"
 	"unicode"
 
@@ -20,7 +21,7 @@ func FormatUsername(str string) string {
 		}
 	}
 
-	return strings.ToLower(strings.TrimSpace(formattedStr))
+	return url.QueryEscape(strings.ToLower(strings.TrimSpace(formattedStr)))
 }
 
 func IsStrongPassword(password string) bool {
