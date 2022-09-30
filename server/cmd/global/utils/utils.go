@@ -12,10 +12,10 @@ func IsEmptyString(str any) bool {
 	return !isStr || len(strings.TrimSpace(realStr)) <= 0
 }
 
-func FormatString(str string) string {
+func FormatUsername(str string) string {
 	formattedStr := ""
 	for _, r := range str {
-		if unicode.IsLetter(r) {
+		if unicode.IsLetter(r) || r == '_' {
 			formattedStr += string(r)
 		}
 	}

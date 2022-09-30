@@ -30,3 +30,11 @@ export const pushAlert = (message: string, type: AlertTypes, duration = 5000) =>
 	});
 	document.dispatchEvent(alert);
 };
+
+/**
+ * Remove all non-letter in username except "_"
+ * @param {string} username
+ * @returns {string} the formatted username
+ */
+export const FormatUsername = (username: string): string =>
+	username.replace(/[\W0-9]+/g, "").toLowerCase();

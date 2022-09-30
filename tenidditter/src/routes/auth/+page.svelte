@@ -1,19 +1,21 @@
 <script lang="ts">
-	import { pushAlert } from "$lib/utils/utils";
+	import { FormatUsername, pushAlert } from "$lib/utils/utils";
 
-	import { GetZxcvbn, ScoreToText } from "$lib/utils/zxcvbn";
+	import { GetZxcvbn, ScoreToColor, ScoreToText } from "$lib/utils/zxcvbn";
 	import { onMount } from "svelte";
 
+	/* TYPES */
 	interface PswReport {
-		score: string;
-		feedback: string[];
+		score: { text: string; number: number; color: string };
 		crackTime: string;
 	}
 
+	/* VAR */
 	let Username = "",
 		Password = "";
 
-	let PswStrenghtReport: PswReport;
+	let PswStrenghtReport: PswReport | null,
+		UsernameError = false;
 
 	let AuthBtn: HTMLButtonElement;
 	let loading = false;
@@ -26,7 +28,44 @@
 				PlacehoverAnimate(inp, "rem");
 			});
 		});
+		DrawLines();
 	});
+
+	/* INPUTS */
+
+	const Authenticate = async () => {
+		// Username check
+		const nameLen = Username.trim().length;
+		if (nameLen < 3 || nameLen > 15)
+			return (UsernameError = true) && pushAlert("Username invalid!", "warning");
+
+		// Checks Password
+		const zxcvbn = await GetZxcvbn();
+		const passwordStrenght = zxcvbn(Password);
+		if (passwordStrenght.score < 3) return pushAlert("Password is too weak! Like you", "warning");
+
+		// NEXT: db endpoint to see if username overlap
+	};
+
+	let debounce: NodeJS.Timeout;
+	const PasswordChange = () => {
+		clearTimeout(debounce);
+		debounce = setTimeout(async () => {
+			if (Password.trim().length <= 0) return (PswStrenghtReport = null);
+			const zxcvbn = await GetZxcvbn();
+			const { score, crack_times_display } = zxcvbn(Password);
+			PswStrenghtReport = {
+				crackTime: crack_times_display.online_throttling_100_per_hour.toString(),
+				score: {
+					number: score,
+					text: ScoreToText[score],
+					color: ScoreToColor[score]
+				}
+			};
+		}, 500);
+	};
+
+	/* ANIMATION */
 	const PlacehoverAnimate = (inp: HTMLInputElement, mode: "add" | "rem") => {
 		const label = inp.parentElement?.parentElement?.firstChild as HTMLElement;
 		const hasAnimate = label?.classList.contains("animate");
@@ -37,48 +76,50 @@
 		label?.classList.toggle("animate");
 	};
 
-	const Authenticate = async () => {
-		{
-			loading = true;
-			AuthBtn?.classList.add("loading");
+	const DrawLines = () => {
+		const canvas = document.getElementById("LinesCanvas") as HTMLCanvasElement;
+		if (!canvas?.getContext) return;
+		const ctx = canvas.getContext("2d");
+		if (!ctx) return;
+
+		canvas.height *= 4;
+		canvas.width *= 5;
+
+		const smoothness = Math.round(Math.random() * 24) + 1;
+		const linesNumbers = Math.round(Math.random() * 50) + 50;
+
+		for (let lineID = 0; lineID < linesNumbers; lineID++) {
+			const h = Math.round(Math.random() * canvas.height);
+			// const f = Math.round(Math.random() * 2) + 1;
+
+			// Filled sinwave
+			ctx.beginPath();
+			ctx.moveTo(0, h);
+			let lastCoord: [number, number] = [0, h];
+			for (let i = 0; i < canvas.width; i += smoothness) {
+				let y = Math.sin(((i % 360) * 2 * Math.PI) / 360); // Calculate y value from x
+				ctx.moveTo(i, lastCoord[1]); // Where to start drawing
+				ctx.lineTo(lastCoord[0], h + 25 * y); // Where to draw to
+				lastCoord = [i, h + 25 * y];
+			}
+
+			ctx.strokeStyle = Math.round(Math.random()) === 0 ? "#FF4500" : "#1DA1F2";
+			ctx.stroke();
 		}
-
-		// Checks Password
-		const zxcvbn = await GetZxcvbn();
-		const passwordStrenght = zxcvbn(Password);
-		if (passwordStrenght.score < 3) return pushAlert("Password is too weak! Like you", "warning");
-
-		const nameLen = Username.trim().length;
-		if (nameLen < 3 || nameLen > 15) return pushAlert("Username invalid!", "warning");
-
-		// NEXT: db endpoint to see if username overlap
-		// + password bar
-
-		{
-			loading = false;
-			AuthBtn?.classList.remove("loading");
-		}
-	};
-
-	let debounce: NodeJS.Timeout;
-	const PasswordChange = () => {
-		clearTimeout(debounce);
-		debounce = setTimeout(async () => {
-			const zxcvbn = await GetZxcvbn();
-			const { score, feedback, crack_times_display } = zxcvbn(Password);
-			PswStrenghtReport = {
-				crackTime: crack_times_display.online_throttling_100_per_hour.toString(),
-				score: ScoreToText[score],
-				feedback: feedback?.suggestions
-			};
-		}, 500);
 	};
 </script>
 
 <section class="w-screen grid grid-cols-6">
 	<div class="col-span-2 bg-base-200 h-full flex flex-col justify-center items-center">
 		<h1 class="font-fancy text-4xl mb-10">Welcome 👋</h1>
-		<form on:submit|preventDefault={Authenticate} class="w-fit flex flex-col items-center gap-y-10">
+		<form
+			on:submit|preventDefault={() => {
+				loading = true;
+				Authenticate();
+				loading = false;
+			}}
+			class="w-fit flex flex-col items-center gap-y-10"
+		>
 			<div class="form-control relative">
 				<span class="placehover absolute select-none top-1/4 left-1/4">Username</span>
 				<label class="input-group">
@@ -87,8 +128,9 @@
 						autocomplete="off"
 						disabled={loading}
 						bind:value={Username}
+						on:input={(ev) => (Username = FormatUsername(ev.currentTarget.value))}
 						type="text"
-						class="input input-bordered bg-transparent"
+						class={`input input-bordered bg-transparent ${UsernameError ? "input-error" : ""}`}
 					/>
 				</label>
 			</div>
@@ -102,41 +144,55 @@
 						bind:value={Password}
 						on:input={PasswordChange}
 						type="password"
-						class="input input-bordered bg-transparent"
+						class={`input input-bordered bg-transparent ${
+							PswStrenghtReport
+								? PswStrenghtReport.score.number < 3
+									? "input-error"
+									: "input-success"
+								: ""
+						}`}
 					/>
 				</label>
+				{#if PswStrenghtReport}
+					<div class="text-sm text-white text-center mt-2 -mb-7">
+						<p>
+							Password is <span class="font-bold" style={`color: ${PswStrenghtReport.score.color};`}
+								>{PswStrenghtReport.score.text}</span
+							>
+						</p>
+						<p><span class="font-bold">{PswStrenghtReport.crackTime}</span> to crack</p>
+					</div>
+				{/if}
 			</div>
-			{#if PswStrenghtReport}
-				<div class="text-sm text-white leading-4">
-					<p>
-						Password is <span class="font-bold">{PswStrenghtReport.score}</span>
-						-- <span class="font-bold">{PswStrenghtReport.crackTime}</span> to crack
-					</p>
-
-					{#if PswStrenghtReport?.feedback}
-						<ul>
-							{#each PswStrenghtReport?.feedback as feedback}
-								<li>{feedback}</li>
-							{/each}
-						</ul>
-					{/if}
-				</div>
-			{/if}
 
 			<button
-				disabled={loading}
+				disabled={loading || (PswStrenghtReport && PswStrenghtReport?.score.number < 3)}
 				bind:this={AuthBtn}
-				class="btn btn-wide flex gap-2  btn-sm md:btn-md"
+				class={`btn btn-wide flex gap-2 btn-sm md:btn-md ${loading ? "loading" : ""}`}
 				type="submit"><span class="fas fa-user" /> Login/Sign Up</button
 			>
 		</form>
 	</div>
-	<aside class="col-span-4" />
+	<aside class="col-span-4 relative">
+		<canvas id="LinesCanvas" class="w-full h-full" />
+		<div class="quote mockup-window border bg-base-300 absolute bottom-0 w-3/4">
+			<div class="flex justify-center px-4 py-16 bg-base-200">Hello!</div>
+		</div>
+	</aside>
 </section>
 
 <style scoped>
+	section {
+		overflow: hidden;
+	}
+
 	input[disabled] {
 		opacity: 0.5;
+	}
+
+	.quote {
+		left: calc(50% - 75% / 2);
+		animation: PopIn 1s cubic-bezier(0.6, 0, 0.96, 0.68) 0.1s 1 forwards;
 	}
 
 	section {
@@ -149,5 +205,14 @@
 
 	:global(.placehover.animate) {
 		transform: translateY(-40px);
+	}
+
+	@keyframes PopIn {
+		from {
+			transform: translateY(400px);
+		}
+		to {
+			transform: translateY(-25%);
+		}
 	}
 </style>

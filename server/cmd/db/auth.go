@@ -16,7 +16,7 @@ func CreateAccount(username string, password string) (*AccountModel, error) {
 		return nil, ErrDbNotFound
 	}
 
-	username = utils.FormatString(username)
+	username = utils.FormatUsername(username)
 	if utils.IsEmptyString(username) || len(username) < 3 || len(username) > 15 {
 		return nil, errors.New("invalid username")
 	}
@@ -60,7 +60,7 @@ func GetUserByUsername(username string) (*AccountModel, error) {
 		return nil, ErrDbNotFound
 	}
 
-	username = utils.FormatString(username)
+	username = utils.FormatUsername(username)
 	if utils.IsEmptyString(username) {
 		return nil, errors.New("cannot get user")
 	}
