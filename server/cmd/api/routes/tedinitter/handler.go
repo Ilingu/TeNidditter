@@ -23,15 +23,15 @@ func TedinitterHandler(t *echo.Group) {
 	}
 	t.Use(middleware.JWTWithConfig(config)) // restricted routes
 
-	t.GET("/testlogin", func(c echo.Context) error {
+	t.GET("/userInfo", func(c echo.Context) error {
 		res := routes.EchoWrapper{Context: c}
 
-		username, err := jwt.GetUsernameFromToken(&c)
+		token, err := jwt.DecodeToken(&c)
 		if err != nil {
-			return res.HandleResp(http.StatusUnauthorized)
+			return res.HandleResp(http.StatusUnauthorized, err.Error())
 		}
 
-		return res.HandleResp(http.StatusFound, username)
+		return res.HandleResp(http.StatusOK, token)
 	})
 
 	console.Log("TedinitterHandler Registered ✅", console.Success)

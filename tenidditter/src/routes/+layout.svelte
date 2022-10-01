@@ -4,8 +4,11 @@
 	import Navbar from "$lib/components/layout/Navbar.svelte";
 
 	import "../style/app.css";
+	import { AutoLogin } from "$lib/stores/auth";
 
 	onMount(() => {
+		AutoLogin();
+
 		let ScrollAnimationObserver = new IntersectionObserver(ScrollAnimation, { threshold: 1.0 });
 		document
 			.querySelectorAll(".scrollAnimate")

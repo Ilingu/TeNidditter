@@ -7,6 +7,7 @@ declare namespace App {
 	// interface PrivateEnv {}
 	interface PublicEnv {
 		PUBLIC_API_URL: string;
+		PUBLIC_ENCRYPT_KEY: string;
 	}
 	// interface Session {}
 	// interface Stuff {}

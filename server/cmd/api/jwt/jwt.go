@@ -47,14 +47,23 @@ func GenerateToken(username string) (string, error) {
 	return t, nil
 }
 
-func GetUsernameFromToken(c *echo.Context) (string, error) {
+type DecodedToken struct {
+	Username  string `json:"username"`
+	Admin     bool   `json:"admin"`
+	ExpiresAt int64  `json:"exp"`
+}
+
+func DecodeToken(c *echo.Context) (DecodedToken, error) {
 	t := (*c).Get("user").(*jwt.Token)
 	claims := t.Claims.(*JwtCustomClaims)
 
 	username := utils.FormatUsername(claims.Name)
 	if utils.IsEmptyString(username) || len(username) < 3 || len(username) > 15 {
-		return "", errors.New("invalid username format")
+		return DecodedToken{}, errors.New("invalid username format")
+	}
+	if err := claims.Valid(); err != nil {
+		return DecodedToken{}, errors.New("invalid token")
 	}
 
-	return username, nil
+	return DecodedToken{Username: username, Admin: false, ExpiresAt: claims.ExpiresAt}, nil
 }

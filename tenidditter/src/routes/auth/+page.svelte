@@ -1,6 +1,7 @@
 <script lang="ts">
+	import AuthStore, { AutoLogin } from "$lib/stores/auth";
 	import { callApi } from "$lib/utils/server";
-	import { FormatUsername, pushAlert } from "$lib/utils/utils";
+	import { FormatUsername, IsEmptyString, pushAlert } from "$lib/utils/utils";
 
 	import { GetZxcvbn, ScoreToColor, ScoreToText } from "$lib/utils/zxcvbn";
 	import { onMount } from "svelte";
@@ -14,6 +15,8 @@
 	/* VAR */
 	let Username = "",
 		Password = "";
+
+	let AuthMethod: "signup" | "login" = "login";
 
 	let PswStrenghtReport: PswReport | null,
 		UsernameError = false;
@@ -31,6 +34,8 @@
 		`Tenidditter app is what social medias should have become <span class="font-bold">long ago</span>.`,
 		`Tenidditter app act as a proxy between twitter/reddit's datas and you, you never directly speak to them, therefore you can keep <span class="font-bold">entertaining yourself without seeing your freedom being stolen</span>.`
 	];
+
+	AuthStore.subscribe((value) => value.loggedIn && (Username = value.user?.username || ""));
 
 	/* App Start */
 	onMount(() => {
@@ -57,14 +62,37 @@
 		const passwordStrenght = zxcvbn(Password);
 		if (passwordStrenght.score < 3) return pushAlert("Password is too weak! Like you", "warning");
 
-		// TODO: db endpoint to see if username overlap
-		const { success, data } = await callApi<boolean>({
-			uri: `/auth/available?username=${encodeURI(username)}`,
-			method: "GET"
-		});
-		if (!success || !data) return pushAlert("This Username is already taken.", "warning", 6000);
+		if (AuthMethod === "signup") {
+			const { success, data: IsAvailable } = await callApi<boolean>({
+				uri: `/auth/available?username=${encodeURI(username)}`,
+				method: "GET"
+			});
+			if (!success || !IsAvailable)
+				return pushAlert("This Username is already taken.", "warning", 6000);
+		}
 
-		console.log(data);
+		const { success: AuthSuccess, data: JwtToken } = await callApi<string>({
+			uri: `/auth/`,
+			method: "POST",
+			body: {
+				username: username,
+				password: Password
+			}
+		});
+
+		if (!AuthSuccess) pushAlert("Failed to auth", "error");
+		else if (AuthMethod === "signup")
+			pushAlert("Successfully registered, you can now login", "success", 6000);
+		// AuthMethod: login
+		else if (!IsEmptyString(JwtToken)) AutoLogin(JwtToken as string);
+		else pushAlert("Invalid login", "error");
+
+		Reset();
+	};
+
+	const Reset = () => {
+		Username = "";
+		Password = "";
 	};
 
 	let debounce: NodeJS.Timeout;
@@ -134,20 +162,24 @@
 	<div class="col-span-2 bg-base-200 h-full flex flex-col justify-center items-center">
 		<h1 class="font-fancy text-4xl mb-10">Welcome 👋</h1>
 		<form
-			on:submit|preventDefault={() => {
+			on:submit|preventDefault={async () => {
 				loading = true;
-				Authenticate();
+				await Authenticate();
 				loading = false;
 			}}
 			class="w-fit flex flex-col items-center gap-y-10"
 		>
 			<div class="form-control relative">
-				<span class="placehover absolute select-none top-1/4 left-1/4">Username</span>
+				<span
+					class={`placehover absolute select-none top-1/4 left-1/4 ${
+						$AuthStore.loggedIn ? "hidden" : ""
+					}`}>Username</span
+				>
 				<label class="input-group">
 					<span class="fas fa-at" />
 					<input
 						autocomplete="off"
-						disabled={loading}
+						disabled={loading || $AuthStore.loggedIn}
 						bind:value={Username}
 						on:input={(ev) => (Username = FormatUsername(ev.currentTarget.value))}
 						type="text"
@@ -161,7 +193,7 @@
 					<span class="fas fa-lock" />
 					<input
 						autocomplete="off"
-						disabled={loading}
+						disabled={loading || $AuthStore.loggedIn}
 						bind:value={Password}
 						on:input={PasswordChange}
 						type="password"
@@ -186,11 +218,24 @@
 				{/if}
 			</div>
 
-			<button
-				disabled={loading || (PswStrenghtReport && PswStrenghtReport?.score.number < 3)}
-				class={`btn btn-wide bg-base-300 flex gap-2 btn-sm md:btn-md ${loading ? "loading" : ""}`}
-				type="submit"><span class="fas fa-user" /> Login/Sign Up</button
-			>
+			<div class="grid grid-cols-2 w-full">
+				<button
+					disabled={loading ||
+						(PswStrenghtReport && PswStrenghtReport?.score.number < 3) ||
+						$AuthStore.loggedIn}
+					class={`btn  bg-base-300 flex gap-2 btn-sm md:btn-md ${loading ? "loading" : ""}`}
+					type="submit"
+					on:click={() => (AuthMethod = "login")}><span class="fas fa-user" /> Login</button
+				>
+				<button
+					disabled={loading ||
+						(PswStrenghtReport && PswStrenghtReport?.score.number < 3) ||
+						$AuthStore.loggedIn}
+					class={`btn  bg-base-300 flex gap-2 btn-sm md:btn-md ${loading ? "loading" : ""}`}
+					type="submit"
+					on:click={() => (AuthMethod = "signup")}><span class="fas fa-user" /> Sign Up</button
+				>
+			</div>
 		</form>
 	</div>
 	<aside class="col-span-4 relative">
@@ -229,15 +274,15 @@
 	}
 
 	:global(.placehover.animate) {
-		transform: translateY(-40px);
+		translate: 0 -40px;
 	}
 
 	@keyframes PopIn {
 		from {
-			transform: translateY(400px);
+			translate: 0 400px;
 		}
 		to {
-			transform: translateY(-25%);
+			translate: 0 -25%;
 		}
 	}
 </style>

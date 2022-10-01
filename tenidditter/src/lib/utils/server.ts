@@ -18,7 +18,8 @@ interface APIResShape<T = never> {
 export const callApi = async <T = never>({
 	uri,
 	method,
-	body
+	body,
+	headers
 }: QueryParams): Promise<FunctionJob<T>> => {
 	if (IsEmptyString(uri)) return { success: false, error: "Invalid URI" };
 
@@ -29,7 +30,11 @@ export const callApi = async <T = never>({
 	if (!isValidUrl(url)) return { success: false, error: "Invalid URL" };
 
 	try {
-		const resp = await fetch(url, { method, body: JSON.stringify(body) });
+		const resp = await fetch(url, {
+			method,
+			body: JSON.stringify(body),
+			headers: { "Content-Type": "application/json", ...(headers || {}) }
+		});
 		if (!resp.ok) return { success: false, error: "Request Failed" };
 
 		const { success, data: apiRes }: APIResShape<T> = await resp.json();
