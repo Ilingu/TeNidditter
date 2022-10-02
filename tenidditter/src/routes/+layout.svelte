@@ -2,9 +2,9 @@
 	import { onMount } from "svelte";
 	import AlertProvider from "$lib/services/AlertProvider.svelte";
 	import Navbar from "$lib/components/layout/Navbar.svelte";
+	import { AutoLogin } from "$lib/stores/auth";
 
 	import "../style/app.css";
-	import { AutoLogin } from "$lib/stores/auth";
 
 	onMount(() => {
 		AutoLogin();
