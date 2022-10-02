@@ -15,6 +15,21 @@ interface APIResShape<T = never> {
 	data: T;
 }
 
+export default class ApiClient {
+	static get() {
+		//
+	}
+	static post() {
+		//
+	}
+	static update() {
+		//
+	}
+	static delete() {
+		//
+	}
+}
+
 export const callApi = async <T = never>({
 	uri,
 	method,

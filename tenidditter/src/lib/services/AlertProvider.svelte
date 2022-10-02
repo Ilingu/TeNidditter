@@ -2,7 +2,7 @@
 	import Alert from "$lib/components/design/Alert/Alert.svelte";
 
 	import type { AlertShape } from "$lib/types/interfaces";
-	import { IsEmptyString } from "$lib/utils/utils";
+	import { IsEmptyString } from "$lib/utils";
 	import { onMount } from "svelte";
 
 	type EnhancedAlert = AlertShape & { id: string };

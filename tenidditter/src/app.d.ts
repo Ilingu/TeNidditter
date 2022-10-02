@@ -12,3 +12,9 @@ declare namespace App {
 	// interface Session {}
 	// interface Stuff {}
 }
+
+declare class Go {
+	_callbackTimeouts: Record<string, unknown>;
+	_nextCallbackTimeoutID: number;
+	importObject: WebAssembly.Imports | undefined;
+}

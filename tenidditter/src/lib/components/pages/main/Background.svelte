@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { routingListener } from "$lib/utils/routing";
+	import { routeWillChange } from "$lib/routing";
 
-	import { isMobile } from "$lib/utils/utils";
+	import { isMobile } from "$lib/utils";
 
 	import { onMount } from "svelte";
 	import { fade } from "svelte/transition";
@@ -42,7 +42,7 @@
 		AnimationReq = requestAnimationFrame(AnimateBg);
 
 		// Unblock routing by stoping animation
-		routingListener(() => {
+		routeWillChange(() => {
 			AnimationMode = "stop";
 			cancelAnimationFrame(AnimationReq);
 		});

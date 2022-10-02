@@ -66,6 +66,7 @@
 <style scoped>
 	.quote {
 		left: calc(50% - 75% / 2);
+		translate: 0 400px;
 		animation: PopIn 1s cubic-bezier(0.6, 0, 0.96, 0.68) 0.1s 1 forwards;
 	}
 	@keyframes PopIn {

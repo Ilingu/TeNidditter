@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { dispatchRouting } from "$lib/utils/routing";
+	import { dispatchRouting } from "$lib/routing";
 
 	export let href: string;
 	export let classStyle = "";

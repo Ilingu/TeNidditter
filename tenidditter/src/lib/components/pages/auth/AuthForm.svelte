@@ -1,8 +1,8 @@
 <script lang="ts">
 	import AuthStore, { AutoLogin } from "$lib/stores/auth";
-	import { callApi } from "$lib/utils/server";
-	import { FormatUsername, IsEmptyString, pushAlert } from "$lib/utils/utils";
-	import { GetZxcvbn, ScoreToColor, ScoreToText } from "$lib/utils/zxcvbn";
+	import { callApi } from "$lib/api";
+	import { FormatUsername, IsEmptyString, pushAlert } from "$lib/utils";
+	import { GetZxcvbn, ScoreToColor, ScoreToText } from "$lib/zxcvbn";
 	import { onMount } from "svelte";
 
 	/* TYPES */
