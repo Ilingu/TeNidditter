@@ -18,3 +18,6 @@ declare class Go {
 	_nextCallbackTimeoutID: number;
 	importObject: WebAssembly.Imports | undefined;
 }
+
+declare function EncryptAES(key: string, textToEnc: string): string;
+declare function DecryptAES(key: string, textToDec: string): string;

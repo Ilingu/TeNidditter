@@ -1,6 +1,7 @@
 import type { FunctionJob } from "./types/interfaces";
+import { IsEmptyString } from "./utils";
 
-let wasm: WebAssembly.Instance;
+let wasmBinary: WebAssembly.Instance;
 
 const WASM_URL = "/wasm/encryption.wasm";
 export const InitWasm = async (): Promise<FunctionJob> => {
@@ -9,9 +10,8 @@ export const InitWasm = async (): Promise<FunctionJob> => {
 
 		if ("instantiateStreaming" in WebAssembly) {
 			const obj = await WebAssembly.instantiateStreaming(fetch(WASM_URL), go.importObject);
-			wasm = obj.instance;
-			// go.run(wasm); // --> run main()
-			console.log(wasm.exports);
+			wasmBinary = obj.instance;
+			go.run(wasmBinary); // --> run main()
 
 			return { success: true };
 		}
@@ -20,7 +20,8 @@ export const InitWasm = async (): Promise<FunctionJob> => {
 		const resp = await fetch(WASM_URL);
 		const bytes = await resp.arrayBuffer();
 		await WebAssembly.instantiate(bytes, go.importObject).then((obj) => {
-			wasm = obj.instance;
+			wasmBinary = obj.instance;
+			go.run(wasmBinary); // --> run main()
 		});
 		return { success: true };
 	} catch (err) {
@@ -29,15 +30,21 @@ export const InitWasm = async (): Promise<FunctionJob> => {
 	}
 };
 
-export const EncryptAES = (str: string): FunctionJob<string> => {
-	if (!wasm || !wasm?.exports?.EncryptAES) return { success: false };
+export const EncryptDatas = (str: string): FunctionJob<string> => {
+	if (IsEmptyString(str)) return { success: false };
 
-	const encryptedStr = wasm.exports.EncryptAES(
-		"thisis32bitlongpassphraseimusing",
-		"This is a secret"
-	);
+	if (!wasmBinary || !EncryptAES) return { success: false };
+	const encryptedStr = EncryptAES("thisis32bitlongpassphraseimusing", str);
 
-	console.log(encryptedStr);
-
+	if (IsEmptyString(encryptedStr)) return { success: false };
 	return { success: true, data: encryptedStr };
+};
+export const DecryptDatas = (str: string): FunctionJob<string> => {
+	if (IsEmptyString(str)) return { success: false };
+
+	if (!wasmBinary || !DecryptAES) return { success: false };
+	const decryptedStr = DecryptAES("thisis32bitlongpassphraseimusing", str);
+
+	if (IsEmptyString(decryptedStr)) return { success: false };
+	return { success: true, data: decryptedStr };
 };

@@ -8,7 +8,7 @@
 	import "../style/app.css";
 	import { changeAppTheme } from "$lib/utils";
 	import { afterNavigate } from "$app/navigation";
-	import { EncryptAES, InitWasm } from "$lib/wasm";
+	import { EncryptDatas, DecryptDatas, InitWasm } from "$lib/wasm";
 
 	afterNavigate((n) => {
 		const path = n.to?.url.pathname;
@@ -28,7 +28,10 @@
 			.forEach((el) => ScrollAnimationObserver.observe(el));
 
 		await InitWasm();
-		EncryptAES("abc");
+		// const { success, data } = EncryptDatas("abc");
+		// console.log(data);
+		// const { success: s, data: enc } = EncryptDatas(data);
+		// console.log(enc);
 	});
 
 	const ScrollAnimation: IntersectionObserverCallback = (entries) => {

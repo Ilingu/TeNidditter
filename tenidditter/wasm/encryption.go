@@ -4,16 +4,40 @@ import (
 	"crypto/aes"
 	"encoding/hex"
 	"fmt"
+	"syscall/js"
 )
 
 func main() {
 	fmt.Println("Webassembly Connected!")
 
+	c := make(chan struct{}, 0)
+	js.Global().Set("EncryptAES", EncryptDatas())
+	js.Global().Set("DecryptAES", DecryptDatas())
+	<-c
 }
 
-// NOTE: do not remove the "//export <name>" comments, they are here to export the funcs to wasm.exports in js
+func EncryptDatas() js.Func {
+	return js.FuncOf(func(this js.Value, args []js.Value) interface{} {
+		if len(args) != 2 {
+			return "Invalid no of arguments passed"
+		}
 
-//export EncryptAES
+		key, textToEnc := args[0].String(), args[1].String()
+		return EncryptAES(key, textToEnc)
+	})
+}
+
+func DecryptDatas() js.Func {
+	return js.FuncOf(func(this js.Value, args []js.Value) interface{} {
+		if len(args) != 2 {
+			return "Invalid no of arguments passed"
+		}
+
+		key, textToEnc := args[0].String(), args[1].String()
+		return DecryptAES(key, textToEnc)
+	})
+}
+
 func EncryptAES(key string, textToEnc string) string {
 	c, err := aes.NewCipher([]byte(key))
 	if err != nil {
@@ -26,7 +50,6 @@ func EncryptAES(key string, textToEnc string) string {
 	return hex.EncodeToString(out)
 }
 
-//export DecryptAES
 func DecryptAES(key string, textToDec string) string {
 	ciphertext, _ := hex.DecodeString(textToDec)
 
