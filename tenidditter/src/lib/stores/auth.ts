@@ -1,7 +1,8 @@
 import type { FunctionJob } from "$lib/types/interfaces";
 import { callApi } from "$lib/api";
-import { decryptDatas, encryptDatas, IsEmptyString, pushAlert } from "$lib/utils";
+import { IsEmptyString, pushAlert } from "$lib/utils";
 import { writable } from "svelte/store";
+import { DecryptDatas, EncryptDatas } from "$lib/encryption";
 
 export interface User {
 	username: string;
@@ -59,13 +60,13 @@ export const GetJWT = async (): Promise<FunctionJob<string>> => {
 	const rawToken = window.localStorage.getItem("JWT_TOKEN");
 	if (!rawToken || IsEmptyString(rawToken)) return { success: false };
 
-	const { success, data: Token } = await decryptDatas(rawToken);
+	const { success, data: Token } = DecryptDatas(rawToken);
 	if (!success || !Token || Token?.length <= 0) return { success: false };
 
 	return { success: true, data: Token };
 };
 export const SetJWT = async (JwtToken: string) => {
-	const { success, data: eToken } = await encryptDatas(JwtToken);
+	const { success, data: eToken } = EncryptDatas(JwtToken);
 	if (success && eToken && eToken?.length > 0) {
 		window.localStorage.setItem("JWT_TOKEN", eToken);
 		document.cookie = `JWT_TOKEN=${eToken}; expires=${new Date(
