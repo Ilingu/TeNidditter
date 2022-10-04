@@ -15,18 +15,61 @@ interface APIResShape<T = never> {
 	data: T;
 }
 
-export default class ApiClient {
-	static get() {
-		//
+interface APIClientParams<T extends { route: string; body?: object; headers?: object }> {
+	uri: T["route"];
+	body?: T["body"];
+	headers?: T["headers"];
+	query?: {
+		[key: string]: string;
+	};
+}
+
+type GetType<T = never> = Omit<T, "body">;
+
+export default class api {
+	static async get<T = never>({
+		uri,
+		query,
+		headers
+	}: GetType<
+		APIClientParams<
+			| { route: "/tedinitter/userInfo"; headers: { Authorization: string } }
+			| { route: `/auth/available`; headers: undefined }
+		>
+	>): Promise<FunctionJob<T>> {
+		if (query && Object.entries(query).length > 0) {
+			uri += "?";
+			for (const [key, val] of Object.entries(query)) {
+				uri += `${key}=${encodeURI(val)}&`;
+			}
+			uri = uri.replace(/&+$/, "") as "/tedinitter/userInfo" | `/auth/available`; // trim last &
+		}
+
+		return await callApi<T>({
+			uri,
+			method: "GET",
+			headers: headers as object
+		});
 	}
-	static post() {
-		//
+	static async post<T = never>({
+		uri,
+		body,
+		headers
+	}: APIClientParams<{ route: "/auth/"; body: { username: string; password: string } }>): Promise<
+		FunctionJob<T>
+	> {
+		return await callApi<T>({
+			uri,
+			method: "POST",
+			body,
+			headers: headers as object
+		});
 	}
-	static update() {
-		//
+	static update({ uri, body, headers }: APIClientParams<{ route: "" }>) {
+		console.log({ uri, body, headers });
 	}
-	static delete() {
-		//
+	static delete({ uri, body, headers }: APIClientParams<{ route: "" }>) {
+		console.log({ uri, body, headers });
 	}
 }
 

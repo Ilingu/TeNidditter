@@ -1,5 +1,5 @@
 import type { FunctionJob } from "$lib/types/interfaces";
-import { callApi } from "$lib/api";
+import api from "$lib/api";
 import { IsEmptyString, pushAlert } from "$lib/utils";
 import { writable } from "svelte/store";
 import { DecryptDatas, EncryptDatas } from "$lib/encryption";
@@ -37,12 +37,9 @@ export const AutoLogin = async (JwtToken?: string) => {
 };
 
 export const GetUserInfo = async (JwtToken: string): Promise<FunctionJob<User>> => {
-	const { success: LoginSuccess, data: user } = await callApi<User>({
-		uri: `/tedinitter/userInfo`,
-		method: "GET",
-		headers: {
-			Authorization: "Bearer " + JwtToken
-		}
+	const { success: LoginSuccess, data: user } = await api.get<User>({
+		uri: "/tedinitter/userInfo",
+		headers: { Authorization: "Bearer " + JwtToken }
 	});
 
 	if (!LoginSuccess || !user) return { success: false };

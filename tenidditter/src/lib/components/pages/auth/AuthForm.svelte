@@ -1,6 +1,6 @@
 <script lang="ts">
 	import AuthStore, { AutoLogin } from "$lib/stores/auth";
-	import { callApi } from "$lib/api";
+	import api from "$lib/api";
 	import { FormatUsername, IsEmptyString, pushAlert } from "$lib/utils";
 	import { GetZxcvbn, ScoreToColor, ScoreToText } from "$lib/zxcvbn";
 	import { onMount } from "svelte";
@@ -49,19 +49,18 @@
 		if (passwordStrenght.score < 3) return pushAlert("Password is too weak! Like you", "warning");
 
 		if (AuthMethod === "signup") {
-			const { success, data: IsAvailable } = await callApi<boolean>({
-				uri: `/auth/available?username=${encodeURI(username)}`,
-				method: "GET"
+			const { success, data: IsAvailable } = await api.get<boolean>({
+				uri: "/auth/available",
+				query: { username }
 			});
 			if (!success || !IsAvailable)
 				return pushAlert("This Username is already taken.", "warning", 6000);
 		}
 
-		const { success: AuthSuccess, data: JwtToken } = await callApi<string>({
-			uri: `/auth/`,
-			method: "POST",
+		const { success: AuthSuccess, data: JwtToken } = await api.post<string>({
+			uri: "/auth/",
 			body: {
-				username: username,
+				username,
 				password: Password
 			}
 		});
