@@ -3,14 +3,7 @@
 	import AuthForm from "$lib/components/pages/auth/AuthForm.svelte";
 </script>
 
-<section class="w-screen grid grid-cols-6">
+<section class="page-content w-screen grid grid-cols-6">
 	<AuthForm />
 	<Art />
 </section>
-
-<style scoped>
-	section {
-		overflow: hidden;
-		height: calc(100vh - 64px);
-	}
-</style>

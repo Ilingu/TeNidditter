@@ -25,6 +25,11 @@ body {
 		url("/Assets/fonts/Fira/FiraMono-Medium.ttf") format("truetype"),
 		url("/Assets/fonts/Fira/FiraMono-Bold.ttf") format("truetype");
 }
+.page-content {
+	overflow: hidden;
+	height: calc(100vh - 64px);
+}
+
 .scrollAnimate {
 	opacity: 0;
 	transform: translateX(-25vw);

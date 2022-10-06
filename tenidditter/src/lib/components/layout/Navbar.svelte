@@ -18,5 +18,11 @@
 		<img src="/Assets/Img/reddit.svg" alt="app logo" class="w-6 hue-rotate-180" />
 		Teddit
 	</Link>
-	{$AuthStore.loggedIn}
+
+	{#if $AuthStore.loggedIn}
+		<p class="gap-x-2 font-nerd text-xl italic">
+			<span class="fas fa-user" />
+			{$AuthStore.user?.username}
+		</p>
+	{/if}
 </nav>
