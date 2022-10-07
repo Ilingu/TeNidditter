@@ -38,3 +38,19 @@ export const pushAlert = (message: string, type: AlertTypes, duration = 5000) =>
  */
 export const FormatUsername = (username: string): string =>
 	username.replace(/[\W0-9]+/g, "").toLowerCase();
+
+export const ConvertHTMLEntities = (str: string): string => {
+	const htmlEntities = {
+		"&": "&amp;",
+		"<": "&lt;",
+		">": "&gt;",
+		'"': "&quot;",
+		"'": "&apos;"
+	};
+	return str.replace(/([&<>"'])/g, (match) => htmlEntities[match as keyof typeof htmlEntities]);
+};
+
+export const FormatNumbers = (num: number) =>
+	new Intl.NumberFormat(Intl.DateTimeFormat().resolvedOptions().locale, {
+		notation: "compact"
+	}).format(num);

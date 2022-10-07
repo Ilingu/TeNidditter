@@ -3,7 +3,7 @@
 	import { AutoLogin } from "$lib/stores/auth";
 	import { InitWasm } from "$lib/wasm";
 
-	import AlertProvider from "$lib/services/AlertProvider.svelte";
+	import AlertProvider from "$lib/AlertProvider.svelte";
 	import Navbar from "$lib/components/layout/Navbar.svelte";
 
 	import "../style/app.css";

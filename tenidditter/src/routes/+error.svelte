@@ -3,21 +3,21 @@
 	import Link from "$lib/components/design/Link.svelte";
 </script>
 
-<div class="page-content grid place-content-center text-center">
+<div class="page-content flex flex-col justify-center items-center text-center">
 	<div class="glitch text-error text-5xl">
 		<span aria-hidden="true">ERROR -- {$page.status}</span>
 		ERROR -- {$page.status}
 		<span aria-hidden="true">ERROR -- {$page.status}</span>
 	</div>
 
-	<p class="text-center text-xl mb-5">
-		Oops! Something went wrong: <span class="font-bold">{$page.error?.message}</span>
-	</p>
+	<p class="text-center text-xl">Oops! Something went wrong:</p>
+	<p class="text-center text-xl font-bold mb-5">{$page.error?.message}</p>
 	<Link href="/" classStyle="btn">Return Home</Link>
 </div>
 
 <style scoped>
 	.glitch {
+		user-select: none;
 		font-weight: bold;
 		text-transform: uppercase;
 		position: relative;
@@ -34,14 +34,14 @@
 	.glitch span:first-child {
 		animation: glitch 500ms infinite;
 		clip-path: polygon(0 0, 100% 0, 100% 35%, 0 35%);
-		transform: translate(calc(-0.04em + 14%), -0.03em);
+		transform: translate(-0.04em, -0.03em);
 		opacity: 0.75;
 	}
 
 	.glitch span:last-child {
 		animation: glitch 375ms infinite;
 		clip-path: polygon(0 65%, 100% 65%, 100% 100%, 0 100%);
-		transform: translate(calc(0.04em + 14%), 0.03em);
+		transform: translate(0.04em, 0.03em);
 		opacity: 0.75;
 	}
 
