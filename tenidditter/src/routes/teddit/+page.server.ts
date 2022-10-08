@@ -1,11 +1,6 @@
-import type { TedditRawPost, TedditHomePageRes, FunctionJob } from "$lib/types/interfaces";
-import type { FeedType } from "$lib/types/types";
+import type { TedditHomePageRes, FeedResult } from "$lib/types/interfaces";
 import { IsEmptyString } from "$lib/utils";
 import { error } from "@sveltejs/kit";
-
-interface FeedResult extends FunctionJob<TedditRawPost[]> {
-	type: FeedType;
-}
 
 export const load: import("./$types").PageServerLoad = async ({ cookies }): Promise<FeedResult> => {
 	const eToken = cookies.get("JWT_TOKEN");
@@ -35,3 +30,5 @@ const fetchHomePage = async (): Promise<FeedResult> => {
 		throw error(500, "No Posts returned...");
 	}
 };
+
+export const prerender = false;

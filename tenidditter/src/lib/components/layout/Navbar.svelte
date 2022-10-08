@@ -21,7 +21,7 @@
 
 	{#if $AuthStore.loggedIn}
 		<p class="gap-x-2 font-nerd text-xl italic">
-			<span class="fas fa-user" />
+			<i class="icon fas fa-user" />
 			{$AuthStore.user?.username}
 		</p>
 	{/if}

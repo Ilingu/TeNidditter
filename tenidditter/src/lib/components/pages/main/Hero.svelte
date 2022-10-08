@@ -14,7 +14,7 @@
 							target="_blank"
 							rel="noopener noreferrer"
 						>
-							Github <i class="fa-brands fa-github" /></a
+							Github <i class="fa-brands fa-github icon" /></a
 						>
 					</div>
 

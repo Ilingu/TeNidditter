@@ -183,7 +183,7 @@
 				class={`btn  bg-base-300 flex gap-2 btn-sm md:btn-md ${loading ? "loading" : ""}`}
 				type="submit"
 				on:click={() => (AuthMethod = "login")}
-				><span class="fas fa-right-to-bracket" /> Sign in</button
+				><i class="fas fa-right-to-bracket icon" /> Sign in</button
 			>
 			<button
 				disabled={loading ||
@@ -191,7 +191,7 @@
 					$AuthStore.loggedIn}
 				class={`btn  bg-base-300 flex gap-2 btn-sm md:btn-md ${loading ? "loading" : ""}`}
 				type="submit"
-				on:click={() => (AuthMethod = "signup")}><span class="fas fa-user" /> Sign up</button
+				on:click={() => (AuthMethod = "signup")}><i class="fas fa-user icon" /> Sign up</button
 			>
 		</div>
 	</form>

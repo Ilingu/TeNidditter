@@ -2,6 +2,7 @@
 <script lang="ts">
 	import Tabs from "$lib/components/design/Tabs.svelte";
 	import Feeds from "$lib/components/pages/teddit/Feeds.svelte";
+	import { QueryHomePost } from "$lib/services/teddit";
 	import { FeedTypeEnum } from "$lib/types/enums";
 
 	export let data: import("./$types").PageData;
@@ -11,6 +12,13 @@
 
 	const ChangeFeedType = (active: number) => {
 		FeedDisplayType = active;
+		HandleQueryingPost();
+	};
+
+	const HandleQueryingPost = async (afterId?: string) => {
+		const { success, data: newPosts } = await QueryHomePost(FeedDisplayType, afterId);
+		if (success && newPosts && newPosts?.length > 0)
+			data.data = [...(data.data || []), ...newPosts];
 	};
 </script>
 
@@ -19,17 +27,17 @@
 		{#if data.type === "home_feed"}
 			<Tabs
 				elems={[
-					`<i class="fa-brands fa-hotjar"></i> Hot`,
-					`<i class="fa-solid fa-star"></i> New`,
-					`<i class="fa-solid fa-bolt"></i> Top`,
-					`<i class="fa-solid fa-chart-line"></i> Rising`,
-					`<i class="fa-solid fa-comment"></i> Controversial`
+					`<i class="fa-brands fa-hotjar icon"></i> Hot`,
+					`<i class="fa-solid fa-star icon"></i> New`,
+					`<i class="fa-solid fa-bolt icon"></i> Top`,
+					`<i class="fa-solid fa-chart-line icon"></i> Rising`,
+					`<i class="fa-solid fa-comment icon"></i> Controversial`
 				]}
 				active={FeedDisplayType}
 				cb={ChangeFeedType}
 			/>
 		{/if}
-		<Feeds rawPosts={data?.data || []} />
+		<Feeds rawPosts={data?.data || []} queryMorePostHandler={HandleQueryingPost} />
 	</div>
 </main>
 

@@ -1,9 +1,12 @@
-import type { AlertTypes } from "./types";
+import type { AlertTypes, FeedType } from "./types";
 
 export interface FunctionJob<T = never> {
 	success: boolean;
 	data?: T;
 	error?: string;
+}
+export interface FeedResult extends FunctionJob<TedditRawPost[]> {
+	type?: FeedType;
 }
 
 export interface AlertShape {
@@ -41,10 +44,11 @@ export interface TedditPost {
 	duration?: number;
 
 	url: string;
+	domain: string;
 	permalink: string;
 
 	subreddit: string;
-	link_flair_text?: string;
+	link_flair?: string;
 }
 
 export interface TedditRawPost {
