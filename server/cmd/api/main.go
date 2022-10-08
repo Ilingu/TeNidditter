@@ -9,6 +9,7 @@ import (
 	"time"
 
 	auth_routes "teniditter-server/cmd/api/routes/auth"
+	"teniditter-server/cmd/api/routes/teddit"
 	tedinitter_routes "teniditter-server/cmd/api/routes/tedinitter"
 	"teniditter-server/cmd/db"
 	"teniditter-server/cmd/global/console"
@@ -46,10 +47,12 @@ func main() {
 	auth_routes.AuthHandler(authG)
 
 	tedinitterG := e.Group("/tedinitter")
-	tedinitter_routes.TedinitterHandler(tedinitterG)
+	tedinitter_routes.TedinitterUserHandler(tedinitterG)
+
+	tedditG := e.Group("/teddit")
+	teddit.TedditHandler(tedditG)
 
 	// Start Server
-
 	go func() {
 		PORT := fmt.Sprintf(":%s", os.Getenv("PORT"))
 		if err := e.Start(PORT); err != nil && err != http.ErrServerClosed {

@@ -2,21 +2,22 @@
 	import type { TedditPost } from "$lib/types/interfaces";
 
 	import Link from "$lib/components/design/Link.svelte";
-	import { FormatNumbers, humanElapsedTime, IsEmptyString } from "$lib/utils";
-
-	let SvelteMarkdown: typeof import("svelte-markdown").default;
+	import { FormatNumbers, humanElapsedTime } from "$lib/utils";
+	import { onMount } from "svelte";
 
 	export let post: TedditPost;
 
-	let hasBody = true;
-	$: hasBody = !!post.selftext_html || !!post.is_video || !!post.images;
-	$: if (!IsEmptyString(post.selftext_html)) LoadSvelteMD();
+	onMount(() => {
+		document.querySelectorAll(".md a").forEach((a) => {
+			try {
+				a.textContent = new URL(a.textContent || "").host;
+				a.innerHTML = `<i class="fa-solid fa-arrow-up-right-from-square"></i>` + a.innerHTML;
 
-	const LoadSvelteMD = async () => {
-		try {
-			SvelteMarkdown = (await import("svelte-markdown")).default;
-		} catch (err) {}
-	};
+				a.setAttribute("target", "_blank");
+				a.setAttribute("rel", "noopener noreferrer");
+			} catch (err) {}
+		});
+	});
 
 	const FormattedTedditUrl = post.permalink
 		.replace(/\/+$/, "")
@@ -56,37 +57,41 @@
 			>{post.title}</Link
 		>
 	</div>
-	<div class="post-body flex justify-center">
-		{#if hasBody}
-			{#if post.is_video && post.media}
-				<video
-					class="my-5 max-h-[512px]"
-					width={post.media?.reddit_video?.width}
-					src={post.media?.reddit_video?.fallback_url}
-					controls
-				>
-					<track kind="captions" /></video
-				>
-			{:else if !post.is_self_link}
-				<div
-					class="p-2 text-sm flex flex-col items-center bg-black rounded-md ring-1 ring-[#686868]"
-				>
-					<Link href={post.url}>
+	<div class="post-body flex flex-col items-center">
+		{#if post.selftext_html}
+			{@html post.selftext_html}
+		{/if}
+
+		{#if post.is_video && post.media}
+			<video
+				class="my-5 max-h-[512px]"
+				width={post.media?.reddit_video?.width}
+				src={post.media?.reddit_video?.fallback_url}
+				controls
+			>
+				<track kind="captions" /></video
+			>
+		{/if}
+
+		{#if post.images && post.images.preview && post.is_self_link}
+			<img
+				src={"https://teddit.pussthecat.org" + post.images.preview}
+				class="my-5 max-h-[512px] w-auto"
+				alt="🖼"
+			/>
+		{/if}
+
+		{#if !post.is_self_link}
+			<div class="p-2 text-sm flex flex-col items-center bg-black rounded-md ring-1 ring-[#686868]">
+				<a href={post.url} target="_blank" rel="noopener noreferrer">
+					{#if post.images?.thumb}
 						<img src={post.images?.thumb} class="my-5 w-full" alt="🔗" />
-						<legend class="flex items-center gap-x-2 hover:underline"
-							><i class="fa-solid fa-arrow-up-right-from-square" /> {post.domain}</legend
-						>
-					</Link>
-				</div>
-			{:else if post.images && post.images.preview}
-				<img
-					src={"https://teddit.pussthecat.org" + post.images.preview}
-					class="my-5 max-h-[512px] w-auto"
-					alt="🖼"
-				/>
-			{/if}
-		{:else if post.selftext_html && SvelteMarkdown}
-			<SvelteMarkdown source={post.selftext_html} />
+					{/if}
+					<legend class="flex items-center gap-x-2 hover:underline"
+						><i class="fa-solid fa-arrow-up-right-from-square" /> {post.domain}</legend
+					>
+				</a>
+			</div>
 		{/if}
 	</div>
 	<div class="post-footer text-sm flex items-end">
@@ -140,5 +145,15 @@
 
 	.post-footer {
 		grid-area: post-footer;
+	}
+
+	:global(.md) {
+		text-align: justify;
+		width: 100%;
+		max-height: 300px;
+		overflow: hidden;
+		position: relative;
+		-webkit-mask-image: linear-gradient(180deg, black, 75%, transparent);
+		mask-image: linear-gradient(180deg, black, 75%, transparent);
 	}
 </style>

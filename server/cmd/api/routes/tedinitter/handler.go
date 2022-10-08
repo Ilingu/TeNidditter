@@ -11,7 +11,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 )
 
-func TedinitterHandler(t *echo.Group) {
+func TedinitterUserHandler(t *echo.Group) {
 	if len(os.Getenv("JWT_SECRET")) < 15 {
 		console.Log("Couldn't register Tedinitter routes: JWT_SECRET is not secured", console.Error)
 		return
@@ -34,5 +34,16 @@ func TedinitterHandler(t *echo.Group) {
 		return res.HandleResp(http.StatusOK, token)
 	})
 
-	console.Log("TedinitterHandler Registered ✅", console.Success)
+	t.GET("/userInfo", func(c echo.Context) error {
+		res := routes.EchoWrapper{Context: c}
+
+		token, err := jwt.DecodeToken(&c)
+		if err != nil {
+			return res.HandleResp(http.StatusUnauthorized, err.Error())
+		}
+
+		return res.HandleResp(http.StatusOK, token)
+	})
+
+	console.Log("TedinitterUserHandler Registered ✅", console.Success)
 }

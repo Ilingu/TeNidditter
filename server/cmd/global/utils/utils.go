@@ -13,6 +13,15 @@ func IsEmptyString(str any) bool {
 	return !isStr || len(strings.TrimSpace(realStr)) <= 0
 }
 
+func SafeString(str string) string {
+	return url.QueryEscape(strings.ToLower(strings.TrimSpace(str)))
+}
+
+func IsValidURL(urlToCheck string) bool {
+	_, err := url.ParseRequestURI(urlToCheck)
+	return err == nil
+}
+
 func FormatUsername(str string) string {
 	formattedStr := ""
 	for _, r := range str {
@@ -21,7 +30,7 @@ func FormatUsername(str string) string {
 		}
 	}
 
-	return url.QueryEscape(strings.ToLower(strings.TrimSpace(formattedStr)))
+	return SafeString(formattedStr)
 }
 
 func IsStrongPassword(password string) bool {

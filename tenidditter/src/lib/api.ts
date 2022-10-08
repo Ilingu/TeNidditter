@@ -2,6 +2,7 @@ import { PUBLIC_API_URL } from "$env/static/public";
 
 import { IsEmptyString, isValidUrl } from "./utils";
 import type { FunctionJob } from "$lib/types/interfaces";
+import type { FeedHomeType } from "./types/types";
 
 interface QueryParams {
 	uri: string;
@@ -15,13 +16,13 @@ interface APIResShape<T = never> {
 	data: T;
 }
 
-interface APIClientParams<T extends { route: string; body?: object; headers?: object }> {
+interface APIClientParams<
+	T extends { route: string; body?: object; headers?: object; query?: Record<string, string> }
+> {
 	uri: T["route"];
 	body?: T["body"];
 	headers?: T["headers"];
-	query?: {
-		[key: string]: string;
-	};
+	query?: T["query"];
 }
 
 type GetType<T = never> = Omit<T, "body">;
@@ -33,13 +34,19 @@ export default class api {
 		headers
 	}: GetType<
 		APIClientParams<
-			| { route: "/tedinitter/userInfo"; headers: { Authorization: string } }
-			| { route: `/auth/available`; headers: undefined }
+			| { route: "/tedinitter/userInfo"; headers: { Authorization: string }; query: undefined }
+			| { route: `/auth/available`; headers: undefined; query: { username: string } }
+			| {
+					route: `/teddit/home`;
+					headers: undefined;
+					query: { type?: FeedHomeType; afterId?: string };
+			  }
 		>
 	>): Promise<FunctionJob<T>> {
 		if (query && Object.entries(query).length > 0) {
 			uri += "?";
 			for (const [key, val] of Object.entries(query)) {
+				if (val === null || typeof val === "undefined") continue;
 				uri += `${key}=${encodeURI(val)}&`;
 			}
 			uri = uri.replace(/&+$/, "") as "/tedinitter/userInfo" | `/auth/available`; // trim last &

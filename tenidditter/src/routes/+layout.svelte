@@ -17,13 +17,19 @@
 		if (path.includes("nitter")) changeAppTheme("nitter");
 		else if (path.includes("teddit")) changeAppTheme("teddit");
 		else changeAppTheme("tenidditter");
+
+		// ReTrigger All Animation
+		document
+			.querySelectorAll(".scrollAnimate")
+			.forEach((el) => ScrollAnimationObserver.observe(el));
 	});
 
+	let ScrollAnimationObserver: IntersectionObserver;
 	onMount(async () => {
 		await InitWasm();
 		AutoLogin();
 
-		let ScrollAnimationObserver = new IntersectionObserver(ScrollAnimation, { threshold: 1.0 });
+		ScrollAnimationObserver = new IntersectionObserver(ScrollAnimation, { threshold: 1.0 });
 		document
 			.querySelectorAll(".scrollAnimate")
 			.forEach((el) => ScrollAnimationObserver.observe(el));

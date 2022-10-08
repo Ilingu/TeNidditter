@@ -9,16 +9,21 @@
 	console.log(data);
 
 	let FeedDisplayType = FeedTypeEnum.Hot;
+	let loading = false;
 
 	const ChangeFeedType = (active: number) => {
+		if (active === FeedDisplayType) return;
 		FeedDisplayType = active;
-		HandleQueryingPost();
+		HandleQueryingPost({ appendResult: false });
 	};
 
-	const HandleQueryingPost = async (afterId?: string) => {
+	type HandlePostParams = { afterId?: string; appendResult?: boolean };
+	const HandleQueryingPost = async ({ afterId, appendResult }: HandlePostParams) => {
+		loading = true;
 		const { success, data: newPosts } = await QueryHomePost(FeedDisplayType, afterId);
 		if (success && newPosts && newPosts?.length > 0)
-			data.data = [...(data.data || []), ...newPosts];
+			data.data = appendResult ? [...(data.data || []), ...newPosts] : newPosts;
+		loading = false;
 	};
 </script>
 
@@ -37,7 +42,7 @@
 				cb={ChangeFeedType}
 			/>
 		{/if}
-		<Feeds rawPosts={data?.data || []} queryMorePostHandler={HandleQueryingPost} />
+		<Feeds rawPosts={data?.data || []} queryMorePostHandler={HandleQueryingPost} {loading} />
 	</div>
 </main>
 
