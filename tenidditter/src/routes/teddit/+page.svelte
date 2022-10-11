@@ -6,7 +6,6 @@
 	import { FeedTypeEnum } from "$lib/types/enums";
 
 	export let data: import("./$types").PageData;
-	console.log(data);
 
 	let FeedDisplayType = FeedTypeEnum.Hot;
 	let loading = false;

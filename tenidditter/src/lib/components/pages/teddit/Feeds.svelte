@@ -15,6 +15,17 @@
 	let InfiniteScrollObserver: IntersectionObserver;
 	onMount(() => {
 		InfiniteScrollObserver = new IntersectionObserver(QueryMorePost);
+
+		document.querySelectorAll(".md a").forEach((a) => {
+			try {
+				a.textContent = new URL(a.textContent || "").host;
+				a.innerHTML = `<i class="fa-solid fa-arrow-up-right-from-square"></i>` + a.innerHTML;
+
+				a.setAttribute("target", "_blank");
+				a.setAttribute("rel", "noopener noreferrer");
+				a.classList.add("innerPostLink");
+			} catch (err) {}
+		});
 	});
 
 	afterUpdate(() => {

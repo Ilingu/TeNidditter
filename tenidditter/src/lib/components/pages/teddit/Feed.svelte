@@ -3,21 +3,8 @@
 
 	import Link from "$lib/components/design/Link.svelte";
 	import { FormatNumbers, humanElapsedTime } from "$lib/utils";
-	import { onMount } from "svelte";
 
 	export let post: TedditPost;
-
-	onMount(() => {
-		document.querySelectorAll(".md a").forEach((a) => {
-			try {
-				a.textContent = new URL(a.textContent || "").host;
-				a.innerHTML = `<i class="fa-solid fa-arrow-up-right-from-square"></i>` + a.innerHTML;
-
-				a.setAttribute("target", "_blank");
-				a.setAttribute("rel", "noopener noreferrer");
-			} catch (err) {}
-		});
-	});
 
 	const FormattedTedditUrl = post.permalink
 		.replace(/\/+$/, "")
@@ -30,7 +17,9 @@
 
 <div
 	id={post.id}
-	class={`post w-[750px] px-1 pt-4 pb-1 transition-all bg-primary-content hover:bg-[rgba(45,49,49,0.71)] min-h-[128px] rounded-lg ring-1 ring-[#686868]`}
+	class={`post w-[750px] px-1 pt-4 pb-1 transition-all bg-primary-content hover:bg-[rgba(45,49,49,0.71)] min-h-[128px] rounded-lg ring-1 ring-[#686868] ${
+		post.stickied === true ? "stickied" : ""
+	}`}
 >
 	<score class="post-score text-sm text-teddit text-center"
 		><i class="fa-solid fa-arrow-up mr-1" /> <br />{FormatNumbers(post.ups)}</score
@@ -113,6 +102,10 @@
 		/* grid-template-rows: 0.225fr 0.4fr minmax(0, 1fr) 1fr 0.225fr; */
 		grid-template-columns: 45px 1fr;
 	}
+	.post.stickied {
+		border: 2px solid #ff4500;
+		box-shadow: none;
+	}
 
 	.post-score {
 		grid-area: post-score;
@@ -155,5 +148,32 @@
 		position: relative;
 		-webkit-mask-image: linear-gradient(180deg, black, 75%, transparent);
 		mask-image: linear-gradient(180deg, black, 75%, transparent);
+	}
+	:global(.md > *) {
+		margin-bottom: 12.5px;
+	}
+	:global(.md .innerPostLink) {
+		font-style: italic;
+		color: #92bddf;
+		transition: all;
+	}
+	:global(.md .innerPostLink:hover) {
+		text-decoration: underline wavy;
+		color: #5296dd;
+	}
+	:global(.md code) {
+		background: #666;
+		border-left: 3px solid #ff4500;
+		color: #fff;
+		page-break-inside: avoid;
+		font-family: monospace;
+		font-size: 15px;
+		line-height: 1.6;
+		margin-bottom: 1.6em;
+		max-width: 100%;
+		overflow: auto;
+		padding: 1em 1.5em;
+		display: block;
+		word-wrap: break-word;
 	}
 </style>
