@@ -18,7 +18,7 @@
 
 	type HandlePostParams = { afterId?: string; appendResult?: boolean };
 	const HandleQueryingPost = async ({ afterId, appendResult }: HandlePostParams) => {
-		loading = true;
+		loading = !appendResult;
 		const { success, data: newPosts } = await QueryHomePost(FeedDisplayType, afterId);
 		if (success && newPosts && newPosts?.length > 0)
 			data.data = appendResult ? [...(data.data || []), ...newPosts] : newPosts;

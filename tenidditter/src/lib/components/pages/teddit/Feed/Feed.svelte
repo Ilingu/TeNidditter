@@ -2,7 +2,8 @@
 	import type { TedditPost } from "$lib/types/interfaces";
 
 	import Link from "$lib/components/design/Link.svelte";
-	import { FormatNumbers, humanElapsedTime } from "$lib/utils";
+	import { FormatNumbers } from "$lib/utils";
+	import FeedHeader from "./FeedHeader.svelte";
 
 	export let post: TedditPost;
 
@@ -25,13 +26,7 @@
 		><i class="fa-solid fa-arrow-up mr-1" /> <br />{FormatNumbers(post.ups)}</score
 	>
 	<header class="post-header flex text-sm">
-		<Link href={`/teddit/r/${post.subreddit}`} classStyle="text-white hover:underline font-bold"
-			>r/{post.subreddit}</Link
-		> <span class="mx-1">•</span>
-		<Link href={`/teddit/u/${post.author}`} classStyle="text-gray-300 hover:underline"
-			>u/{post.author}</Link
-		> <span class="mx-1">•</span>
-		<p class="text-gray-400">{humanElapsedTime(post.created * 1000, Date.now())}</p>
+		<FeedHeader author={post.author} subreddit={post.subreddit} created={post.created} />
 	</header>
 	<div class="post-title mb-2 text-gray-50">
 		{#if post.link_flair}
@@ -57,6 +52,7 @@
 				width={post.media?.reddit_video?.width}
 				src={post.media?.reddit_video?.fallback_url}
 				controls
+				preload="none"
 			>
 				<track kind="captions" /></video
 			>

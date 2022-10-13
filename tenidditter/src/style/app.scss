@@ -18,6 +18,15 @@ body {
 	font-family: "Fira", monospace;
 }
 
+details summary {
+	cursor: pointer;
+	user-select: none;
+}
+
+details summary > * {
+	display: inline;
+}
+
 @font-face {
 	font-family: "Pacifico";
 	src: url("/Assets/fonts/Pacifico/Pacifico-Regular.ttf") format("truetype");

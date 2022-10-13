@@ -26,11 +26,11 @@ export interface UserShape {
 	user_front: boolean;
 	before: string;
 	after: string;
-	posts: UserPostShape[];
+	posts: (TedditPost | TedditCommmentShape)[];
 }
 
-export interface UserPostShape {
-	type: string;
+export interface TedditCommmentShape {
+	type: "t1";
 	subreddit: string;
 	created: number;
 	subreddit_name_prefixed: string;
@@ -80,9 +80,10 @@ export interface TedditPost {
 
 	subreddit: string;
 	link_flair?: string;
+	type?: "t3";
 }
 
-export interface TedditRawPost {
+export interface TedditRawPost extends TedditPost {
 	id: string;
 	permalink: string;
 	created: number;
