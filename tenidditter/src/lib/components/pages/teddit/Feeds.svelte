@@ -23,7 +23,6 @@
 
 				a.setAttribute("target", "_blank");
 				a.setAttribute("rel", "noopener noreferrer");
-				a.classList.add("innerPostLink");
 			} catch (err) {}
 		});
 	});

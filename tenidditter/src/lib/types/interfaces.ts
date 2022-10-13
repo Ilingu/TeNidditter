@@ -15,6 +15,37 @@ export interface AlertShape {
 	type: AlertTypes;
 }
 
+export interface UserShape {
+	username: string;
+	icon_img: string;
+	created: number;
+	verified: boolean;
+	link_karma: number;
+	comment_karma: number;
+	view_more_posts: boolean;
+	user_front: boolean;
+	before: string;
+	after: string;
+	posts: UserPostShape[];
+}
+
+export interface UserPostShape {
+	type: string;
+	subreddit: string;
+	created: number;
+	subreddit_name_prefixed: string;
+	ups: number;
+	url: string;
+	edited: boolean;
+	body_html: string;
+	num_comments: number;
+	over_18: boolean;
+	permalink: string;
+	link_author: string;
+	link_title: string;
+	user_flair: string;
+}
+
 export interface TedditHomePageRes {
 	info: Info;
 	links: TedditRawPost[];

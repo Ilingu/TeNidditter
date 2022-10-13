@@ -17,12 +17,19 @@ interface APIResShape<T = never> {
 }
 
 interface APIClientParams<
-	T extends { route: string; body?: object; headers?: object; query?: Record<string, string> }
+	T extends {
+		route: string;
+		body?: object;
+		headers?: object;
+		query?: Record<string, string>;
+		param?: string;
+	}
 > {
 	uri: T["route"];
 	body?: T["body"];
 	headers?: T["headers"];
 	query?: T["query"];
+	param?: T["param"];
 }
 
 type GetType<T = never> = Omit<T, "body">;
@@ -31,18 +38,32 @@ export default class api {
 	static async get<T = never>({
 		uri,
 		query,
-		headers
+		headers,
+		param
 	}: GetType<
 		APIClientParams<
-			| { route: "/tedinitter/userInfo"; headers: { Authorization: string }; query: undefined }
-			| { route: `/auth/available`; headers: undefined; query: { username: string } }
+			| {
+					route: "/tedinitter/userInfo";
+					headers: { Authorization: string };
+					query: undefined;
+					param: undefined;
+			  }
+			| {
+					route: `/auth/available`;
+					headers: undefined;
+					query: { username: string };
+					param: undefined;
+			  }
+			| { route: `/teddit/r`; headers: undefined; param: string }
 			| {
 					route: `/teddit/home`;
 					headers: undefined;
 					query: { type?: FeedHomeType; afterId?: string };
+					param: undefined;
 			  }
 		>
 	>): Promise<FunctionJob<T>> {
+		if (!IsEmptyString(param)) uri += `/${param}`;
 		if (query && Object.entries(query).length > 0) {
 			uri += "?";
 			for (const [key, val] of Object.entries(query)) {

@@ -140,7 +140,7 @@
 		grid-area: post-footer;
 	}
 
-	:global(.md) {
+	:global(.post .md) {
 		text-align: justify;
 		width: 100%;
 		max-height: 300px;
@@ -152,12 +152,12 @@
 	:global(.md > *) {
 		margin-bottom: 12.5px;
 	}
-	:global(.md .innerPostLink) {
+	:global(.md a) {
 		font-style: italic;
 		color: #92bddf;
 		transition: all;
 	}
-	:global(.md .innerPostLink:hover) {
+	:global(.md a:hover) {
 		text-decoration: underline wavy;
 		color: #5296dd;
 	}
