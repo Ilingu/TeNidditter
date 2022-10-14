@@ -1,6 +1,8 @@
 package redis
 
 import (
+	"context"
+	"encoding/json"
 	"errors"
 	"teniditter-server/cmd/global/console"
 	"time"
@@ -13,12 +15,13 @@ var redisConn *redis.Client
 func openRedis() *redis.Client {
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
-		Password: "", // no password set
+		Password: "", // no password set (not accessible to clear internet)
 		DB:       0,  // use default DB
 	})
 	return rdb
 }
 
+// Will attempt 20 conection to redis
 func ConnectRedis() error {
 	var i int
 	for {
@@ -53,14 +56,38 @@ func DisconnectRedis() error {
 	return err
 }
 
+// Get a value in redis via its key
 func Get[T any](key string) (T, error) {
 	if redisConn == nil {
 		return *new(T), errors.New("no redis conn")
 	}
 
-	return *new(T), nil
+	var result T
+	rawData, err := redisConn.Get(context.Background(), key).Bytes()
+	if err != nil {
+		return *new(T), err
+	}
+
+	err = json.Unmarshal(rawData, &result)
+	// json.NewDecoder(bytes.NewReader(rawData)).Decode(&result)
+	if err != nil {
+		return *new(T), err
+	}
+
+	return result, nil
 }
 
+// Set a value in redis cache
 func Set(key string, data any) bool {
-	return redisConn != nil
+	if redisConn == nil {
+		return false
+	}
+
+	jsonBlob, err := json.Marshal(data)
+	if err != nil {
+		return false
+	}
+
+	err = redisConn.Set(context.Background(), key, jsonBlob, 12*time.Hour).Err()
+	return err == nil
 }
