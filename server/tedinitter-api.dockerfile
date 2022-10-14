@@ -9,6 +9,9 @@ COPY . /app
 # Set working directory
 WORKDIR /app
 
+# Redis Instance
+RUN apk add redis
+
 # Set environnement variables
 ARG APP_MODE
 ARG PORT
@@ -26,4 +29,5 @@ ENV APP_MODE=${APP_MODE} \
 RUN set GOOS=linux && set GOARCH=amd64 && set CGO_ENABLED=0 && go build -o ./bin/tenidditerApi ./cmd/api
 
 # Run the server executable
-CMD [ "/app/bin/tenidditerApi" ]
+RUN chmod +x startup.sh
+CMD [ "/app/startup.sh" ]
