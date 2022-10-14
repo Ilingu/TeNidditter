@@ -18,7 +18,7 @@ type RegisterPayload struct {
 }
 
 func AuthHandler(g *echo.Group) {
-	console.Log("AuthHandler Registered ✅", console.Success)
+	console.Log("AuthHandler Registered ✅", console.Info)
 
 	g.POST("/", func(c echo.Context) error {
 		res := routes.EchoWrapper{Context: c}

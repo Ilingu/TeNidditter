@@ -22,12 +22,12 @@ var sqlConn *sql.DB
 func openDB() (*sql.DB, error) {
 	db, err := sql.Open("mysql", os.Getenv("DSN")+"&parseTime=true")
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	err = db.Ping()
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	return db, nil
 }

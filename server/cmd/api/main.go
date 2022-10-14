@@ -13,6 +13,7 @@ import (
 	tedinitter_routes "teniditter-server/cmd/api/routes/tedinitter"
 	"teniditter-server/cmd/db"
 	"teniditter-server/cmd/global/console"
+	"teniditter-server/cmd/redis"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -24,6 +25,9 @@ func main() {
 	{
 		go db.DBManager.NewDB() // Connect to DB in bg
 		defer db.DBManager.Disconnect()
+
+		go redis.ConnectRedis()
+		defer redis.DisconnectRedis()
 	}
 
 	// Create echo instance

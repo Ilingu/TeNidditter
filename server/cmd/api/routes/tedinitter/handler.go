@@ -45,5 +45,5 @@ func TedinitterUserHandler(t *echo.Group) {
 		return res.HandleResp(http.StatusOK, token)
 	})
 
-	console.Log("TedinitterUserHandler Registered ✅", console.Success)
+	console.Log("TedinitterUserHandler Registered ✅", console.Info)
 }

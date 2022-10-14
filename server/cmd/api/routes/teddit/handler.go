@@ -106,5 +106,5 @@ func TedditHandler(t *echo.Group) {
 		return res.HandleRespBlob(http.StatusOK, jsonDatas)
 	})
 
-	console.Log("TedditHandler Registered", console.Success)
+	console.Log("TedditHandler Registered", console.Info)
 }
