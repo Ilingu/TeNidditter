@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"teniditter-server/cmd/global/console"
+	"teniditter-server/cmd/redis/rediskeys"
 	"time"
 
 	"github.com/go-redis/redis/v9"
@@ -57,13 +58,13 @@ func DisconnectRedis() error {
 }
 
 // Get a value in redis via its key
-func Get[T any](key string) (T, error) {
+func Get[T any](key rediskeys.RedisKeys) (T, error) {
 	if redisConn == nil {
 		return *new(T), errors.New("no redis conn")
 	}
 
 	var result T
-	rawData, err := redisConn.Get(context.Background(), key).Bytes()
+	rawData, err := redisConn.Get(context.Background(), string(key)).Bytes()
 	if err != nil {
 		return *new(T), err
 	}
@@ -78,7 +79,7 @@ func Get[T any](key string) (T, error) {
 }
 
 // Set a value in redis cache
-func Set(key string, data any) bool {
+func Set(key rediskeys.RedisKeys, data any, exp ...time.Duration) bool {
 	if redisConn == nil {
 		return false
 	}
@@ -88,6 +89,11 @@ func Set(key string, data any) bool {
 		return false
 	}
 
-	err = redisConn.Set(context.Background(), key, jsonBlob, 12*time.Hour).Err()
+	expiration := 12 * time.Hour
+	if len(exp) == 1 {
+		expiration = exp[0]
+	}
+
+	err = redisConn.Set(context.Background(), string(key), jsonBlob, expiration).Err()
 	return err == nil
 }

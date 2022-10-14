@@ -22,7 +22,8 @@ func IsValidURL(urlToCheck string) bool {
 	return err == nil
 }
 
-func FormatUsername(str string) string {
+// Remove all non alphabetic (except "_") characters from string and apply TrimSpace+ToLower+QueryEscape
+func FormatToSafeString(str string) string {
 	formattedStr := ""
 	for _, r := range str {
 		if unicode.IsLetter(r) || r == '_' {

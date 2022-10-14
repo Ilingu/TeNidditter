@@ -17,7 +17,7 @@ type JwtCustomClaims struct {
 }
 
 func GenerateToken(username string) (string, error) {
-	username = utils.FormatUsername(username)
+	username = utils.FormatToSafeString(username)
 	if utils.IsEmptyString(username) {
 		return "", errors.New("invalid username, cannot generate jwt")
 	}
@@ -57,7 +57,7 @@ func DecodeToken(c *echo.Context) (DecodedToken, error) {
 	t := (*c).Get("user").(*jwt.Token)
 	claims := t.Claims.(*JwtCustomClaims)
 
-	username := utils.FormatUsername(claims.Name)
+	username := utils.FormatToSafeString(claims.Name)
 	if utils.IsEmptyString(username) || len(username) < 3 || len(username) > 15 {
 		return DecodedToken{}, errors.New("invalid username format")
 	}

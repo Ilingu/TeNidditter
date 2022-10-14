@@ -8,3 +8,6 @@ type AccountModel struct {
 	Password  []byte    `json:"-"`
 	CreatedAt time.Time `json:"created_at"`
 }
+
+type AccountFollows struct {
+}

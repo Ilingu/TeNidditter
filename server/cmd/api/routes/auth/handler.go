@@ -40,7 +40,7 @@ func AuthHandler(g *echo.Group) {
 		res := routes.EchoWrapper{Context: c}
 
 		username := c.QueryParam("username")
-		username = utils.FormatUsername(username)
+		username = utils.FormatToSafeString(username)
 
 		if utils.IsEmptyString(username) {
 			return res.HandleResp(http.StatusBadRequest, "invalid username")
