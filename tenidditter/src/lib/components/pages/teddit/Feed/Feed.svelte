@@ -18,7 +18,7 @@
 
 <div
 	id={post.id}
-	class={`post w-[750px] px-1 pt-4 pb-1 transition-all bg-primary-content hover:bg-[rgba(45,49,49,0.71)] min-h-[128px] rounded-lg ring-1 ring-[#686868] ${
+	class={`post w-[750px] px-1 pt-4 pb-1 transition-all bg-primary-content hover:bg-[rgba(45,49,49,0.7)] min-h-[128px] rounded-lg ring-1 ring-[#686868] ${
 		post.stickied === true ? "stickied" : ""
 	}`}
 >
