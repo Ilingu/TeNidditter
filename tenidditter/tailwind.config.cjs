@@ -5,7 +5,8 @@ module.exports = {
 		extend: {
 			colors: {
 				teddit: "#FF4500",
-				nitter: "#1DA1F2"
+				nitter: "#1DA1F2",
+				"light-dark": "rgba(45,49,49,0.7)"
 			},
 			fontFamily: {
 				normal: ["Fira"],

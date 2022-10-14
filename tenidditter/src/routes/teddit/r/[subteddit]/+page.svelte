@@ -14,7 +14,7 @@
 	<!-- Subreddit's info -->
 	<aside class="flex flex-col gap-y-5">
 		<header
-			class="max-w-[350px] min-w-[280px] px-3 py-5 bg-[rgba(45,49,49,0.71)] ring-1 ring-[#686868] flex flex-col items-center rounded-lg"
+			class="max-w-[350px] min-w-[280px] px-3 py-5 bg-light-dark ring-1 ring-[#686868] flex flex-col items-center rounded-lg"
 		>
 			<h1
 				class="text-3xl font-bold	mt-2  tracking-widest text-teddit"
@@ -29,7 +29,7 @@
 				<button>Subscribe</button>
 			{/if}
 		</header>
-		<details class="max-w-[350px] p-3 bg-[rgba(45,49,49,0.71)] ring-1 ring-[#686868] rounded-lg">
+		<details class="max-w-[350px] p-3 bg-light-dark ring-1 ring-[#686868] rounded-lg">
 			<summary class="text-xl font-bold">Rules</summary>
 			{@html data.Info?.rules}
 		</details>
