@@ -15,9 +15,9 @@
 			.join("/");
 </script>
 
-<div class="flex  gap-x-2">
+<div class="flex gap-x-2">
 	<div
-		class="min-w-[32px] w-8 h-8 bg-teddit rounded text-black font-bold font-nerd flex justify-center items-center"
+		class="min-w-[32px] min-w-8 h-8 bg-teddit rounded font-fancy text-lg flex justify-center items-center"
 		title="⬆ Ups"
 	>
 		{comment.ups}
@@ -49,7 +49,7 @@
 		margin: -2px;
 	}
 	summary::marker {
-		color: rgb(255 69 0);
+		color: rgb(255, 69, 0);
 	}
 
 	.truncate-word {

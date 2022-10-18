@@ -1,4 +1,6 @@
-import type { TedditHomePageRes, FeedResult } from "$lib/types/interfaces";
+import { QueryHomePost } from "$lib/services/teddit";
+import { FeedTypeEnum } from "$lib/types/enums";
+import type { FeedResult } from "$lib/types/interfaces";
 import { IsEmptyString } from "$lib/utils";
 import { error } from "@sveltejs/kit";
 
@@ -18,14 +20,11 @@ const fetchUserFeed = async (): Promise<FeedResult> => {
 
 const fetchHomePage = async (): Promise<FeedResult> => {
 	try {
-		const resp = await fetch("https://teddit.net/?api&raw_json=1");
-		if (!resp.ok) throw error(500, "No Posts returned...");
+		const { success, data: posts } = await QueryHomePost(FeedTypeEnum.Hot);
+		if (!success) throw error(500, "No Posts returned...");
 
-		const datas: TedditHomePageRes = await resp.json();
-		if (typeof datas !== "object" || !Object.hasOwn(datas, "links"))
-			throw error(500, "No Posts returned...");
-
-		return { success: true, data: datas.links, type: "home_feed" };
+		if (typeof posts !== "object" || posts.length <= 0) throw error(500, "No Posts returned...");
+		return { success: true, data: posts, type: "home_feed" };
 	} catch (err) {
 		throw error(500, "No Posts returned...");
 	}

@@ -7,3 +7,5 @@ Teddit endpoints
 - https://teddit.net/rising?api
 - https://teddit.net/controversial?api
 - https://teddit.net/top?api
+
+Generate OG:image on the fly for the reddit posts [youtube.com/watch?v=6rYzM_oWi7A]

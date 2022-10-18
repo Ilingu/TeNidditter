@@ -33,7 +33,6 @@ export const AutoLogin = async (JwtToken?: string) => {
 	if (!success || !user) return LogOut();
 
 	SetUserSession(user, JwtToken);
-	pushAlert("Successfully logged in", "success", 2000);
 };
 
 export const GetUserInfo = async (JwtToken: string): Promise<FunctionJob<User>> => {
@@ -47,6 +46,8 @@ export const GetUserInfo = async (JwtToken: string): Promise<FunctionJob<User>> 
 };
 
 const LogOut = () => {
+	pushAlert("Failed to login", "error", 3600);
+
 	window.localStorage.removeItem("JWT_TOKEN");
 	window.localStorage.removeItem("user");
 	AuthStore.set({ loggedIn: false });

@@ -26,7 +26,9 @@
 			<p class="mt-2 text-justify">{data.Info?.description}</p>
 			<p class="mt-2 underline text-nitter capitalize">{data.Info?.subs}</p>
 			{#if $AuthStore.loggedIn}
-				<button>Subscribe</button>
+				<button class="btn btn-primary mt-3 gap-x-2"
+					><i class={`fas ${true ? "fa-plus" : "fa-minus"}`} /> Subscribe</button
+				>
 			{/if}
 		</header>
 		<details class="max-w-[350px] p-3 bg-light-dark ring-1 ring-[#686868] rounded-lg">
