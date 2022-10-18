@@ -56,6 +56,70 @@ func GetHomePosts(FeedType, afterId string) (*map[string]any, error) {
 	return &jsonDatas, nil
 }
 
+func GetUserInfos(username string) (*map[string]any, error) {
+	redisKey := rediskeys.NewKey(rediskeys.USER, utils.Hash(username))
+
+	if posts, err := redis.Get[map[string]any](redisKey); err == nil {
+		console.Log("Teddit User Info Returned from Cache ⚡", console.Neutral)
+		return &posts, nil
+	}
+
+	Url := fmt.Sprintf("https://teddit.net/u/%s?api&raw_json=1", url.QueryEscape(username))
+	rawUserInfo, err := http.Get(Url)
+	if err != nil || rawUserInfo.StatusCode != 200 {
+		return nil, err
+	}
+	defer rawUserInfo.Body.Close()
+
+	rawBlobUserInfo, err := io.ReadAll(rawUserInfo.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var userInfo map[string]any
+	err = json.Unmarshal(rawBlobUserInfo, &userInfo)
+	if err != nil || len(userInfo) <= 0 {
+		return nil, err
+	}
+
+	// Caching
+	go redis.Set(redisKey, userInfo, 2*time.Hour)
+
+	return &userInfo, nil
+}
+
+func GetSubredditPosts(subreddit string) (*map[string]any, error) {
+	redisKey := rediskeys.NewKey(rediskeys.SUBREDDIT, subreddit+"_POSTS")
+
+	if posts, err := redis.Get[map[string]any](redisKey); err == nil {
+		console.Log("Subteddit Posts Returned from Cache ⚡", console.Neutral)
+		return &posts, nil
+	}
+
+	Url := fmt.Sprintf("https://teddit.net/r/%s?api&raw_json=1", url.QueryEscape(subreddit))
+	rawPosts, err := http.Get(Url)
+	if err != nil || rawPosts.StatusCode != 200 {
+		return nil, err
+	}
+	defer rawPosts.Body.Close()
+
+	rawBlobPosts, err := io.ReadAll(rawPosts.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var posts map[string]any
+	err = json.Unmarshal(rawBlobPosts, &posts)
+	if err != nil || len(posts) <= 0 {
+		return nil, err
+	}
+
+	// Caching
+	go redis.Set(redisKey, posts, 24*time.Hour)
+
+	return &posts, nil
+}
+
 type subredditInfos struct {
 	Subs        string `json:"subs"`
 	Description string `json:"description"`
@@ -63,7 +127,7 @@ type subredditInfos struct {
 }
 
 func GetSubredditMetadatas(subreddit string) (*subredditInfos, error) {
-	redisKey := rediskeys.NewKey(rediskeys.SUBREDDIT_INFO, subreddit)
+	redisKey := rediskeys.NewKey(rediskeys.SUBREDDIT, subreddit+"_ABOUT")
 
 	if subDatas, err := redis.Get[subredditInfos](redisKey); err == nil {
 		console.Log("Subteddit Returned from Cache ⚡", console.Neutral)

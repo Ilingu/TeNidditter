@@ -1,7 +1,6 @@
 package auth_routes
 
 import (
-	"encoding/json"
 	"net/http"
 	"teniditter-server/cmd/api/jwt"
 	"teniditter-server/cmd/api/routes"
@@ -65,12 +64,7 @@ func register(res routes.EchoWrapper, username, password string) error {
 		return res.HandleResp(http.StatusInternalServerError, err.Error())
 	}
 
-	blob, err := json.Marshal(account)
-	if err != nil {
-		return res.HandleResp(http.StatusCreated, "Account Created But Nothing Returned")
-	}
-
-	return res.HandleRespBlob(http.StatusCreated, blob)
+	return res.HandleResp(http.StatusCreated, *account)
 }
 
 func login(res routes.EchoWrapper, account *db.AccountModel, password string) error {

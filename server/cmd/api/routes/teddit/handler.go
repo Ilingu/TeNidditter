@@ -11,7 +11,23 @@ import (
 )
 
 func TedditHandler(t *echo.Group) {
-	t.GET("/r/:subreddit", func(c echo.Context) error {
+	t.GET("/u/:username", func(c echo.Context) error {
+		res := routes.EchoWrapper{Context: c}
+
+		username := c.Param("username")
+		if utils.IsEmptyString(username) {
+			return res.HandleResp(http.StatusBadRequest, "invalid username")
+		}
+
+		userInfos, err := teddit.GetUserInfos(username)
+		if err != nil {
+			return res.HandleResp(http.StatusForbidden, err.Error())
+		}
+
+		return res.HandleResp(http.StatusOK, userInfos)
+	})
+
+	t.GET("/r/:subreddit/about", func(c echo.Context) error {
 		res := routes.EchoWrapper{Context: c}
 
 		subreddit := utils.FormatToSafeString(c.Param("subreddit"))
@@ -25,6 +41,22 @@ func TedditHandler(t *echo.Group) {
 		}
 
 		return res.HandleResp(http.StatusOK, subredditMetadatas)
+	})
+
+	t.GET("/r/:subreddit/posts", func(c echo.Context) error {
+		res := routes.EchoWrapper{Context: c}
+
+		subreddit := utils.FormatToSafeString(c.Param("subreddit"))
+		if utils.IsEmptyString(subreddit) {
+			return res.HandleResp(http.StatusBadRequest, "invalid subreddit")
+		}
+
+		subredditPosts, err := teddit.GetSubredditPosts(subreddit)
+		if err != nil {
+			return res.HandleResp(http.StatusForbidden, err.Error())
+		}
+
+		return res.HandleRespBlob(http.StatusOK, *subredditPosts)
 	})
 
 	t.GET("/home", func(c echo.Context) error {

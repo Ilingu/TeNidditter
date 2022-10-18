@@ -69,8 +69,10 @@
 		else if (AuthMethod === "signup")
 			pushAlert("Successfully registered, you can now login", "success", 6000);
 		// AuthMethod: login
-		else if (!IsEmptyString(JwtToken)) AutoLogin(JwtToken as string);
-		else pushAlert("Invalid login", "error");
+		else if (!IsEmptyString(JwtToken)) {
+			await AutoLogin(JwtToken as string);
+			$AuthStore.loggedIn && pushAlert("Successfully logged in!", "success");
+		} else pushAlert("Invalid login", "error");
 
 		Reset();
 	};

@@ -54,7 +54,13 @@ export default class api {
 					query: { username: string };
 					param: undefined;
 			  }
-			| { route: `/teddit/r`; headers: undefined; param: string }
+			| { route: `/teddit/r`; headers: undefined; param: string; query: undefined }
+			| {
+					route: "/teddit/u";
+					headers: undefined;
+					query: undefined;
+					param: string;
+			  }
 			| {
 					route: `/teddit/home`;
 					headers: undefined;

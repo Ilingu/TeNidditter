@@ -1,6 +1,6 @@
 import type { FunctionJob } from "$lib/types/interfaces";
 import api from "$lib/api";
-import { IsEmptyString, pushAlert } from "$lib/utils";
+import { IsEmptyString } from "$lib/utils";
 import { writable } from "svelte/store";
 import { DecryptDatas, EncryptDatas } from "$lib/encryption";
 
@@ -46,8 +46,6 @@ export const GetUserInfo = async (JwtToken: string): Promise<FunctionJob<User>> 
 };
 
 const LogOut = () => {
-	pushAlert("Failed to login", "error", 3600);
-
 	window.localStorage.removeItem("JWT_TOKEN");
 	window.localStorage.removeItem("user");
 	AuthStore.set({ loggedIn: false });

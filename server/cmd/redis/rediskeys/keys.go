@@ -8,8 +8,9 @@ import (
 type RedisKeys string
 
 const (
-	TEDDIT_HOME    = RedisKeys("TEDDIT_HOME")
-	SUBREDDIT_INFO = RedisKeys("TEDDIT_HOME")
+	TEDDIT_HOME = RedisKeys("TEDDIT_HOME")
+	SUBREDDIT   = RedisKeys("TEDDIT_SUBREDDIT")
+	USER        = RedisKeys("TEDDIT_USER")
 )
 
 func NewKey(base RedisKeys, extendKeyword string) RedisKeys {

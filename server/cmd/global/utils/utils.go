@@ -1,12 +1,20 @@
 package utils
 
 import (
+	"crypto/sha256"
+	"fmt"
 	"net/url"
 	"strings"
 	"unicode"
 
 	"github.com/nbutton23/zxcvbn-go"
 )
+
+func Hash(str string) string {
+	ByteHash := sha256.Sum256([]byte(str))
+	HashedStr := fmt.Sprintf("%x", ByteHash[:])
+	return HashedStr
+}
 
 func IsEmptyString(str any) bool {
 	realStr, isStr := str.(string)

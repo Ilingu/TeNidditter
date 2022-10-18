@@ -24,16 +24,19 @@ export const load: import("./$types").PageServerLoad = async ({
 	if (IsEmptyString(subredditName)) throw error(404, "Not Found -- Invalid subreddit");
 
 	try {
-		const resp = await fetch(`https://teddit.net/r/${encodeURI(subredditName)}?api&raw_json=1`);
-		if (!resp.ok) throw error(404, "Subreddit Not found");
-		const datas: TedditSubredditPosts = await resp.json();
+		const { success, data: SubPosts } = await api.get<TedditSubredditPosts>({
+			uri: "/teddit/r",
+			param: subredditName + "/posts"
+		});
+		if (!success || typeof SubPosts !== "object" || !Object.hasOwn(SubPosts, "links"))
+			throw error(404, "Subreddit Not found");
 
 		const { data: SubInfo } = await api.get<SubRedditDatas["Info"]>({
 			uri: "/teddit/r",
-			param: subredditName
+			param: subredditName + "/about"
 		});
 
-		return { Info: SubInfo, Feed: datas?.links };
+		return { Info: SubInfo, Feed: SubPosts.links };
 	} catch (err) {
 		throw error(500, JSON.stringify(err));
 	}
