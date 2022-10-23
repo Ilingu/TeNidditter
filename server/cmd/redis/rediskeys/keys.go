@@ -10,7 +10,7 @@ type RedisKeys string
 const (
 	TEDDIT_HOME = RedisKeys("TEDDIT_HOME")
 	SUBREDDIT   = RedisKeys("TEDDIT_SUBREDDIT")
-	USER        = RedisKeys("TEDDIT_USER")
+	TEDDIT_USER = RedisKeys("TEDDIT_USER")
 )
 
 func NewKey(base RedisKeys, extendKeyword string) RedisKeys {

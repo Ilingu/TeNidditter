@@ -27,7 +27,7 @@ func AuthHandler(g *echo.Group) {
 			return res.HandleResp(http.StatusBadRequest)
 		}
 
-		account, err := db.GetUserByUsername(userInfo.Username)
+		account, err := db.GetAccount(userInfo.Username)
 
 		if err != nil || account == nil {
 			return register(res, userInfo.Username, userInfo.Password)
@@ -45,7 +45,7 @@ func AuthHandler(g *echo.Group) {
 			return res.HandleResp(http.StatusBadRequest, "invalid username")
 		}
 
-		account, err := db.GetUserByUsername(username)
+		account, err := db.GetAccount(username)
 		if err != nil || account == nil {
 			return res.HandleResp(200, true)
 		}
@@ -72,10 +72,13 @@ func login(res routes.EchoWrapper, account *db.AccountModel, password string) er
 		return res.HandleResp(http.StatusForbidden, "Wrong Credentials")
 	}
 
-	token, err := jwt.GenerateToken(account.Username)
+	token, err := jwt.GenerateToken(account)
 	if err != nil {
 		return res.HandleResp(http.StatusInternalServerError, "Couldn't Generate JWT token")
 	}
+
+	subs, _ := account.GetTedditSubs()
+	res.InjectSubs(subs)
 
 	return res.HandleResp(http.StatusAccepted, token)
 }

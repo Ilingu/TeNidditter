@@ -81,6 +81,7 @@ func enableCors(e *echo.Echo) {
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins:     []string{os.Getenv("ALLOWED_ORIGIN")},
 		AllowMethods:     []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete},
+		ExposeHeaders:    []string{"TedditSubs"},
 		AllowCredentials: true,
 	}))
 

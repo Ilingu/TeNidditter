@@ -5,7 +5,7 @@ import (
 	"teniditter-server/cmd/api/routes"
 	"teniditter-server/cmd/global/console"
 	"teniditter-server/cmd/global/utils"
-	"teniditter-server/cmd/service/teddit"
+	"teniditter-server/cmd/services/teddit"
 
 	"github.com/labstack/echo/v4"
 )

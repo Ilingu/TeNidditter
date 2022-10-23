@@ -2,10 +2,14 @@ package tedinitter_routes
 
 import (
 	"net/http"
+	"net/url"
 	"os"
 	"teniditter-server/cmd/api/jwt"
 	"teniditter-server/cmd/api/routes"
+	"teniditter-server/cmd/api/ws"
+	"teniditter-server/cmd/db"
 	"teniditter-server/cmd/global/console"
+	"teniditter-server/cmd/global/utils"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -23,7 +27,7 @@ func TedinitterUserHandler(t *echo.Group) {
 	}
 	t.Use(middleware.JWTWithConfig(config)) // restricted routes
 
-	t.GET("/userInfo", func(c echo.Context) error {
+	t.GET("/userChanged", func(c echo.Context) error {
 		res := routes.EchoWrapper{Context: c}
 
 		token, err := jwt.DecodeToken(&c)
@@ -31,7 +35,9 @@ func TedinitterUserHandler(t *echo.Group) {
 			return res.HandleResp(http.StatusUnauthorized, err.Error())
 		}
 
-		return res.HandleResp(http.StatusOK, token)
+		cws := ws.EchoWrapper{Context: c}
+		cws.NewWsConn(ws.GenerateUserKey(token.ID, token.Username))
+		return nil
 	})
 
 	t.GET("/userInfo", func(c echo.Context) error {
@@ -43,7 +49,49 @@ func TedinitterUserHandler(t *echo.Group) {
 		}
 
 		return res.HandleResp(http.StatusOK, token)
+	})
+
+	t.POST("/teddit/sub/:subname", func(c echo.Context) error {
+		return SubUnsubTeddit(c, "sub")
+	})
+
+	t.DELETE("/teddit/unsub/:subname", func(c echo.Context) error {
+		return SubUnsubTeddit(c, "unsub")
 	})
 
 	console.Log("TedinitterUserHandler Registered ✅", console.Info)
+}
+
+func SubUnsubTeddit(c echo.Context, method string) error {
+	res := routes.EchoWrapper{Context: c}
+
+	subname, err := url.QueryUnescape(c.Param("subname"))
+	if err != nil || utils.IsEmptyString(subname) {
+		return res.HandleResp(http.StatusBadRequest, "invalid subname")
+	}
+
+	token, err := jwt.DecodeToken(&c)
+	if err != nil {
+		return res.HandleResp(http.StatusUnauthorized, err.Error())
+	}
+
+	user := db.AccountModel{AccountId: token.ID, Username: token.Username}
+	subteddit, err := db.GetSubteddit(subname)
+	if err != nil {
+		return res.HandleResp(http.StatusBadRequest, "failed to query this subteddit")
+	}
+
+	switch method {
+	case "sub":
+		if ok := user.SubToSubteddit(subteddit); !ok {
+			return res.HandleResp(http.StatusInternalServerError, "couldn't subscribe you to this subteddit")
+		}
+	case "unsub":
+		if ok := user.UnsubFromSubteddit(subteddit); !ok {
+			return res.HandleResp(http.StatusInternalServerError, "couldn't unsubscibe you to this subteddit")
+		}
+	default:
+		return res.HandleResp(http.StatusForbidden)
+	}
+	return res.HandleResp(http.StatusOK)
 }

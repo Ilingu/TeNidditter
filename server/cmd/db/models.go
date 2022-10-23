@@ -8,6 +8,13 @@ type AccountModel struct {
 	Password  []byte    `json:"-"`
 	CreatedAt time.Time `json:"created_at"`
 }
+type UsersInfo struct {
+	AccountModel         // extends account model
+	TedditFollows string `json:"teddit_follows"`
+	NitterFollows string `json:"nitter_follows"`
+}
 
-type AccountFollows struct {
+type SubtedditModel struct {
+	SubID   uint   `json:"subteddit_id"`
+	Subname string `json:"subname"`
 }

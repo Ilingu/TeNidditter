@@ -8,9 +8,10 @@ import (
 )
 
 type ResponsePayload struct {
-	Success bool `json:"success"`
-	Code    int  `json:"code"`
-	Data    any  `json:"data"`
+	Success bool   `json:"success"`
+	Code    int    `json:"code"`
+	Data    any    `json:"data"`
+	Error   string `json:"error"`
 }
 
 type EchoWrapper struct {
@@ -23,7 +24,11 @@ func newRespPayload(code uint, data ...any) *ResponsePayload {
 		resp.Success = true
 	}
 	if len(data) == 1 {
-		resp.Data = data[0]
+		if resp.Success {
+			resp.Data = data[0]
+		} else if errorStr, ok := data[0].(string); ok {
+			resp.Error = errorStr
+		}
 	}
 	return &resp
 }
@@ -42,4 +47,13 @@ func (c EchoWrapper) HandleRespBlob(code uint, data ...any) error {
 	}
 
 	return c.JSONBlob(resp.Code, blob)
+}
+
+func (c EchoWrapper) InjectSubs(subs []string) {
+	stringifiedSubs, err := json.Marshal(subs)
+	if err != nil {
+		stringifiedSubs = []byte{}
+	}
+
+	c.Response().Header().Set("TedditSubs", string(stringifiedSubs))
 }

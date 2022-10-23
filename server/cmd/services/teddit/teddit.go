@@ -57,7 +57,7 @@ func GetHomePosts(FeedType, afterId string) (*map[string]any, error) {
 }
 
 func GetUserInfos(username string) (*map[string]any, error) {
-	redisKey := rediskeys.NewKey(rediskeys.USER, utils.Hash(username))
+	redisKey := rediskeys.NewKey(rediskeys.TEDDIT_USER, utils.Hash(username))
 
 	if posts, err := redis.Get[map[string]any](redisKey); err == nil {
 		console.Log("Teddit User Info Returned from Cache ⚡", console.Neutral)

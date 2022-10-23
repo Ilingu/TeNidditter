@@ -9,6 +9,10 @@ import (
 
 var ErrRegister = errors.New("failed to register")
 
+type UserInfoAcceptedArg interface {
+	uint | string
+}
+
 func CreateAccount(username string, password string) (*AccountModel, error) {
 	db := DBManager.Connect()
 	if db == nil {
@@ -36,7 +40,7 @@ func CreateAccount(username string, password string) (*AccountModel, error) {
 	return nil, nil
 }
 
-func (u *AccountModel) DeleteAccount() error {
+func DeleteAccount(u *AccountModel) error {
 	db := DBManager.Connect()
 	if db == nil {
 		return ErrDbNotFound
@@ -49,11 +53,33 @@ func (u *AccountModel) DeleteAccount() error {
 	return nil
 }
 
-func (u *AccountModel) SignOut() bool {
-	return false
+// Get User by ID or username
+func GetAccount[T UserInfoAcceptedArg](username_or_userId T) (*AccountModel, error) {
+	switch realVal := any(username_or_userId).(type) {
+	case uint:
+		return GetAccountByID(realVal)
+	case string:
+		return GetAccountByUsername(realVal)
+	default:
+		return nil, errors.New("invalid user info (type: uint (userID) or string (username))")
+	}
 }
+func GetAccountByID(ID uint) (*AccountModel, error) {
+	db := DBManager.Connect()
+	if db == nil {
+		return nil, ErrDbNotFound
+	}
 
-func GetUserByUsername(username string) (*AccountModel, error) {
+	var user AccountModel
+
+	err := db.QueryRow("SELECT * FROM Account WHERE account_id=?", ID).Scan(&user.AccountId, &user.Username, &user.Password, &user.CreatedAt)
+	if err != nil || user.AccountId == 0 || user.AccountId != ID {
+		return nil, errors.New("cannot fetch user")
+	}
+
+	return &user, nil
+}
+func GetAccountByUsername(username string) (*AccountModel, error) {
 	db := DBManager.Connect()
 	if db == nil {
 		return nil, ErrDbNotFound
@@ -66,15 +92,10 @@ func GetUserByUsername(username string) (*AccountModel, error) {
 
 	var user AccountModel
 
-	err := db.QueryRow("SELECT * FROM Account WHERE username LIKE ?", username).Scan(&user.AccountId, &user.Username, &user.Password, &user.CreatedAt)
+	err := db.QueryRow("SELECT * FROM Account WHERE username=?", username).Scan(&user.AccountId, &user.Username, &user.Password, &user.CreatedAt)
 	if err != nil || user.AccountId == 0 || user.Username != username {
 		return nil, errors.New("cannot fetch user")
 	}
 
 	return &user, nil
-}
-
-func (u *AccountModel) PasswordMatch(passwordInput string) bool {
-	err := bcrypt.CompareHashAndPassword(u.Password, []byte(passwordInput))
-	return err == nil
 }

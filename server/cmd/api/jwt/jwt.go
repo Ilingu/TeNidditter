@@ -3,6 +3,7 @@ package jwt
 import (
 	"errors"
 	"os"
+	"teniditter-server/cmd/db"
 	"teniditter-server/cmd/global/utils"
 	"time"
 
@@ -11,21 +12,23 @@ import (
 )
 
 type JwtCustomClaims struct {
-	Name  string `json:"name"`
-	Admin bool   `json:"admin"`
+	ID   uint   `json:"id"`
+	Name string `json:"name"`
+	// TedditSubs []string `json:"teddit_subs"`
 	jwt.StandardClaims
 }
 
-func GenerateToken(username string) (string, error) {
-	username = utils.FormatToSafeString(username)
+func GenerateToken(account *db.AccountModel) (string, error) {
+	username := utils.FormatToSafeString(account.Username)
 	if utils.IsEmptyString(username) {
 		return "", errors.New("invalid username, cannot generate jwt")
 	}
 
 	// Set custom claims
 	claims := &JwtCustomClaims{
+		account.AccountId,
 		username,
-		false,
+		// tedditSubs,
 		jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Hour * 72).Unix(),
 		},
@@ -48,8 +51,8 @@ func GenerateToken(username string) (string, error) {
 }
 
 type DecodedToken struct {
+	ID        uint   `json:"id"`
 	Username  string `json:"username"`
-	Admin     bool   `json:"admin"`
 	ExpiresAt int64  `json:"exp"`
 }
 
@@ -65,5 +68,5 @@ func DecodeToken(c *echo.Context) (DecodedToken, error) {
 		return DecodedToken{}, errors.New("invalid token")
 	}
 
-	return DecodedToken{Username: username, Admin: false, ExpiresAt: claims.ExpiresAt}, nil
+	return DecodedToken{claims.ID, username, claims.ExpiresAt}, nil
 }
