@@ -1,9 +1,10 @@
 <script lang="ts">
-	import AuthStore, { AutoLogin } from "$lib/stores/auth";
+	import AuthStore from "$lib/stores/auth";
 	import api from "$lib/api";
-	import { FormatUsername, IsEmptyString, pushAlert } from "$lib/utils";
+	import { FormatUsername, IsEmptyString, IsValidJSON, pushAlert } from "$lib/utils";
 	import { GetZxcvbn, ScoreToColor, ScoreToText } from "$lib/zxcvbn";
 	import { onMount } from "svelte";
+	import { SignIn } from "$lib/services/auth";
 
 	/* TYPES */
 	interface PswReport {
@@ -23,6 +24,7 @@
 	let loading = false;
 
 	AuthStore.subscribe((value) => value.loggedIn && (Username = value.user?.username || ""));
+	console.log($AuthStore);
 
 	/* App Start */
 	onMount(() => {
@@ -57,7 +59,11 @@
 				return pushAlert("This Username is already taken.", "warning", 6000);
 		}
 
-		const { success: AuthSuccess, data: JwtToken } = await api.post<string>({
+		const {
+			success: AuthSuccess,
+			data: JwtToken,
+			headers
+		} = await api.post<string>({
 			uri: "/auth/",
 			body: {
 				username,
@@ -68,13 +74,21 @@
 		if (!AuthSuccess) pushAlert("Failed to auth", "error");
 		else if (AuthMethod === "signup")
 			pushAlert("Successfully registered, you can now login", "success", 6000);
-		// AuthMethod: login
-		else if (!IsEmptyString(JwtToken)) {
-			await AutoLogin(JwtToken as string);
-			$AuthStore.loggedIn && pushAlert("Successfully logged in!", "success");
-		} else pushAlert("Invalid login", "error");
+		else if (!IsEmptyString(JwtToken)) AfterLogin(JwtToken as string, headers);
+		else pushAlert("Invalid login", "error");
 
 		Reset();
+	};
+
+	const AfterLogin = async (JwtToken: string, headers?: Headers) => {
+		const tedditSubs = headers?.get("TedditSubs"); // retrieve user subs
+		if (!tedditSubs || IsEmptyString(tedditSubs) || !IsValidJSON(tedditSubs))
+			return pushAlert("Invalid login", "error");
+
+		await SignIn(JwtToken, { teddit: JSON.parse(tedditSubs), nitter: [] }); // validate user jwt
+		if (!$AuthStore.loggedIn) return;
+
+		pushAlert("Successfully logged in!", "success");
 	};
 
 	const Reset = () => {

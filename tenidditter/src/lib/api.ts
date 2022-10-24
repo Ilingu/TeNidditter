@@ -68,7 +68,7 @@ export default class api {
 					param: undefined;
 			  }
 		>
-	>): Promise<FunctionJob<T>> {
+	>): Promise<ApiClientResp<T>> {
 		if (!IsEmptyString(param)) uri += `/${param}`;
 		if (query && Object.entries(query).length > 0) {
 			uri += "?";
@@ -90,7 +90,7 @@ export default class api {
 		body,
 		headers
 	}: APIClientParams<{ route: "/auth/"; body: { username: string; password: string } }>): Promise<
-		FunctionJob<T>
+		ApiClientResp<T>
 	> {
 		return await callApi<T>({
 			uri,
@@ -107,12 +107,16 @@ export default class api {
 	}
 }
 
+interface ApiClientResp<T = never> extends FunctionJob<T> {
+	headers?: Headers;
+}
+
 export const callApi = async <T = never>({
 	uri,
 	method,
 	body,
 	headers
-}: QueryParams): Promise<FunctionJob<T>> => {
+}: QueryParams): Promise<ApiClientResp<T>> => {
 	if (IsEmptyString(uri)) return { success: false, error: "Invalid URI" };
 
 	let url: string;
@@ -132,7 +136,7 @@ export const callApi = async <T = never>({
 		const { success, data: apiRes }: APIResShape<T> = await resp.json();
 		if (!success) return { success: false, error: "apiRes" };
 
-		return { success: true, data: apiRes };
+		return { success: true, data: apiRes, headers: resp?.headers };
 	} catch (error) {
 		return { success: false, error: error as string };
 	}

@@ -73,3 +73,12 @@ export const humanElapsedTime = (dateA: number, dateB: number): string => {
 	const toYears = toDays / 365.25; // 1/4y has 365, so in avg 1y=365.25d (or 12m but it'll be less precise to use "toMonth" here)
 	return `${Math.round(toYears)}y ago`;
 };
+
+export const IsValidJSON = (jsonBlob: string): boolean => {
+	try {
+		JSON.parse(jsonBlob);
+		return true;
+	} catch (err) {
+		return false;
+	}
+};

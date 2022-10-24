@@ -34,11 +34,30 @@
 	"shortcuts": [
 		{
 			"name": "Nitter",
-			"url": "/nitter"
+			"description": "Open your Nitter Feed",
+			"url": "/nitter",
+			"icons": [{ "src": "/Assets/Img/twitter96x96.webp", "sizes": "96x96", "type": "image/webp" }]
 		},
 		{
 			"name": "Teddit",
-			"url": "/teddit"
+			"description": "Open your Teddit Feed",
+			"url": "/teddit",
+			"icons": [{ "src": "/Assets/Img/reddit96x96.png", "sizes": "96x96", "type": "image/png" }]
+		}
+	],
+	"categories": ["Social medias", "Privacy", "Entertainment"],
+	"protocol_handlers": [
+		{
+			"protocol": "web+tdnt",
+			"url": "/%s"
+		},
+		{
+			"protocol": "web+tdntteddit",
+			"url": "/teddit%s"
+		},
+		{
+			"protocol": "web+tdntnitter",
+			"url": "/nitter%s"
 		}
 	]
 }

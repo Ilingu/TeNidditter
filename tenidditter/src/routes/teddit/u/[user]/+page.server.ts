@@ -1,16 +1,18 @@
 import api from "$lib/api";
-import type { UserShape } from "$lib/types/interfaces";
+import type { TedditUserShape } from "$lib/types/interfaces";
 import { IsEmptyString } from "$lib/utils";
 import { error } from "@sveltejs/kit";
 
 export const prerender = false;
 
-export const load: import("./$types").PageServerLoad = async ({ params }): Promise<UserShape> => {
+export const load: import("./$types").PageServerLoad = async ({
+	params
+}): Promise<TedditUserShape> => {
 	const username = params?.user;
 	if (IsEmptyString(username)) throw error(404, "Not Found -- Invalid username");
 
 	try {
-		const { success, data: UserInfos } = await api.get<UserShape>({
+		const { success, data: UserInfos } = await api.get<TedditUserShape>({
 			uri: "/teddit/u",
 			param: username
 		});

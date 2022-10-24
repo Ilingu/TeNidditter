@@ -15,7 +15,12 @@ export interface AlertShape {
 	type: AlertTypes;
 }
 
-export interface UserShape {
+export interface UserSubs {
+	teddit?: string[];
+	nitter?: string[];
+}
+
+export interface TedditUserShape {
 	username: string;
 	icon_img: string;
 	created: number;

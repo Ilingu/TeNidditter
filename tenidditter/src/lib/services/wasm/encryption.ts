@@ -1,5 +1,5 @@
-import type { FunctionJob } from "./types/interfaces";
-import { IsEmptyString } from "./utils";
+import type { FunctionJob } from "../../types/interfaces";
+import { IsEmptyString } from "../../utils";
 import { WasmInitiate } from "./wasm";
 
 import { PUBLIC_ENCRYPT_KEY } from "$env/static/public";

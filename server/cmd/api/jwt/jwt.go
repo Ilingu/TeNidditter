@@ -1,6 +1,7 @@
 package jwt
 
 import (
+	"encoding/json"
 	"errors"
 	"os"
 	"teniditter-server/cmd/db"
@@ -56,9 +57,39 @@ type DecodedToken struct {
 	ExpiresAt int64  `json:"exp"`
 }
 
-func DecodeToken(c *echo.Context) (DecodedToken, error) {
-	t := (*c).Get("user").(*jwt.Token)
-	claims := t.Claims.(*JwtCustomClaims)
+// Parse string token into jwtToken with server sign key (doesn't check if token is valid)
+func ParseToken(token string) (*jwt.Token, error) {
+	return jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
+		return []byte(os.Getenv("JWT_SECRET")), nil
+	})
+}
+
+// Get token from Echo JWT Middleware's context
+func RetrieveToken(c *echo.Context) *jwt.Token {
+	return (*c).Get("user").(*jwt.Token)
+}
+
+// Check and Decode Token to its datas, if token invalid returns nil and error
+func DecodeToken(t *jwt.Token) (DecodedToken, error) {
+	var claims *JwtCustomClaims
+	switch c := t.Claims.(type) {
+	case jwt.MapClaims:
+		jsonbody, err := json.Marshal(c)
+		if err != nil {
+			return DecodedToken{}, errors.New("invalid token's claims type")
+		}
+
+		var claimsNoP JwtCustomClaims
+		if err := json.Unmarshal(jsonbody, &claimsNoP); err != nil {
+			return DecodedToken{}, errors.New("invalid token's claims type")
+		}
+
+		claims = &claimsNoP
+	case *JwtCustomClaims:
+		claims = c
+	default:
+		return DecodedToken{}, errors.New("invalid token's claims type")
+	}
 
 	username := utils.FormatToSafeString(claims.Name)
 	if utils.IsEmptyString(username) || len(username) < 3 || len(username) > 15 {

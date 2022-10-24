@@ -19,34 +19,40 @@ type WebsocketConn struct {
 	// callback func(msg any)
 }
 
-var globalWsConns map[string][]WebsocketConn
+var globalWsConns = map[string][]WebsocketConn{}
 
 // create a new websocket connection between client and server
-func (c *EchoWrapper) NewWsConn(key string) *WebsocketConn {
+func (c EchoWrapper) NewWsConn(key string, returns chan *WebsocketConn) {
+	ConnId := len(globalWsConns[key])
+
 	ch := make(chan *websocket.Conn)
 	go func() {
-		websocket.Handler(func(ws *websocket.Conn) {
-			defer ws.Close()
-			ws.SetDeadline(time.Now().Add(2 * time.Hour))
+		wsConn := <-ch
 
-			ch <- ws
-			for {
-				// Read
-				var msg any
-				if err := websocket.Message.Receive(ws, &msg); err == nil {
-					// cb(msg)
-					log.Println(msg)
-				}
-			}
-		}).ServeHTTP((*c).Response(), (*c).Request())
+		wst := WebsocketConn{key, wsConn}
+		globalWsConns[key] = append(globalWsConns[key], wst)
+
+		returns <- &wst
+		close(returns)
 	}()
 
-	wsConn := <-ch
+	websocket.Handler(func(ws *websocket.Conn) {
+		defer ws.Close()
+		defer func() {
+			globalWsConns[key] = append(globalWsConns[key][:ConnId], globalWsConns[key][ConnId+1:]...) // remove conn from global
+		}()
+		ws.SetDeadline(time.Now().Add(2 * time.Hour))
 
-	wst := WebsocketConn{key, wsConn}
-	globalWsConns[key] = append(globalWsConns[key], wst)
-
-	return &wst
+		ch <- ws
+		for {
+			// Read
+			var msg any
+			if err := websocket.Message.Receive(ws, &msg); err == nil {
+				// cb(msg)
+				log.Println(msg)
+			}
+		}
+	}).ServeHTTP(c.Response(), c.Request())
 }
 
 func GetWsConn(key string) (*[]WebsocketConn, error) {

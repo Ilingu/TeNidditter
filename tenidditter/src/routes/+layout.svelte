@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import { AutoLogin } from "$lib/stores/auth";
-	import { InitWasm } from "$lib/wasm";
+	import { InitWasm } from "$lib/services/wasm/wasm";
 
 	import AlertProvider from "$lib/AlertProvider.svelte";
 	import Navbar from "$lib/components/layout/Navbar.svelte";
@@ -9,6 +8,7 @@
 	import "../style/app.css";
 	import { changeAppTheme } from "$lib/utils";
 	import { afterNavigate } from "$app/navigation";
+	import { AutoLogin } from "$lib/services/auth";
 
 	afterNavigate((n) => {
 		const path = n.to?.url.pathname;

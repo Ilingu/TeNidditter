@@ -1,86 +1,22 @@
-import type { FunctionJob } from "$lib/types/interfaces";
-import api from "$lib/api";
+import { ListenToUserChange, LogOut } from "$lib/services/auth";
+import { SetJWT } from "$lib/services/localstorage";
+import type { UserSubs } from "$lib/types/interfaces";
 import { IsEmptyString } from "$lib/utils";
 import { writable } from "svelte/store";
-import { DecryptDatas, EncryptDatas } from "$lib/encryption";
 
 export interface User {
 	username: string;
 	exp: number;
-	admin: false;
+	id: number;
 }
 interface AuthStoreShape {
 	loggedIn: boolean;
 	user?: User;
 	JwtToken?: string;
+	Subs?: UserSubs;
 }
 
 const JwtTokenRegExp = /^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*$/g;
-
-/* AUTH FUNC */
-export const AutoLogin = async (JwtToken?: string) => {
-	if (!JwtToken) {
-		const { success, data: jwt } = await GetJWT();
-		if (!success || !jwt) return LogOut();
-		JwtToken = jwt;
-	}
-	{
-		const { success, data: user } = GetLSUser();
-		if (success && typeof user === "object") SetUserSession(user, JwtToken);
-	}
-
-	const { success, data: user } = await GetUserInfo(JwtToken);
-	if (!success || !user) return LogOut();
-
-	SetUserSession(user, JwtToken);
-};
-
-export const GetUserInfo = async (JwtToken: string): Promise<FunctionJob<User>> => {
-	const { success: LoginSuccess, data: user } = await api.get<User>({
-		uri: "/tedinitter/userInfo",
-		headers: { Authorization: "Bearer " + JwtToken }
-	});
-
-	if (!LoginSuccess || !user) return { success: false };
-	return { success: true, data: user };
-};
-
-const LogOut = () => {
-	window.localStorage.removeItem("JWT_TOKEN");
-	window.localStorage.removeItem("user");
-	AuthStore.set({ loggedIn: false });
-};
-
-/* LocalStorage */
-export const GetJWT = async (): Promise<FunctionJob<string>> => {
-	const rawToken = window.localStorage.getItem("JWT_TOKEN");
-	if (!rawToken || IsEmptyString(rawToken)) return { success: false };
-
-	const { success, data: Token } = DecryptDatas(rawToken);
-	if (!success || !Token || Token?.length <= 0) return { success: false };
-
-	return { success: true, data: Token };
-};
-export const SetJWT = async (JwtToken: string) => {
-	const { success, data: eToken } = EncryptDatas(JwtToken);
-	if (success && eToken && eToken?.length > 0) {
-		window.localStorage.setItem("JWT_TOKEN", eToken);
-		document.cookie = `JWT_TOKEN=${eToken}; expires=${new Date(
-			Date.now() + 1000 * 60 * 60 * 24 * 90
-		).toISOString()}; path=/`;
-	}
-};
-
-export const GetLSUser = (): FunctionJob<User> => {
-	const rawToken = window.localStorage.getItem("user");
-	if (!rawToken || IsEmptyString(rawToken)) return { success: false };
-
-	try {
-		return { success: true, data: JSON.parse(rawToken) };
-	} catch (err) {
-		return { success: false };
-	}
-};
 
 /* STORE */
 const AuthStore = writable<AuthStoreShape>({ loggedIn: false });
@@ -92,7 +28,7 @@ export const GetUserSession = (): Promise<AuthStoreShape> =>
 		});
 	});
 
-export const SetUserSession = (user: User, JwtToken: string) => {
+export const SetUserSession = (user: User, JwtToken: string, Subs: UserSubs) => {
 	if (!JwtTokenRegExp.test(JwtToken)) return;
 	if (typeof user !== "object" || IsEmptyString(user?.username) || typeof user?.exp !== "number")
 		return;
@@ -102,8 +38,15 @@ export const SetUserSession = (user: User, JwtToken: string) => {
 
 	SetJWT(JwtToken);
 	window.localStorage.setItem("user", JSON.stringify(user));
+	localStorage.setItem("subs", JSON.stringify(Subs));
 
-	AuthStore.set({ loggedIn: true, user, JwtToken });
+	AuthStore.set({ loggedIn: true, user, JwtToken, Subs });
+	ListenToUserChange(JwtToken);
+};
+
+export const UpdateUserSubs = (Subs: UserSubs) => {
+	localStorage.setItem("subs", JSON.stringify(Subs));
+	AuthStore.update((s) => ({ ...s, Subs }));
 };
 
 export default AuthStore;

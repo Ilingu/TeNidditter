@@ -82,18 +82,25 @@ func (user AccountModel) UnsubFromSubteddit(sub *SubtedditModel) bool {
 	return true
 }
 
+type SubsPayload struct {
+	Teddit []string `json:"teddit"`
+	Nitter []string `json:"nitter"`
+}
+
 func (user AccountModel) HasChange() {
 	wsConns, err := ws.GetWsConn(ws.GenerateUserKey(user.AccountId, user.Username))
 	if err != nil || wsConns == nil {
 		return
 	}
 
-	subs, err := user.GetTedditSubs()
+	TedditSubs, err := user.GetTedditSubs()
 	if err != nil {
 		return
 	}
 
-	stringifiedSubs, err := json.Marshal(subs)
+	respData := SubsPayload{Teddit: TedditSubs, Nitter: []string{}}
+
+	stringifiedSubs, err := json.Marshal(respData)
 	if err != nil {
 		return
 	}

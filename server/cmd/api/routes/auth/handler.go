@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"teniditter-server/cmd/api/jwt"
 	"teniditter-server/cmd/api/routes"
+	"teniditter-server/cmd/api/ws"
 	"teniditter-server/cmd/db"
 	"teniditter-server/cmd/global/console"
 	"teniditter-server/cmd/global/utils"
@@ -55,6 +56,32 @@ func AuthHandler(g *echo.Group) {
 	g.DELETE("/erase", func(c echo.Context) error {
 		res := routes.EchoWrapper{Context: c}
 		return res.HandleResp(http.StatusNotImplemented, "Not Implemented Yet")
+	})
+
+	g.GET("/userChanged", func(c echo.Context) error {
+		res := routes.EchoWrapper{Context: c}
+
+		// get token from query
+		tokenParams := c.QueryParam("token")
+		if utils.IsEmptyString(tokenParams) {
+			return res.HandleResp(http.StatusBadRequest, "missing token argument")
+		}
+
+		// parse token with the server key
+		parsedToken, err := jwt.ParseToken(tokenParams)
+		if err != nil {
+			return res.HandleResp(http.StatusUnauthorized, err.Error())
+		}
+
+		// check and decode the token to its datas
+		token, err := jwt.DecodeToken(parsedToken)
+		if err != nil {
+			return res.HandleResp(http.StatusUnauthorized, err.Error())
+		}
+
+		cws := ws.EchoWrapper{Context: c}
+		cws.NewWsConn(ws.GenerateUserKey(token.ID, token.Username), make(chan *ws.WebsocketConn)) // reply to the caller
+		return nil
 	})
 }
 

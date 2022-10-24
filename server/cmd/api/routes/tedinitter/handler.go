@@ -6,7 +6,6 @@ import (
 	"os"
 	"teniditter-server/cmd/api/jwt"
 	"teniditter-server/cmd/api/routes"
-	"teniditter-server/cmd/api/ws"
 	"teniditter-server/cmd/db"
 	"teniditter-server/cmd/global/console"
 	"teniditter-server/cmd/global/utils"
@@ -27,23 +26,10 @@ func TedinitterUserHandler(t *echo.Group) {
 	}
 	t.Use(middleware.JWTWithConfig(config)) // restricted routes
 
-	t.GET("/userChanged", func(c echo.Context) error {
-		res := routes.EchoWrapper{Context: c}
-
-		token, err := jwt.DecodeToken(&c)
-		if err != nil {
-			return res.HandleResp(http.StatusUnauthorized, err.Error())
-		}
-
-		cws := ws.EchoWrapper{Context: c}
-		cws.NewWsConn(ws.GenerateUserKey(token.ID, token.Username))
-		return nil
-	})
-
 	t.GET("/userInfo", func(c echo.Context) error {
 		res := routes.EchoWrapper{Context: c}
 
-		token, err := jwt.DecodeToken(&c)
+		token, err := jwt.DecodeToken(jwt.RetrieveToken(&c))
 		if err != nil {
 			return res.HandleResp(http.StatusUnauthorized, err.Error())
 		}
@@ -70,7 +56,7 @@ func SubUnsubTeddit(c echo.Context, method string) error {
 		return res.HandleResp(http.StatusBadRequest, "invalid subname")
 	}
 
-	token, err := jwt.DecodeToken(&c)
+	token, err := jwt.DecodeToken(jwt.RetrieveToken(&c))
 	if err != nil {
 		return res.HandleResp(http.StatusUnauthorized, err.Error())
 	}
