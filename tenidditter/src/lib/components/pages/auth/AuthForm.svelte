@@ -24,7 +24,6 @@
 	let loading = false;
 
 	AuthStore.subscribe((value) => value.loggedIn && (Username = value.user?.username || ""));
-	console.log($AuthStore);
 
 	/* App Start */
 	onMount(() => {
@@ -51,10 +50,10 @@
 		if (passwordStrenght.score < 3) return pushAlert("Password is too weak! Like you", "warning");
 
 		if (AuthMethod === "signup") {
-			const { success, data: IsAvailable } = await api.get<boolean>({
-				uri: "/auth/available",
+			const { success, data: IsAvailable } = await api.get("/auth/available", {
 				query: { username }
 			});
+
 			if (!success || !IsAvailable)
 				return pushAlert("This Username is already taken.", "warning", 6000);
 		}
@@ -63,8 +62,7 @@
 			success: AuthSuccess,
 			data: JwtToken,
 			headers
-		} = await api.post<string>({
-			uri: "/auth/",
+		} = await api.post("/auth/", {
 			body: {
 				username,
 				password: Password

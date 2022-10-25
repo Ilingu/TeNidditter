@@ -10,4 +10,4 @@ Teddit endpoints
 
 Generate OG:image on the fly for the reddit posts [youtube.com/watch?v=6rYzM_oWi7A]
 
-[REMAINING]: sub/unsub to subteddit (db), generate teddit feed // redo for twitter
+[REMAINING]: view posts, generate teddit feed // redo for twitter

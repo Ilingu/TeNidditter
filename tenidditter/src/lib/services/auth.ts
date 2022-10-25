@@ -4,12 +4,11 @@ import type { FunctionJob, UserSubs } from "$lib/types/interfaces";
 import { HandleWsConn, NewWsConn } from "$lib/ws";
 import { GetJWT, GetLSUser, GetUserSubs } from "./localstorage";
 import { PUBLIC_API_URL } from "$env/static/public";
-import { IsValidJSON } from "$lib/utils";
+import { IsValidJSON, MakeBearerToken } from "$lib/utils";
 
 /* AUTH FUNC */
 export const SignIn = async (JwtToken: string, Subs: UserSubs) => {
 	// check if jwt still valid
-	console.log("here");
 	const { success, data: user } = await GetUserInfo(JwtToken);
 	if (!success || !user) return LogOut();
 
@@ -70,9 +69,8 @@ export const ListenToUserChange = async (JwtToken: string) => {
 };
 
 export const GetUserInfo = async (JwtToken: string): Promise<FunctionJob<User>> => {
-	const { success: LoginSuccess, data: user } = await api.get<User>({
-		uri: "/tedinitter/userInfo",
-		headers: { Authorization: "Bearer " + JwtToken }
+	const { success: LoginSuccess, data: user } = await api.get("/tedinitter/userInfo", {
+		headers: MakeBearerToken(JwtToken)
 	});
 
 	if (!LoginSuccess || !user) return { success: false };

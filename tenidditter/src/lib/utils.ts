@@ -82,3 +82,5 @@ export const IsValidJSON = (jsonBlob: string): boolean => {
 		return false;
 	}
 };
+
+export const MakeBearerToken = (JwtToken: string) => ({ Authorization: "Bearer " + JwtToken });

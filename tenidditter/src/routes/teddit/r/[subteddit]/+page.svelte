@@ -3,8 +3,38 @@
 	import { page } from "$app/stores";
 	import AuthStore from "$lib/stores/auth";
 	import { styles } from "$lib/services/style";
+	import api from "$lib/api";
+	import { MakeBearerToken, pushAlert } from "$lib/utils";
 
 	export let data: import("./$types").PageData;
+
+	let isSub = false;
+	$: if ($AuthStore.loggedIn) isSub = !!$AuthStore.Subs?.teddit?.includes($page.params.subteddit);
+
+	const TriggerSub = async () => {
+		const copySub = isSub;
+		isSub = !isSub; // so that the user don't wait 2s
+
+		if (copySub) {
+			const { success } = await api.delete("/tedinitter/teddit/unsub", {
+				param: $page.params.subteddit,
+				headers: MakeBearerToken($AuthStore.JwtToken || "")
+			});
+			if (!success) {
+				pushAlert("Couldn't unsubscribe you, try again", "error");
+				isSub = copySub;
+			}
+		} else {
+			const { success } = await api.post("/tedinitter/teddit/sub", {
+				param: $page.params.subteddit,
+				headers: MakeBearerToken($AuthStore.JwtToken || "")
+			});
+			if (!success) {
+				pushAlert("Couldn't subscribe you, try again", "error");
+				isSub = copySub;
+			}
+		}
+	};
 </script>
 
 <main class="max-w-[1500px] m-auto flex justify-center gap-x-8 px-2 py-5">
@@ -26,8 +56,11 @@
 			<p class="mt-2 text-justify">{data.Info?.description}</p>
 			<p class="mt-2 underline text-nitter capitalize">{data.Info?.subs}</p>
 			{#if $AuthStore.loggedIn}
-				<button class="btn btn-primary mt-3 gap-x-2"
-					><i class={`fas ${true ? "fa-plus" : "fa-minus"}`} /> Subscribe</button
+				<button
+					on:click={TriggerSub}
+					class={`btn mt-3 gap-x-2 ${isSub ? "btn-secondary" : "btn-primary"}`}
+					><i class={`fas ${isSub ? "fa-minus" : "fa-plus"}`} />
+					{isSub ? "Unsubscribe" : "Subscribe"}</button
 				>
 			{/if}
 		</header>

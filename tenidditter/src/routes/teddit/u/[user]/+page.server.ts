@@ -12,10 +12,7 @@ export const load: import("./$types").PageServerLoad = async ({
 	if (IsEmptyString(username)) throw error(404, "Not Found -- Invalid username");
 
 	try {
-		const { success, data: UserInfos } = await api.get<TedditUserShape>({
-			uri: "/teddit/u",
-			param: username
-		});
+		const { success, data: UserInfos } = await api.get("/teddit/u", { param: username });
 		if (!success || typeof UserInfos !== "object" || !Object.hasOwn(UserInfos, "username"))
 			throw error(404, "User Not found");
 

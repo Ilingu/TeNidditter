@@ -1,6 +1,6 @@
 import api from "$lib/api";
 import type { FeedTypeEnum } from "$lib/types/enums";
-import type { FeedResult, TedditHomePageRes } from "$lib/types/interfaces";
+import type { FeedResult } from "$lib/types/interfaces";
 import type { FeedHomeType } from "$lib/types/types";
 
 // export const QueryUserPost = () => void;
@@ -16,8 +16,7 @@ export const QueryHomePost = async (type: FeedTypeEnum, afterId?: string): Promi
 	};
 
 	try {
-		const { success, data: posts } = await api.get<TedditHomePageRes>({
-			uri: "/teddit/home",
+		const { success, data: posts } = await api.get("/teddit/home", {
 			query: { type: TypeToWord[type], afterId }
 		});
 
