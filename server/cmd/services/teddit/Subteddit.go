@@ -16,78 +16,6 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-func GetHomePosts(FeedType, afterId string) (*map[string]any, error) {
-	// Check If content already cached:
-	redisKey := rediskeys.NewKey(rediskeys.TEDDIT_HOME, FeedType)
-	if posts, err := redis.Get[map[string]any](redisKey); err == nil {
-		console.Log("Posts Returned from cache", console.Neutral)
-		return &posts, nil // Returned from cache
-	}
-
-	url := fmt.Sprintf("https://teddit.net/%s?api&raw_json=1", FeedType)
-	if !utils.IsEmptyString(afterId) {
-		url += fmt.Sprintf("&t=&after=t3_%s", afterId)
-	}
-
-	if !utils.IsValidURL(url) {
-		return nil, errors.New("this request has returned nothing")
-	}
-
-	resp, err := http.Get(url)
-	if err != nil {
-		return nil, errors.New("this request has returned nothing")
-	}
-	defer resp.Body.Close()
-
-	jsonBlob, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, errors.New("this request has returned a corrupted response")
-	}
-
-	var jsonDatas map[string]any
-	err = json.Unmarshal(jsonBlob, &jsonDatas)
-	if err != nil {
-		return nil, errors.New("this request has returned a corrupted response")
-	}
-
-	// Caching
-	go redis.Set(redisKey, jsonDatas)
-
-	return &jsonDatas, nil
-}
-
-func GetUserInfos(username string) (*map[string]any, error) {
-	redisKey := rediskeys.NewKey(rediskeys.TEDDIT_USER, utils.Hash(username))
-
-	if posts, err := redis.Get[map[string]any](redisKey); err == nil {
-		console.Log("Teddit User Info Returned from Cache ⚡", console.Neutral)
-		return &posts, nil
-	}
-
-	Url := fmt.Sprintf("https://teddit.net/u/%s?api&raw_json=1", url.QueryEscape(username))
-	rawUserInfo, err := http.Get(Url)
-	if err != nil || rawUserInfo.StatusCode != 200 {
-		return nil, err
-	}
-	defer rawUserInfo.Body.Close()
-
-	rawBlobUserInfo, err := io.ReadAll(rawUserInfo.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	var userInfo map[string]any
-	err = json.Unmarshal(rawBlobUserInfo, &userInfo)
-	if err != nil || len(userInfo) <= 0 {
-		return nil, err
-	}
-
-	// Caching
-	go redis.Set(redisKey, userInfo, 2*time.Hour)
-
-	return &userInfo, nil
-}
-
 func GetSubredditPosts(subreddit string) (*map[string]any, error) {
 	redisKey := rediskeys.NewKey(rediskeys.SUBREDDIT, subreddit+"_POSTS")
 
@@ -97,6 +25,10 @@ func GetSubredditPosts(subreddit string) (*map[string]any, error) {
 	}
 
 	Url := fmt.Sprintf("https://teddit.net/r/%s?api&raw_json=1", url.QueryEscape(subreddit))
+	if !utils.IsValidURL(Url) {
+		return nil, errors.New("invalid URL")
+	}
+
 	rawPosts, err := http.Get(Url)
 	if err != nil || rawPosts.StatusCode != 200 {
 		return nil, err
@@ -135,6 +67,10 @@ func GetSubredditMetadatas(subreddit string) (*subredditInfos, error) {
 	}
 
 	Url := fmt.Sprintf("https://teddit.net/r/%s", url.QueryEscape(subreddit))
+	if !utils.IsValidURL(Url) {
+		return nil, errors.New("invalid URL")
+	}
+
 	htmlPage, err := http.Get(Url)
 	if err != nil || htmlPage.StatusCode != 200 {
 		return nil, err

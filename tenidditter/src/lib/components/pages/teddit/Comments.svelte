@@ -4,6 +4,7 @@
 	import FeedHeader from "./Feed/FeedHeader.svelte";
 
 	export let comment: TedditCommmentShape;
+	export let open = false;
 
 	const FormattedTedditUrl =
 		"/teddit" +
@@ -23,7 +24,7 @@
 		{comment.ups}
 	</div>
 
-	<details class="translate-y-1">
+	<details class="translate-y-1" {open}>
 		<summary>
 			<div class="inline-block">
 				<div class="flex text-sm">

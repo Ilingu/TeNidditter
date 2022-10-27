@@ -11,6 +11,7 @@ const (
 	TEDDIT_HOME = RedisKeys("TEDDIT_HOME")
 	SUBREDDIT   = RedisKeys("TEDDIT_SUBREDDIT")
 	TEDDIT_USER = RedisKeys("TEDDIT_USER")
+	TEDDIT_POST = RedisKeys("TEDDIT_POST")
 )
 
 func NewKey(base RedisKeys, extendKeyword string) RedisKeys {
