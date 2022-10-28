@@ -37,14 +37,18 @@ interface APIResShape<T = never> {
 export default class api {
 	static async get<T extends GetRoutes>(
 		uri: T,
-		{ query, headers, params }: GetParams<T>
+		{ query, headers, params }: GetParams<T>,
+		customFetch?: typeof fetch
 	): Promise<ApiClientResp<GetReturns<T>>> {
 		uri = BuildURI<T>(uri, { params, query });
-		return await callApi<GetReturns<T>>({
-			uri,
-			method: "GET",
-			headers
-		});
+		return await callApi<GetReturns<T>>(
+			{
+				uri,
+				method: "GET",
+				headers
+			},
+			customFetch
+		);
 	}
 
 	static async post<T extends PostRoutes>(
@@ -92,12 +96,10 @@ interface ApiClientResp<T = never> extends FunctionJob<T> {
 	headers?: Headers;
 }
 
-export const callApi = async <T = never>({
-	uri,
-	method,
-	body,
-	headers
-}: QueryParams): Promise<ApiClientResp<T>> => {
+export const callApi = async <T = never>(
+	{ uri, method, body, headers }: QueryParams,
+	customFetch?: typeof fetch
+): Promise<ApiClientResp<T>> => {
 	if (IsEmptyString(uri)) return { success: false, error: "Invalid URI" };
 
 	let url: string;
@@ -107,7 +109,7 @@ export const callApi = async <T = never>({
 	if (!isValidUrl(url)) return { success: false, error: "Invalid URL" };
 
 	try {
-		const resp = await fetch(url, {
+		const resp = await (customFetch || fetch)(url, {
 			method,
 			body: JSON.stringify(body),
 			headers: { "Content-Type": "application/json", ...(headers || {}) }

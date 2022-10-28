@@ -1,5 +1,5 @@
 import type { User } from "$lib/stores/auth";
-import type { TedditHomePageRes, TedditUserShape } from "./interfaces";
+import type { TedditHomePageRes, TedditPostInfo, TedditUserShape } from "./interfaces";
 import type { FeedHomeType } from "./types";
 
 /* GET */
@@ -27,6 +27,8 @@ export type GetReturns<T> = T extends "/tedinitter/userInfo"
 	? TedditUserShape
 	: T extends "/teddit/home"
 	? TedditHomePageRes
+	: T extends "/teddit/r/%s/post/%s"
+	? TedditPostInfo
 	: never;
 export interface GetParams<T> {
 	query?: T extends "/auth/available"

@@ -5,7 +5,11 @@ import type { FeedHomeType } from "$lib/types/types";
 
 // export const QueryUserPost = () => void;
 
-export const QueryHomePost = async (type: FeedTypeEnum, afterId?: string): Promise<FeedResult> => {
+export const QueryHomePost = async (
+	type: FeedTypeEnum,
+	afterId?: string,
+	customFetch?: typeof fetch
+): Promise<FeedResult> => {
 	if (type < 0 || type > 4) return { success: false };
 	const TypeToWord: Record<number, FeedHomeType> = {
 		0: "hot",
@@ -16,9 +20,13 @@ export const QueryHomePost = async (type: FeedTypeEnum, afterId?: string): Promi
 	};
 
 	try {
-		const { success, data: posts } = await api.get("/teddit/home", {
-			query: { type: TypeToWord[type], afterId }
-		});
+		const { success, data: posts } = await api.get(
+			"/teddit/home",
+			{
+				query: { type: TypeToWord[type], afterId }
+			},
+			customFetch
+		);
 
 		if (!success) return { success: false, error: "No Post Retuned..." };
 		if (typeof posts !== "object" || !Object.hasOwn(posts, "links"))

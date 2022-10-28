@@ -14,14 +14,21 @@ interface SubRedditDatas {
 	Feed?: TedditRawPost[];
 }
 
-export const load: import("./$types").PageLoad = async ({ params }): Promise<SubRedditDatas> => {
+export const load: import("./$types").PageLoad = async ({
+	params,
+	fetch
+}): Promise<SubRedditDatas> => {
 	const subredditName = params?.subteddit;
 	if (IsEmptyString(subredditName)) throw error(400, "Invalid subreddit");
 
 	try {
-		const { success, data: SubPosts } = await api.get("/teddit/r/%s/posts", {
-			params: [subredditName]
-		});
+		const { success, data: SubPosts } = await api.get(
+			"/teddit/r/%s/posts",
+			{
+				params: [subredditName]
+			},
+			fetch
+		);
 		if (!success || typeof SubPosts !== "object" || !Object.hasOwn(SubPosts, "links"))
 			throw error(404, "Subreddit Not found");
 

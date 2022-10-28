@@ -4,12 +4,15 @@ import type { FeedResult } from "$lib/types/interfaces";
 import { IsEmptyString } from "$lib/utils";
 import { error } from "@sveltejs/kit";
 
-export const load: import("./$types").PageServerLoad = async ({ cookies }): Promise<FeedResult> => {
+export const load: import("./$types").PageServerLoad = async ({
+	cookies,
+	fetch
+}): Promise<FeedResult> => {
 	const eToken = cookies.get("JWT_TOKEN");
-	if (!eToken || IsEmptyString(eToken)) return fetchHomePage();
+	if (!eToken || IsEmptyString(eToken)) return fetchHomePage(fetch);
 
 	const userFeed = await fetchUserFeed();
-	if (!userFeed.success || !userFeed.data) return fetchHomePage();
+	if (!userFeed.success || !userFeed.data) return fetchHomePage(fetch);
 
 	return userFeed;
 };
@@ -18,9 +21,9 @@ const fetchUserFeed = async (): Promise<FeedResult> => {
 	return { success: false, type: "user_feed" };
 };
 
-const fetchHomePage = async (): Promise<FeedResult> => {
+const fetchHomePage = async (customFetch: typeof fetch): Promise<FeedResult> => {
 	try {
-		const { success, data: posts } = await QueryHomePost(FeedTypeEnum.Hot);
+		const { success, data: posts } = await QueryHomePost(FeedTypeEnum.Hot, undefined, customFetch);
 		if (!success) throw error(500, "No Posts returned...");
 
 		if (typeof posts !== "object" || posts.length <= 0) throw error(500, "No Posts returned...");

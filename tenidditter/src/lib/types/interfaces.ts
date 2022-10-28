@@ -20,6 +20,19 @@ export interface UserSubs {
 	nitter?: string[];
 }
 
+export interface TedditPostInfo {
+	metadata: TedditPostMetadata;
+	comments: (TedditCommmentShape & { id: number; parentId: number })[][];
+}
+
+export interface TedditPostMetadata {
+	post_author: string;
+	post_title: string;
+	post_created: number;
+	post_ups: string;
+	post_nb_comments: number;
+}
+
 export interface TedditUserShape {
 	username: string;
 	icon_img: string;

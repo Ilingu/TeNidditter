@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -137,7 +138,7 @@ type TedditCommmentShape struct {
 	ParentId int `json:"parentId"` // Temporary, to rebuild tree in frontend
 
 	Created     int64  `json:"created"`
-	Ups         int    `json:"ups"`
+	Ups         string `json:"ups"`
 	Body_html   string `json:"body_html"`
 	Link_author string `json:"link_author"`
 }
@@ -145,34 +146,44 @@ type TedditCommmentShape struct {
 var NodesID = []int{}
 
 func GetPostComments(doc *goquery.Document) [][]TedditCommmentShape {
-	var result [][]TedditCommmentShape
+	var comments [][]TedditCommmentShape
 	selection := doc.Find("#post > div.comments > .comment")
 
 	var wg sync.WaitGroup
 	wg.Add(selection.Length())
 	selection.Each(func(i int, s *goquery.Selection) {
 		idIdx := len(NodesID)
-		NodesID = append(NodesID, -1)
+		NodesID = append(NodesID, 0)
 
 		go func() {
 			defer wg.Done()
-			result = append(result, RecursiveSearch(s, idIdx, 0))
+
+			result := RecursiveSearch(s, idIdx, 0)
+			sort.Slice(result, func(p, q int) bool {
+				return result[p].ParentId < result[q].ParentId // sorting by parentId
+			})
+
+			comments = append(comments, result)
 		}()
 	})
 	wg.Wait()
 
 	NodesID = []int{}
-	return result
+	return comments
 }
 
 func RecursiveSearch(elem *goquery.Selection, idIdx int, parentId int) []TedditCommmentShape {
 	NodesID[idIdx]++
-	CoAuthor := elem.Find("details > .meta .author").Text()
-	CoUps, _ := strconv.Atoi(elem.Find("details > .meta .ups").Text())
-	BodyHtml, _ := elem.Find("details > .body").Html()
+
+	commentId, _ := elem.Attr("id")
+	detailsElem := fmt.Sprintf("#%s > details", commentId)
+
+	CoAuthor := elem.Find(detailsElem + " > .meta .author").First().Text()
+	CoUps := strings.TrimSuffix(elem.Find(detailsElem+" > .meta .ups").First().Text(), " points")
+	BodyHtml, _ := elem.Find(detailsElem + " > .body").First().Html()
 
 	var CoCreated int64
-	if creationISO, exist := elem.Find("details > .meta .created").Attr("title"); exist {
+	if creationISO, exist := elem.Find(detailsElem + " > .meta .created").First().Attr("title"); exist {
 		layout := "Mon, 02 Jan 2006 15:04:05 GMT"
 		if t, err := time.Parse(layout, creationISO); err == nil {
 			CoCreated = t.Unix()
@@ -180,7 +191,7 @@ func RecursiveSearch(elem *goquery.Selection, idIdx int, parentId int) []TedditC
 	}
 	comment := TedditCommmentShape{NodesID[idIdx], parentId, CoCreated, CoUps, BodyHtml, CoAuthor}
 
-	children := elem.Find("details > .comment")
+	children := elem.Find(detailsElem + " > .comment")
 	if children.Length() <= 0 {
 		return []TedditCommmentShape{comment}
 	}

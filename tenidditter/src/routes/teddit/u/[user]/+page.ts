@@ -5,12 +5,19 @@ import { error } from "@sveltejs/kit";
 
 export const prerender = false;
 
-export const load: import("./$types").PageLoad = async ({ params }): Promise<TedditUserShape> => {
+export const load: import("./$types").PageLoad = async ({
+	params,
+	fetch
+}): Promise<TedditUserShape> => {
 	const username = params?.user;
 	if (IsEmptyString(username)) throw error(400, "Invalid username");
 
 	try {
-		const { success, data: UserInfos } = await api.get("/teddit/u/%s", { params: [username] });
+		const { success, data: UserInfos } = await api.get(
+			"/teddit/u/%s",
+			{ params: [username] },
+			fetch
+		);
 		if (!success || typeof UserInfos !== "object" || !Object.hasOwn(UserInfos, "username"))
 			throw error(404, "User Not found");
 

@@ -6,7 +6,7 @@
 	import Feed from "./Feed/Feed.svelte";
 	import Loader from "$lib/components/design/Loader.svelte";
 	import { isValidUrl } from "$lib/utils";
-	import Comments from "./Comments.svelte";
+	import Comments from "./comments/Comments.svelte";
 
 	export let loading = false;
 	export let rawPosts: (TedditPost | TedditCommmentShape)[];
