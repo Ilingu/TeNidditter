@@ -105,7 +105,7 @@ func (user AccountModel) HasChange() {
 		return
 	}
 
-	for _, wsClient := range *wsConns {
+	for _, wsClient := range wsConns {
 		go websocket.Message.Send(wsClient.WsConn, stringifiedSubs)
 	}
 }

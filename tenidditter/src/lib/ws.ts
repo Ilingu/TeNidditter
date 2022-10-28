@@ -37,5 +37,8 @@ export const HandleWsConn = (socket: WebSocket, { onMessage, onClose, onError }:
 	onClose && socket.addEventListener("close", onClose);
 
 	// Listen for messages
-	socket.addEventListener("message", (event) => onMessage(event.data));
+	socket.addEventListener("message", (event) => {
+		if (event.data === "PING") return socket.send("OK_PING");
+		onMessage(event.data);
+	});
 };

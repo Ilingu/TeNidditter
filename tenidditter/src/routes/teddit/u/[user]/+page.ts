@@ -5,9 +5,7 @@ import { error } from "@sveltejs/kit";
 
 export const prerender = false;
 
-export const load: import("./$types").PageServerLoad = async ({
-	params
-}): Promise<TedditUserShape> => {
+export const load: import("./$types").PageLoad = async ({ params }): Promise<TedditUserShape> => {
 	const username = params?.user;
 	if (IsEmptyString(username)) throw error(400, "Invalid username");
 
