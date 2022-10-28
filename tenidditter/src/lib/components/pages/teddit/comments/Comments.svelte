@@ -6,7 +6,7 @@
 	import { getContext } from "svelte";
 	import { onMount } from "svelte";
 
-	type Comments = TedditCommmentShape & { id: number; parentId: number };
+	type Comments = TedditCommmentShape & { id?: number; parentId?: number };
 	export let comment: Comments;
 
 	export let open = false;
@@ -17,9 +17,9 @@
 	const comments = ((getContext("COMMEMTS_CTX") as Comments[][]) || [""])[idxCtx];
 	let childrenComments: Comments[] = [];
 	onMount(() => {
-		if (!recursive) return;
+		if (!recursive) return; // to the potential contributor, I fucked up this components but it works as following: if the "recursive" props is set to true your datas must have the "id" and "parentId" field
 		childrenComments = comments.filter(({ parentId }) => parentId === comment.id);
-		if (comment.id >= 5) open = false;
+		if (comment.id && comment.id >= 5) open = false;
 	});
 
 	const FormattedTedditUrl =
