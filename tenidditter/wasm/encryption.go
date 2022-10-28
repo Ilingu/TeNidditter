@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	fmt.Println("Webassembly Connected!")
+	fmt.Println("Webassembly Connected (enc.go)!")
 
 	// blk, err := GenRandomBytes(16)
 	// if err != nil {

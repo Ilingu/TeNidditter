@@ -4,7 +4,6 @@
 	import { FormatNumbers } from "$lib/utils";
 
 	export let data: import("./$types").PageData;
-	console.log(data);
 </script>
 
 <main class="max-w-[1150px] m-auto flex justify-center gap-x-8 px-2 py-5">

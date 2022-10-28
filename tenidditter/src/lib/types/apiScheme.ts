@@ -6,22 +6,24 @@ import type { FeedHomeType } from "./types";
 export type GetRoutes =
 	| "/tedinitter/userInfo"
 	| "/auth/available"
-	| "/teddit/r"
-	| "/teddit/u"
-	| "/teddit/home";
+	| "/teddit/r/%s/about"
+	| "/teddit/r/%s/posts"
+	| "/teddit/u/%s"
+	| "/teddit/home"
+	| "/teddit/r/%s/post/%s";
 export type GetReturns<T> = T extends "/tedinitter/userInfo"
 	? User
 	: T extends "/auth/available"
 	? boolean
-	: T extends "/teddit/r"
-	?
-			| TedditHomePageRes
-			| {
-					subs: string;
-					description: string;
-					rules: string;
-			  }
-	: T extends "/teddit/u"
+	: T extends "/teddit/r/%s/about"
+	? {
+			subs: string;
+			description: string;
+			rules: string;
+	  }
+	: T extends "/teddit/r/%s/posts"
+	? TedditHomePageRes
+	: T extends "/teddit/u/%s"
 	? TedditUserShape
 	: T extends "/teddit/home"
 	? TedditHomePageRes
@@ -33,20 +35,28 @@ export interface GetParams<T> {
 		? { type?: FeedHomeType; afterId?: string }
 		: never;
 	headers?: T extends "/tedinitter/userInfo" ? { Authorization: string } : never;
-	param?: T extends "/teddit/r" ? string : T extends "/teddit/u" ? string : never;
+	params?: T extends "/teddit/r/%s/about"
+		? [subteddit: string]
+		: T extends "/teddit/r/%s/posts"
+		? [subteddit: string]
+		: T extends "/teddit/u/%s"
+		? [username: string]
+		: T extends "/teddit/r/%s/post/%s"
+		? [subteddit: string, postId: string]
+		: never;
 }
 
 /* POST */
-export type PostRoutes = "/auth/" | "/tedinitter/teddit/sub";
+export type PostRoutes = "/auth/" | "/tedinitter/teddit/sub/%s";
 export type PostReturns<T> = T extends "/auth/"
 	? string
-	: T extends "/tedinitter/teddit/sub"
+	: T extends "/tedinitter/teddit/sub/%s"
 	? null
 	: never;
 export interface PostParams<T> {
 	query?: never;
-	headers?: T extends "/tedinitter/teddit/sub" ? { Authorization: string } : never;
-	param?: T extends "/tedinitter/teddit/sub" ? string : never;
+	headers?: T extends "/tedinitter/teddit/sub/%s" ? { Authorization: string } : never;
+	params?: T extends "/tedinitter/teddit/sub/%s" ? [subteddit: string] : never;
 	body?: T extends "/auth/" ? { username: string; password: string } : never;
 }
 
@@ -56,16 +66,16 @@ export type PutReturns = never;
 export interface PutParams {
 	query?: never;
 	headers?: never;
-	param?: never;
+	params?: never;
 	body?: never;
 }
 
 /* DELETE */
-export type DeleteRoutes = "/tedinitter/teddit/unsub";
-export type DeleteReturns<T> = T extends "/tedinitter/teddit/unsub" ? null : never;
+export type DeleteRoutes = "/tedinitter/teddit/unsub/%s";
+export type DeleteReturns<T> = T extends "/tedinitter/teddit/unsub/%s" ? null : never;
 export interface DeleteParams<T> {
 	query?: never;
-	headers?: T extends "/tedinitter/teddit/unsub" ? { Authorization: string } : never;
-	param?: T extends "/tedinitter/teddit/unsub" ? string : never;
+	headers?: T extends "/tedinitter/teddit/unsub/%s" ? { Authorization: string } : never;
+	params?: T extends "/tedinitter/teddit/unsub/%s" ? [subteddit: string] : never;
 	body?: never;
 }

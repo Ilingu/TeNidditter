@@ -37,9 +37,9 @@ interface APIResShape<T = never> {
 export default class api {
 	static async get<T extends GetRoutes>(
 		uri: T,
-		{ query, headers, param }: GetParams<T>
+		{ query, headers, params }: GetParams<T>
 	): Promise<ApiClientResp<GetReturns<T>>> {
-		uri = BuildURI<T>(uri, { param, query });
+		uri = BuildURI<T>(uri, { params, query });
 		return await callApi<GetReturns<T>>({
 			uri,
 			method: "GET",
@@ -49,9 +49,9 @@ export default class api {
 
 	static async post<T extends PostRoutes>(
 		uri: T,
-		{ body, headers, param, query }: PostParams<T>
+		{ body, headers, params, query }: PostParams<T>
 	): Promise<ApiClientResp<PostReturns<T>>> {
-		uri = BuildURI<T>(uri, { param, query });
+		uri = BuildURI<T>(uri, { params, query });
 		return await callApi<PostReturns<T>>({
 			uri,
 			method: "POST",
@@ -62,9 +62,9 @@ export default class api {
 
 	static async update<T extends PutRoutes>(
 		uri: T,
-		{ body, headers, param, query }: PutParams
+		{ body, headers, params, query }: PutParams
 	): Promise<ApiClientResp<PutReturns>> {
-		uri = BuildURI<T>(uri, { param, query });
+		uri = BuildURI<T>(uri, { params, query });
 		return await callApi<PutReturns>({
 			uri,
 			method: "PUT",
@@ -75,9 +75,9 @@ export default class api {
 
 	static async delete<T extends DeleteRoutes>(
 		uri: T,
-		{ body, headers, param, query }: DeleteParams<T>
+		{ body, headers, params, query }: DeleteParams<T>
 	): Promise<ApiClientResp<DeleteReturns<T>>> {
-		uri = BuildURI<T>(uri, { param, query });
+		uri = BuildURI<T>(uri, { params, query });
 		return await callApi<DeleteReturns<T>>({
 			uri,
 			method: "DELETE",
@@ -125,11 +125,14 @@ export const callApi = async <T = never>({
 
 const BuildURI = <T extends string>(
 	uri: T,
-	{ param, query }: { param?: string; query?: object }
+	{ params, query }: { params?: string[]; query?: object }
 ): T => {
 	if (typeof uri !== "string") return `${uri}`;
 
-	if (!IsEmptyString(param)) (uri as string) += `/${param}`;
+	// Params subtitution
+	params?.forEach((param) => (uri = uri.replace("%s", param) as T));
+
+	// Queries
 	if (query && Object.entries(query).length > 0) {
 		(uri as string) += "?";
 		for (const [key, val] of Object.entries(query)) {

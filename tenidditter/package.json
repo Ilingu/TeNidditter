@@ -33,7 +33,9 @@
 		"lint": "prettier --check --plugin-search-dir=. . && eslint .",
 		"format": "prettier --write --plugin-search-dir=. .",
 		"build:wasmtinygo": "tinygo build -o ./static/wasm/encryption.wasm -target wasm ./wasm/encryption.go",
-		"build:wasm": "GOOS=js GOARCH=wasm go build -o ./static/wasm/encryption.wasm ./wasm/encryption.go"
+		"build:wasm": "pnpm build:wasm:enc & pnpm build:wasm:treebuilding",
+		"build:wasm:enc": "GOOS=js GOARCH=wasm go build -o ./static/wasm/encryption.wasm ./wasm/encryption.go",
+		"build:wasm:treebuilding": "GOOS=js GOARCH=wasm go build -o ./static/wasm/treebuilding.wasm ./wasm/treebuilding.go"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "next",

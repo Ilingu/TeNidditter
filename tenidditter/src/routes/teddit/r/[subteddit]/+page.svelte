@@ -16,8 +16,8 @@
 		isSub = !isSub; // so that the user don't wait 2s
 
 		if (copySub) {
-			const { success } = await api.delete("/tedinitter/teddit/unsub", {
-				param: $page.params.subteddit,
+			const { success } = await api.delete("/tedinitter/teddit/unsub/%s", {
+				params: [$page.params.subteddit],
 				headers: MakeBearerToken($AuthStore.JwtToken || "")
 			});
 			if (!success) {
@@ -25,8 +25,8 @@
 				isSub = copySub;
 			}
 		} else {
-			const { success } = await api.post("/tedinitter/teddit/sub", {
-				param: $page.params.subteddit,
+			const { success } = await api.post("/tedinitter/teddit/sub/%s", {
+				params: [$page.params.subteddit],
 				headers: MakeBearerToken($AuthStore.JwtToken || "")
 			});
 			if (!success) {
