@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"sync"
 	"teniditter-server/cmd/global/console"
 	"teniditter-server/cmd/global/utils"
 	"teniditter-server/cmd/redis"
@@ -63,20 +64,16 @@ type TedditPostInfo struct {
 	Comments [][]TedditCommmentShape `json:"comments"`
 }
 
-func GetPostInfo(subteddit, id string, sort ...string) (TedditPostInfo, error) {
-	Sort := "best"
-	if len(sort) == 1 && !utils.IsEmptyString(sort[0]) {
-		Sort = sort[0]
-	}
-
+// sort must be "best" || "top" || "new" || "controversial" || "old" || "Q&A"
+func GetPostInfo(subteddit, id string, sort string) (TedditPostInfo, error) {
 	// Check If content already cached:
-	redisKey := rediskeys.NewKey(rediskeys.TEDDIT_HOME, subteddit+id+Sort)
+	redisKey := rediskeys.NewKey(rediskeys.TEDDIT_HOME, subteddit+id+sort)
 	if postInfo, err := redis.Get[TedditPostInfo](redisKey); err == nil {
 		console.Log("Posts Returned from cache", console.Neutral)
 		return postInfo, nil // Returned from cache
 	}
 
-	Url := fmt.Sprintf("https://teddit.net/r/%s/comments/%s/?sort=%s", url.QueryEscape(subteddit), url.QueryEscape(id), Sort)
+	Url := fmt.Sprintf("https://teddit.net/r/%s/comments/%s/?sort=%s", url.QueryEscape(subteddit), url.QueryEscape(id), sort)
 	if !utils.IsValidURL(Url) {
 		return TedditPostInfo{}, errors.New("invalid url")
 	}
@@ -145,25 +142,31 @@ type TedditCommmentShape struct {
 	Link_author string `json:"link_author"`
 }
 
+var NodesID = []int{}
+
 func GetPostComments(doc *goquery.Document) [][]TedditCommmentShape {
 	var result [][]TedditCommmentShape
 	selection := doc.Find("#post > div.comments > .comment")
 
-	// var wg sync.WaitGroup
-	// wg.Add(selection.Length())
+	var wg sync.WaitGroup
+	wg.Add(selection.Length())
 	selection.Each(func(i int, s *goquery.Selection) {
-		// defer wg.Done()
-		result = append(result, RecursiveSearch(s, 0))
-	})
-	// wg.Wait()
+		idIdx := len(NodesID)
+		NodesID = append(NodesID, -1)
 
+		go func() {
+			defer wg.Done()
+			result = append(result, RecursiveSearch(s, idIdx, 0))
+		}()
+	})
+	wg.Wait()
+
+	NodesID = []int{}
 	return result
 }
 
-var NodeID = -1
-
-func RecursiveSearch(elem *goquery.Selection, parentId int) []TedditCommmentShape {
-	NodeID++
+func RecursiveSearch(elem *goquery.Selection, idIdx int, parentId int) []TedditCommmentShape {
+	NodesID[idIdx]++
 	CoAuthor := elem.Find("details > .meta .author").Text()
 	CoUps, _ := strconv.Atoi(elem.Find("details > .meta .ups").Text())
 	BodyHtml, _ := elem.Find("details > .body").Html()
@@ -175,7 +178,7 @@ func RecursiveSearch(elem *goquery.Selection, parentId int) []TedditCommmentShap
 			CoCreated = t.Unix()
 		}
 	}
-	comment := TedditCommmentShape{NodeID, parentId, CoCreated, CoUps, BodyHtml, CoAuthor}
+	comment := TedditCommmentShape{NodesID[idIdx], parentId, CoCreated, CoUps, BodyHtml, CoAuthor}
 
 	children := elem.Find("details > .comment")
 	if children.Length() <= 0 {
@@ -184,7 +187,7 @@ func RecursiveSearch(elem *goquery.Selection, parentId int) []TedditCommmentShap
 
 	var resultChild = []TedditCommmentShape{}
 	children.Each(func(i int, s *goquery.Selection) {
-		resultChild = append(resultChild, RecursiveSearch(s, NodeID)...)
+		resultChild = append(resultChild, RecursiveSearch(s, idIdx, NodesID[idIdx])...)
 	})
 
 	return append(resultChild, comment)

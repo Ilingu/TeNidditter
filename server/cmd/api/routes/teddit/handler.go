@@ -11,7 +11,6 @@ import (
 )
 
 func TedditHandler(t *echo.Group) {
-
 	t.GET("/u/:username", func(c echo.Context) error {
 		res := routes.EchoWrapper{Context: c}
 
@@ -33,12 +32,17 @@ func TedditHandler(t *echo.Group) {
 
 		subreddit := utils.FormatToSafeString(c.Param("subreddit"))
 		postId := utils.SafeString(c.Param("id"))
+		sort := c.QueryParam("sort")
 
 		if utils.IsEmptyString(subreddit) || utils.IsEmptyString(postId) || len(postId) < 6 {
 			return res.HandleResp(http.StatusBadRequest, "invalid subreddit or postId")
 		}
 
-		postDatas, err := teddit.GetPostInfo(subreddit, postId)
+		if sort != "best" && sort != "top" && sort != "new" && sort != "controversial" && sort != "old" && sort != "Q&A" {
+			sort = "best"
+		}
+
+		postDatas, err := teddit.GetPostInfo(subreddit, postId, sort)
 		if err != nil {
 			return res.HandleResp(http.StatusBadRequest, "no data returned")
 		}
