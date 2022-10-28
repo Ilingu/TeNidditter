@@ -90,8 +90,7 @@ func Ping(ws *websocket.Conn, ok chan bool, interrupt chan any) {
 			close(interrupt) // Client didn't answer, closing ws conn
 			return
 		case <-ok:
-			// time.Sleep(time.Minute) // Client answered, backing off 1min
-			time.Sleep(10 * time.Second) // Client answered, backing off 1min
+			time.Sleep(time.Minute) // Client answered, backing off 1min
 		}
 	}
 }
