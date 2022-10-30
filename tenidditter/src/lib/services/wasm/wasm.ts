@@ -3,7 +3,7 @@ import type { FunctionJob } from "./types/interfaces";
 let wasmBinary: WebAssembly.Instance;
 export let WasmInitiate = false;
 
-const WASM_URL = "/wasm/encryption.wasm";
+const WASM_URL = "/wasm/wasmbin.wasm";
 export const InitWasm = async (): Promise<FunctionJob> => {
 	try {
 		const go = new Go();

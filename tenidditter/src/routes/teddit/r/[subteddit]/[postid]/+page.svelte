@@ -3,6 +3,7 @@
 	import { page } from "$app/stores";
 	import { setContext } from "svelte";
 	import Comments from "$lib/components/pages/teddit/comments/Comments.svelte";
+	import { humanElapsedTime } from "$lib/utils";
 
 	export let data: import("./$types").PageData;
 	console.log(data);
@@ -17,7 +18,33 @@
 		}
 		return parseInt(ups);
 	};
+
+	const OGImageUrl = `${$page.url.origin}/api/og-image?title=${encodeURIComponent(
+		data.metadata.post_title
+	)}&author=${encodeURIComponent(data.metadata.post_author)}&subreddit=${encodeURIComponent(
+		$page.params.subteddit
+	)}&ups=${PostUps()}&created=${data.metadata.post_created}`;
+	const OGDesc = `Submitted ${humanElapsedTime(data.metadata.post_created * 1000, Date.now())} by ${
+		data.metadata.post_author
+	} on r/${$page.params.subteddit}`;
 </script>
+
+<svelte:head>
+	<!-- Twitter Card -->
+	<meta name="twitter:card" content="summary" />
+	<meta name="twitter:url" content={$page.url.origin} />
+	<meta name="twitter:title" content={data.metadata.post_title} />
+	<meta name="twitter:description" content={OGDesc} />
+	<meta name="twitter:image" content={OGImageUrl} />
+	<meta name="twitter:creator" content={"u/" + data.metadata.post_author} />
+	<!-- OG Card -->
+	<meta property="og:type" content="website" />
+	<meta property="og:title" content={data.metadata.post_title} />
+	<meta property="og:description" content={OGDesc} />
+	<meta property="og:site_name" content="TeNidditter" />
+	<meta property="og:url" content={$page.url.origin} />
+	<meta property="og:image" content={OGImageUrl} />
+</svelte:head>
 
 <main class="max-w-[1500px] m-auto flex flex-col items-center gap-x-8 px-2 py-5">
 	<div class="max-w-[750px]">

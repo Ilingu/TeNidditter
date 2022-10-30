@@ -1,27 +1,11 @@
-package main
+package encryption
 
 import (
 	"crypto/aes"
 	"crypto/cipher"
 	"encoding/base64"
-	"fmt"
 	"syscall/js"
 )
-
-func main() {
-	fmt.Println("Webassembly Connected (enc.go)!")
-
-	// blk, err := GenRandomBytes(16)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// iv = blk
-
-	c := make(chan struct{}, 0)
-	js.Global().Set("EncryptAES", EncryptDatas())
-	js.Global().Set("DecryptAES", DecryptDatas())
-	<-c
-}
 
 func EncryptDatas() js.Func {
 	return js.FuncOf(func(this js.Value, args []js.Value) interface{} {
