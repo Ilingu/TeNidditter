@@ -9,7 +9,7 @@
 <div class="flex flex-col fixed bottom-0 left-0 z-10 gap-y-3 h-[23vh]">
 	<label class="btn btn-circle btn-primary m-5 text-white swap swap-rotate absolute bottom-0 z-10">
 		<!-- this hidden checkbox controls the state -->
-		<input type="checkbox" on:change={() => (opened = !opened)} />
+		<input type="checkbox" bind:checked={opened} />
 
 		<!-- hamburger icon -->
 		<svg
@@ -40,12 +40,15 @@
 			class="w-96 h-full flex flex-col gap-y-5 rounded-lg p-5 bg-[#2e2d2f]"
 		>
 			<Link href={"/teddit/r"}
-				><button class="btn btn-active btn-primary gap-x-3 w-full"
+				><button class="btn btn-active btn-primary gap-x-3 w-full" on:click={() => (opened = false)}
 					><i class="fa-solid fa-magnifying-glass" /> Search Subteddit</button
 				></Link
 			>
 			<Link href={"/teddit/u"}
-				><button class="btn btn-active btn-warning gap-x-3 w-full">
+				><button
+					class="btn btn-active btn-warning gap-x-3 w-full"
+					on:click={() => (opened = false)}
+				>
 					<i class="fas fa-user" />
 					Search Teddit's User</button
 				></Link

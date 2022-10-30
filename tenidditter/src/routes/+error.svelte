@@ -12,7 +12,14 @@
 
 	<p class="text-center text-xl">Oops! Something went wrong:</p>
 	<p class="text-center text-xl font-bold mb-5">{$page.error?.message}</p>
-	<Link href="/"><button class="btn">Return Home</button></Link>
+	<div class="flex gap-x-4">
+		<Link href="/"
+			><button class="btn gap-x-2"><i class="fa-solid fa-house icon" /> Return Home</button></Link
+		>
+		<button on:click={() => history.back()} class="btn gap-x-2"
+			><i class="fa-solid fa-backward icon" /> Return Back</button
+		>
+	</div>
 </div>
 
 <style scoped>

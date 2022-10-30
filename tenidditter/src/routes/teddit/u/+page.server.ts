@@ -15,11 +15,7 @@ export const actions: Actions = {
 			if (!resp.ok) return false;
 
 			const htmlPage = await resp.text();
-			if (
-				htmlPage.includes("The resource you were looking for was not found.") &&
-				htmlPage.includes("reddit-error")
-			)
-				return false;
+			if (htmlPage.includes("reddit-error")) return false;
 
 			return true;
 		} catch (err) {

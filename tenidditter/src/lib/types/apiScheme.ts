@@ -1,5 +1,10 @@
 import type { User } from "$lib/stores/auth";
-import type { TedditHomePageRes, TedditPostInfo, TedditUserShape } from "./interfaces";
+import type {
+	DBSubtedditsShape,
+	TedditHomePageRes,
+	TedditPostInfo,
+	TedditUserShape
+} from "./interfaces";
 import type { FeedHomeType } from "./types";
 
 /* GET */
@@ -10,7 +15,8 @@ export type GetRoutes =
 	| "/teddit/r/%s/posts"
 	| "/teddit/u/%s"
 	| "/teddit/home"
-	| "/teddit/r/%s/post/%s";
+	| "/teddit/r/%s/post/%s"
+	| "/teddit/r/search";
 export type GetReturns<T> = T extends "/tedinitter/userInfo"
 	? User
 	: T extends "/auth/available"
@@ -29,6 +35,8 @@ export type GetReturns<T> = T extends "/tedinitter/userInfo"
 	? TedditHomePageRes
 	: T extends "/teddit/r/%s/post/%s"
 	? TedditPostInfo
+	: T extends "/teddit/r/search"
+	? DBSubtedditsShape[]
 	: never;
 export interface GetParams<T> {
 	query?: T extends "/auth/available"
@@ -37,6 +45,8 @@ export interface GetParams<T> {
 		? { type?: FeedHomeType; afterId?: string }
 		: T extends "/teddit/r/%s/post/%s"
 		? { sort: string }
+		: T extends "/teddit/r/search"
+		? { q: string }
 		: never;
 	headers?: T extends "/tedinitter/userInfo" ? { Authorization: string } : never;
 	params?: T extends "/teddit/r/%s/about"

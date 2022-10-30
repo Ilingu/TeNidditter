@@ -3,6 +3,7 @@ package teddit
 import (
 	"net/http"
 	"teniditter-server/cmd/api/routes"
+	"teniditter-server/cmd/db"
 	"teniditter-server/cmd/global/console"
 	"teniditter-server/cmd/global/utils"
 	"teniditter-server/cmd/services/teddit"
@@ -47,6 +48,22 @@ func TedditHandler(t *echo.Group) {
 			return res.HandleResp(http.StatusBadRequest, "no data returned")
 		}
 		return res.HandleResp(http.StatusOK, postDatas)
+	})
+
+	t.GET("/r/search", func(c echo.Context) error {
+		res := routes.EchoWrapper{Context: c}
+
+		subreddit := utils.FormatToSafeString(c.QueryParam("q"))
+		if utils.IsEmptyString(subreddit) {
+			return res.HandleResp(http.StatusBadRequest, "invalid subreddit")
+		}
+
+		matchSubs, err := db.SearchSubteddit(subreddit)
+		if err != nil {
+			return res.HandleResp(http.StatusForbidden, err.Error())
+		}
+
+		return res.HandleResp(http.StatusOK, matchSubs)
 	})
 
 	t.GET("/r/:subreddit/about", func(c echo.Context) error {

@@ -14,11 +14,8 @@ export const actions: Actions = {
 			const resp = await fetch(`https://teddit.net/r/${encodeURI(username as string)}?api`);
 			if (!resp.ok) return false;
 
-			const htmlPage = await resp.text();
-			if (
-				htmlPage.includes("The resource you were looking for was not found.") &&
-				htmlPage.includes("reddit-error")
-			)
+			const sub = await resp.json();
+			if (typeof sub !== "object" || !Object.hasOwn(sub, "links") || sub?.links?.length <= 0)
 				return false;
 
 			return true;

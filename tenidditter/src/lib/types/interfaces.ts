@@ -20,6 +20,11 @@ export interface UserSubs {
 	nitter?: string[];
 }
 
+export interface DBSubtedditsShape {
+	subteddit_id: number;
+	subname: string;
+}
+
 export interface TedditPostInfo {
 	metadata: TedditPostMetadata;
 	comments: (TedditCommmentShape & { id: number; parentId: number })[][];

@@ -2,6 +2,7 @@ package db
 
 import (
 	"errors"
+	"log"
 )
 
 // Query Subteddit by its name from DB; if the subteddit is not yet in the db this function will insert it.
@@ -32,4 +33,33 @@ func GetSubteddit(subname string, depth ...int) (*SubtedditModel, error) {
 	}
 
 	return &result, nil
+}
+
+// Query Subteddit by its name from DB; if the subteddit is not yet in the db this function will insert it.
+func SearchSubteddit(subname string) ([]SubtedditModel, error) {
+	db := DBManager.Connect()
+	if db == nil {
+		return nil, ErrDbNotFound
+	}
+
+	rows, err := db.Query("SELECT * FROM Subteddits WHERE subname LIKE ?", "%"+subname+"%")
+	if err != nil {
+		log.Println(err)
+		return nil, errors.New("error when fetching Subteddits")
+	}
+	defer rows.Close()
+
+	var AllSubs []SubtedditModel
+	for rows.Next() {
+		var sub SubtedditModel
+		if err := rows.Scan(&sub.SubID, &sub.Subname); err != nil {
+			return AllSubs, nil
+		}
+		AllSubs = append(AllSubs, sub)
+	}
+	if err = rows.Err(); err != nil {
+		return AllSubs, err
+	}
+
+	return AllSubs, nil
 }
