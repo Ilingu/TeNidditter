@@ -1,24 +1,31 @@
 import api from "$lib/api";
 import type { TedditPostInfo } from "$lib/types/interfaces";
+import type { Tuple } from "$lib/types/types";
 import { IsEmptyString } from "$lib/utils";
 import { error } from "@sveltejs/kit";
 
 export const prerender = false;
 
+const acceptedSort: Tuple<string, 6> = ["best", "top", "new", "controversial", "old", "qa"];
 export const load: import("./$types").PageLoad = async ({
 	params,
-	fetch
+	fetch,
+	url
 }): Promise<TedditPostInfo> => {
 	const subredditName = params?.subteddit;
 	const postId = params?.postid;
 	if (IsEmptyString(subredditName) || IsEmptyString(postId) || postId.length < 6)
 		throw error(400, "Invalid args");
 
+	let sort = (url.searchParams.get("sort") ?? "").toLowerCase();
+	if (!acceptedSort.includes(sort)) sort = acceptedSort[0];
+
 	try {
 		const { success, data: PostInfo } = await api.get(
 			"/teddit/r/%s/post/%s",
 			{
-				params: [subredditName, postId]
+				params: [subredditName, postId],
+				query: { sort }
 			},
 			fetch
 		);

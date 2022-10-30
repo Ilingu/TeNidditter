@@ -65,10 +65,10 @@ type TedditPostInfo struct {
 	Comments [][]TedditCommmentShape `json:"comments"`
 }
 
-// sort must be "best" || "top" || "new" || "controversial" || "old" || "Q&A"
-func GetPostInfo(subteddit, id string, sort string) (TedditPostInfo, error) {
+// sort must be "best" || "top" || "new" || "controversial" || "old" || "qa"
+func GetPostInfo(subteddit, id, sort string) (TedditPostInfo, error) {
 	// Check If content already cached:
-	redisKey := rediskeys.NewKey(rediskeys.TEDDIT_HOME, subteddit+id+sort)
+	redisKey := rediskeys.NewKey(rediskeys.TEDDIT_POST, subteddit+id+sort)
 	if postInfo, err := redis.Get[TedditPostInfo](redisKey); err == nil {
 		console.Log("Posts Returned from cache", console.Neutral)
 		return postInfo, nil // Returned from cache

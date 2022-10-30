@@ -38,7 +38,7 @@ func TedditHandler(t *echo.Group) {
 			return res.HandleResp(http.StatusBadRequest, "invalid subreddit or postId")
 		}
 
-		if sort != "best" && sort != "top" && sort != "new" && sort != "controversial" && sort != "old" && sort != "Q&A" {
+		if sort != "best" && sort != "top" && sort != "new" && sort != "controversial" && sort != "old" && sort != "qa" {
 			sort = "best"
 		}
 

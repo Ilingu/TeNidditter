@@ -18,7 +18,7 @@
 	let childrenComments: Comments[] = [];
 	onMount(() => {
 		if (!recursive) return; // to the potential contributor, I fucked up this components but it works as following: if the "recursive" props is set to true your datas must have the "id" and "parentId" field
-		childrenComments = comments.filter(({ parentId }) => parentId === comment.id);
+		childrenComments = comments?.filter(({ parentId }) => parentId === comment.id) ?? [];
 		if (comment.id && comment.id >= 5) open = false;
 	});
 

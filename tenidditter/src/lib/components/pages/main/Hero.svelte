@@ -32,12 +32,15 @@
 						>
 					</p>
 
-					<Link
-						href="/auth"
-						classStyle="btn btn-primary transition-all w-1/2 flex gap-x-3 text-lg hover:bg-gradient-to-r hover:to-teddit hover:from-nitter hover:text-white"
+					<button
+						class="w-1/2 btn btn-primary transition-all flex gap-x-3 text-lg hover:bg-gradient-to-r hover:to-teddit hover:from-nitter hover:text-white"
 					>
-						<i class="fa-solid fa-fire text-orange-600" /> Get Started</Link
-					>
+						<Link href="/auth">
+							<div class="w-[360px]">
+								<i class="fa-solid fa-fire text-orange-600" /> Get Started
+							</div>
+						</Link>
+					</button>
 				</div>
 			</div>
 		</div>

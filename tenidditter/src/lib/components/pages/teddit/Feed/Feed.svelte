@@ -37,8 +37,8 @@
 				)}</span
 			>
 		{/if}
-		<Link href={FormattedTedditUrl} classStyle="hover:underline hover:text-white transition-all"
-			>{post.title}</Link
+		<Link href={FormattedTedditUrl}
+			><p class="hover:underline hover:text-white transition-all">{post.title}</p></Link
 		>
 	</div>
 	<div class="post-body flex flex-col items-center">

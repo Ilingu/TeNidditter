@@ -5,19 +5,29 @@
 
 <nav class="navbar bg-base-100 sticky top-0 z-10">
 	<div class="mx-[2.5%] flex gap-x-4">
-		<Link href="/" classStyle="btn btn-ghost text-3xl font-nerd font-bold">
-			<img src="/favicon.ico" alt="app logo" class="w-12" />
-			TeNidditter
+		<Link href="/">
+			<button class="btn btn-ghost text-3xl font-nerd font-bold">
+				<img src="/favicon.ico" alt="app logo" class="w-12" />
+				TeNidditter
+			</button>
 		</Link>
 	</div>
-	<Link href="/nitter" classStyle="font-semibold font-nerd flex gap-x-2 mr-[2.5%] items-center">
-		<img src="/Assets/Img/twitter.webp" alt="app logo" class="w-6 hue-rotate-180" />
-		Nitter
-	</Link>
-	<Link href="/teddit" classStyle="font-semibold font-nerd flex gap-x-2 items-center flex-1">
-		<img src="/Assets/Img/reddit.svg" alt="app logo" class="w-6 hue-rotate-180" />
-		Teddit
-	</Link>
+	<div class="gap-x-2 mr-[2.5%]">
+		<Link href="/nitter">
+			<button class="font-semibold font-nerd flex items-center">
+				<img src="/Assets/Img/twitter.webp" alt="app logo" class="w-6 hue-rotate-180" />
+				Nitter</button
+			>
+		</Link>
+	</div>
+	<div class="flex-1 gap-x-2">
+		<Link href="/teddit">
+			<button class="font-semibold font-nerd flex items-center "
+				><img src="/Assets/Img/reddit.svg" alt="app logo" class="w-6 hue-rotate-180" />
+				Teddit</button
+			>
+		</Link>
+	</div>
 
 	{#if $AuthStore.loggedIn}
 		<p class="gap-x-2 font-nerd text-xl">
@@ -25,8 +35,10 @@
 			{$AuthStore.user?.username}
 		</p>
 	{:else}
-		<Link href="/auth" classStyle="btn btn-primary btn-sm transition-all gap-x-3 text-lg">
-			<i class="fa-solid fa-fire text-white" /> Get Started</Link
-		>
+		<Link href="/auth">
+			<button class="btn btn-primary btn-sm transition-all gap-x-3 text-lg"
+				><i class="fa-solid fa-fire text-white" /> Get Started</button
+			>
+		</Link>
 	{/if}
 </nav>

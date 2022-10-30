@@ -12,7 +12,7 @@
 
 	<p class="text-center text-xl">Oops! Something went wrong:</p>
 	<p class="text-center text-xl font-bold mb-5">{$page.error?.message}</p>
-	<Link href="/" classStyle="btn">Return Home</Link>
+	<Link href="/"><button class="btn">Return Home</button></Link>
 </div>
 
 <style scoped>

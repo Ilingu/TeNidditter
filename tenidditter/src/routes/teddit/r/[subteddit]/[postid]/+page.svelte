@@ -4,9 +4,10 @@
 	import { setContext } from "svelte";
 	import Comments from "$lib/components/pages/teddit/comments/Comments.svelte";
 	import { humanElapsedTime } from "$lib/utils";
+	import Link from "$lib/components/design/Link.svelte";
 
 	export let data: import("./$types").PageData;
-	console.log(data);
+	$: console.log(data);
 
 	setContext("COMMEMTS_CTX", data.comments);
 	const PostUps = (): number => {
@@ -70,7 +71,26 @@
 			}}
 		/>
 
-		<section class="mt-5">
+		<details class="w-full max-w-xs mt-5">
+			<summary>
+				Sorted by <span class="text-white font-bold"
+					>{$page.url.searchParams.get("sort") ?? "best"}</span
+				>
+			</summary>
+			<ul style="list-style: inside;">
+				<li><Link href={$page.url.href.split("?sort=")[0] + `?sort=best`}>Best</Link></li>
+				<li><Link href={$page.url.href.split("?sort=")[0] + `?sort=top`}>Top</Link></li>
+				<li><Link href={$page.url.href.split("?sort=")[0] + `?sort=new`}>New</Link></li>
+				<li>
+					<Link href={$page.url.href.split("?sort=")[0] + `?sort=controversial`}>Controversial</Link
+					>
+				</li>
+				<li><Link href={$page.url.href.split("?sort=")[0] + `?sort=old`}>Old</Link></li>
+				<li><Link href={$page.url.href.split("?sort=")[0] + `?sort=qa`}>Q&A</Link></li>
+			</ul>
+		</details>
+
+		<section class="mt-2">
 			{#each data.comments as co, i}
 				<Comments idxCtx={i} comment={co[0]} open recursive />
 				<div class="my-10" />

@@ -35,6 +35,8 @@ export interface GetParams<T> {
 		? { username: string }
 		: T extends "/teddit/home"
 		? { type?: FeedHomeType; afterId?: string }
+		: T extends "/teddit/r/%s/post/%s"
+		? { sort: string }
 		: never;
 	headers?: T extends "/tedinitter/userInfo" ? { Authorization: string } : never;
 	params?: T extends "/teddit/r/%s/about"
