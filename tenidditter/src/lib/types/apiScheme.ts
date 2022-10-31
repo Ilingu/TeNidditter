@@ -72,6 +72,7 @@ export interface PostParams<T> {
 	headers?: T extends "/tedinitter/teddit/sub/%s" ? { Authorization: string } : never;
 	params?: T extends "/tedinitter/teddit/sub/%s" ? [subteddit: string] : never;
 	body?: T extends "/auth/" ? { username: string; password: string } : never;
+	credentials: T extends "/auth/" ? true : never;
 }
 
 /* PUT */

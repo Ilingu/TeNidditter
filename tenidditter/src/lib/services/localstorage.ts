@@ -15,12 +15,7 @@ export const GetJWT = async (): Promise<FunctionJob<string>> => {
 };
 export const SetJWT = async (JwtToken: string) => {
 	const { success, data: eToken } = EncryptDatas(JwtToken);
-	if (success && eToken && eToken?.length > 0) {
-		window.localStorage.setItem("JWT_TOKEN", eToken);
-		document.cookie = `JWT_TOKEN=${eToken}; expires=${new Date(
-			Date.now() + 1000 * 60 * 60 * 24 * 90
-		).toISOString()}; path=/`;
-	}
+	if (success && eToken && eToken?.length > 0) window.localStorage.setItem("JWT_TOKEN", eToken);
 };
 
 export const GetLSUser = (): FunctionJob<User> => {

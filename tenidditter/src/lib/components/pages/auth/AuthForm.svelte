@@ -63,6 +63,7 @@
 			data: JwtToken,
 			headers
 		} = await api.post("/auth/", {
+			credentials: true,
 			body: {
 				username,
 				password: Password

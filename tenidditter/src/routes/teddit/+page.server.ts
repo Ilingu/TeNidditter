@@ -8,7 +8,8 @@ export const load: import("./$types").PageServerLoad = async ({
 	cookies,
 	fetch
 }): Promise<FeedResult> => {
-	const eToken = cookies.get("JWT_TOKEN");
+	const eToken = cookies.get("JwtToken");
+	console.log({ eToken });
 	if (!eToken || IsEmptyString(eToken)) return fetchHomePage(fetch);
 
 	const userFeed = await fetchUserFeed();

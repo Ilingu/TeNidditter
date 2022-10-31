@@ -8,6 +8,7 @@ import (
 	"teniditter-server/cmd/db"
 	"teniditter-server/cmd/global/console"
 	"teniditter-server/cmd/global/utils"
+	"time"
 
 	"github.com/labstack/echo/v4"
 )
@@ -104,8 +105,13 @@ func login(res routes.EchoWrapper, account *db.AccountModel, password string) er
 		return res.HandleResp(http.StatusInternalServerError, "Couldn't Generate JWT token")
 	}
 
+	// custom headers
+	res.Response().Header()["Access-Control-Expose-Headers"] = []string{"Set-Cookie", "TedditSubs"}
 	subs, _ := account.GetTedditSubs()
 	res.InjectSubs(subs)
+
+	// adding jwt token into httpOnly cookies in the client (for future request)
+	res.SetCookie(&http.Cookie{Name: "JwtToken", Value: token, Expires: time.Now().Add(30 * 24 * time.Hour), Secure: true, HttpOnly: true, SameSite: 4 /* 4 = None */})
 
 	return res.HandleResp(http.StatusAccepted, token)
 }

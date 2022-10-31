@@ -26,6 +26,7 @@ interface QueryParams {
 	method: "GET" | "POST" | "PUT" | "DELETE";
 	body?: object;
 	headers?: object;
+	credentials?: boolean;
 }
 interface APIResShape<T = never> {
 	success: boolean;
@@ -53,14 +54,15 @@ export default class api {
 
 	static async post<T extends PostRoutes>(
 		uri: T,
-		{ body, headers, params, query }: PostParams<T>
+		{ body, headers, params, query, credentials }: PostParams<T>
 	): Promise<ApiClientResp<PostReturns<T>>> {
 		uri = BuildURI<T>(uri, { params, query });
 		return await callApi<PostReturns<T>>({
 			uri,
 			method: "POST",
 			body,
-			headers
+			headers,
+			credentials
 		});
 	}
 
@@ -97,7 +99,7 @@ interface ApiClientResp<T = never> extends FunctionJob<T> {
 }
 
 export const callApi = async <T = never>(
-	{ uri, method, body, headers }: QueryParams,
+	{ uri, method, body, headers, credentials }: QueryParams,
 	customFetch?: typeof fetch
 ): Promise<ApiClientResp<T>> => {
 	if (IsEmptyString(uri)) return { success: false, error: "Invalid URI" };
@@ -112,7 +114,8 @@ export const callApi = async <T = never>(
 		const resp = await (customFetch || fetch)(url, {
 			method,
 			body: JSON.stringify(body),
-			headers: { "Content-Type": "application/json", ...(headers || {}) }
+			headers: { "Content-Type": "application/json", ...(headers || {}) },
+			credentials: credentials ? "include" : undefined
 		});
 		if (!resp.ok) return { success: false, error: "Request Failed" };
 
