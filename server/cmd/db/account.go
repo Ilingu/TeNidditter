@@ -53,6 +53,38 @@ func DeleteAccount(u *AccountModel) error {
 	return nil
 }
 
+func GetAllAccounts(onlySubbedOne bool) ([]AccountModel, error) {
+	db := DBManager.Connect()
+	if db == nil {
+		return nil, ErrDbNotFound
+	}
+
+	sqlQuery := "SELECT * FROM Account"
+	if onlySubbedOne {
+		sqlQuery = "SELECT account_id, username, password, created_at FROM Teship INNER JOIN Account ON Teship.follower_id=Account.account_id GROUP BY account_id;"
+	}
+
+	rows, err := db.Query(sqlQuery)
+	if err != nil {
+		return nil, errors.New("error when fetching Accounts")
+	}
+	defer rows.Close()
+
+	var users []AccountModel
+	for rows.Next() {
+		var user AccountModel
+		if err := rows.Scan(&user.AccountId, &user.Username, &user.Password, &user.CreatedAt); err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return users, nil
+}
+
 // Get User by ID or username
 func GetAccount[T UserInfoAcceptedArg](username_or_userId T) (*AccountModel, error) {
 	switch realVal := any(username_or_userId).(type) {

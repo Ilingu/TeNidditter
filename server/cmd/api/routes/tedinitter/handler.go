@@ -45,6 +45,29 @@ func TedinitterUserHandler(t *echo.Group) {
 		return SubUnsubTeddit(c, "unsub")
 	})
 
+	t.GET("/teddit/feed", func(c echo.Context) error {
+		res := routes.EchoWrapper{Context: c}
+
+		token, err := jwt.DecodeToken(jwt.RetrieveToken(&c))
+		if err != nil {
+			return res.HandleResp(http.StatusUnauthorized, err.Error())
+		}
+
+		user := db.AccountModel{AccountId: token.ID, Username: token.Username}
+
+		if feed, err := user.GetTedditFeed(); err == nil {
+			console.Log("Feed Returned from cache", console.Neutral)
+			return res.HandleRespBlob(http.StatusOK, *feed)
+		}
+
+		// not cached: generate on the fly
+		feed, err := user.GenerateTedditFeed()
+		if err != nil {
+			return res.HandleResp(http.StatusInternalServerError, "failed to retreive and generate this user feed: "+err.Error())
+		}
+		return res.HandleRespBlob(http.StatusOK, *feed)
+	})
+
 	console.Log("TedinitterUserHandler Registered ✅", console.Info)
 }
 

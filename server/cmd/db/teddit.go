@@ -2,7 +2,6 @@ package db
 
 import (
 	"errors"
-	"log"
 )
 
 // Query Subteddit by its name from DB; if the subteddit is not yet in the db this function will insert it.
@@ -44,7 +43,6 @@ func SearchSubteddit(subname string) ([]SubtedditModel, error) {
 
 	rows, err := db.Query("SELECT * FROM Subteddits WHERE subname LIKE ?", "%"+subname+"%")
 	if err != nil {
-		log.Println(err)
 		return nil, errors.New("error when fetching Subteddits")
 	}
 	defer rows.Close()

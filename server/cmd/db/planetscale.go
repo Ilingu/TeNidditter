@@ -47,6 +47,7 @@ func connectToDB() *sql.DB {
 
 		if counts > 10 {
 			log.Println(err)
+			console.Log("Failed to connect to Planetscale", console.Error, true)
 			return nil
 		}
 
@@ -62,12 +63,8 @@ func (*databaseManager) NewDB() *sql.DB {
 		return sqlConn
 	}
 
-	db := connectToDB()
-	if db != nil {
-		sqlConn = db
-	}
-
-	return db
+	sqlConn = connectToDB()
+	return sqlConn
 }
 
 // Connect to an already existing DB

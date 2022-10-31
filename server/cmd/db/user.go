@@ -7,7 +7,14 @@ package db
 
 import (
 	"encoding/json"
+	"errors"
+	"sync"
 	"teniditter-server/cmd/api/ws"
+	"teniditter-server/cmd/global/utils"
+	"teniditter-server/cmd/redis"
+	"teniditter-server/cmd/redis/rediskeys"
+	"teniditter-server/cmd/services/teddit"
+	"time"
 
 	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/net/websocket"
@@ -44,6 +51,73 @@ func (user AccountModel) GetTedditSubs() ([]string, error) {
 	}
 
 	return Subs, nil
+}
+
+func (u *AccountModel) GetTedditFeed() (*[]map[string]any, error) {
+	userKey := utils.GenerateKeyFromArgs(u.AccountId, u.Username /* if not enough add: u.CreatedAt.String() */)
+	redisKey := rediskeys.NewKey(rediskeys.TEDDIT_USER_FEED, userKey)
+
+	if subPosts, err := redis.Get[[]map[string]any](redisKey); err == nil {
+		return &subPosts, nil // Returned from cache
+	}
+	return nil, errors.New("no sub posts cached for this user")
+}
+
+func (u *AccountModel) GenerateTedditFeed() (*[]map[string]any, error) {
+	Tsubs, err := u.GetTedditSubs()
+	if err != nil {
+		return nil, err
+	} else if len(Tsubs) <= 0 {
+		return nil, errors.New("cannot generate feed on a user subbed to nothing")
+	}
+
+	var allSubPosts []map[string]any
+
+	var wg sync.WaitGroup
+	var mutex sync.Mutex
+
+	wg.Add(len(Tsubs))
+	for _, subname := range Tsubs {
+		go func(subname string) {
+			defer wg.Done()
+			posts, err := teddit.GetSubredditPosts(subname)
+			if err != nil {
+				return
+			}
+
+			linksUnknown, exist := (*posts)["links"]
+			if !exist {
+				return
+			}
+
+			var links []map[string]any
+			blob, err := json.Marshal(linksUnknown)
+			if err != nil {
+				return
+			}
+
+			err = json.Unmarshal(blob, &links)
+			if err != nil {
+				return
+			}
+
+			mutex.Lock()
+			allSubPosts = append(allSubPosts, links...)
+			mutex.Unlock()
+		}(subname)
+	}
+	wg.Wait()
+
+	if len(allSubPosts) <= 0 {
+		return nil, errors.New("no posts returned")
+	}
+	utils.ShuffleSlice(allSubPosts)
+
+	userKey := utils.GenerateKeyFromArgs(u.AccountId, u.Username /* if not enough add: u.CreatedAt.String() */)
+	redisKey := rediskeys.NewKey(rediskeys.TEDDIT_USER_FEED, userKey)
+	go redis.Set(redisKey, allSubPosts, 8*time.Hour) // cache datas
+
+	return &allSubPosts, nil
 }
 
 func (user AccountModel) SubToSubteddit(sub *SubtedditModel) bool {

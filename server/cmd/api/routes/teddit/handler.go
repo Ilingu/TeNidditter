@@ -1,4 +1,4 @@
-package teddit
+package teddit_routes
 
 import (
 	"net/http"
@@ -111,7 +111,7 @@ func TedditHandler(t *echo.Group) {
 			FeedType = ft
 		}
 
-		posts, err := teddit.GetHomePosts(FeedType, afterId)
+		posts, err := teddit.GetHomePosts(FeedType, afterId, false)
 		if err != nil {
 			return res.HandleResp(http.StatusForbidden, err.Error())
 		}

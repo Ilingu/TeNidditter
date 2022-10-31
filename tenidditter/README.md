@@ -10,4 +10,4 @@ Teddit endpoints
 
 Generate OG:image on the fly for the reddit posts --> [https://doppio.sh/] (if satori doesn't work)
 
-[REMAINING]: generate teddit feed // redo for twitter
+[REMAINING]: generate teddit feed+cron // redo for twitter

@@ -9,7 +9,8 @@ import (
 	"time"
 
 	auth_routes "teniditter-server/cmd/api/routes/auth"
-	"teniditter-server/cmd/api/routes/teddit"
+	cron_routes "teniditter-server/cmd/api/routes/cron"
+	teddit_routes "teniditter-server/cmd/api/routes/teddit"
 	tedinitter_routes "teniditter-server/cmd/api/routes/tedinitter"
 	"teniditter-server/cmd/db"
 	"teniditter-server/cmd/global/console"
@@ -54,13 +55,18 @@ func main() {
 	tedinitter_routes.TedinitterUserHandler(tedinitterG)
 
 	tedditG := e.Group("/teddit")
-	teddit.TedditHandler(tedditG)
+	teddit_routes.TedditHandler(tedditG)
+
+	cronG := e.Group("/cron")
+	cron_routes.CronListener(cronG)
+	// cron_routes.RegisterCron()
 
 	// Start Server
 	go func() {
 		PORT := fmt.Sprintf(":%s", os.Getenv("PORT"))
 		if err := e.Start(PORT); err != nil && err != http.ErrServerClosed {
 			db.DBManager.Disconnect()
+			redis.DisconnectRedis()
 			e.Logger.Fatal("shutting down the server")
 		}
 	}()

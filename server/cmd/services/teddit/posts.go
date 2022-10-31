@@ -20,12 +20,15 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-func GetHomePosts(FeedType, afterId string) (*map[string]any, error) {
+// FeedType is whether "hot" or "new" or "top" or "rising" or "controversial"
+func GetHomePosts(FeedType, afterId string, nocache bool) (*map[string]any, error) {
 	// Check If content already cached:
 	redisKey := rediskeys.NewKey(rediskeys.TEDDIT_HOME, FeedType)
-	if posts, err := redis.Get[map[string]any](redisKey); err == nil {
-		console.Log("Posts Returned from cache", console.Neutral)
-		return &posts, nil // Returned from cache
+	if !nocache {
+		if posts, err := redis.Get[map[string]any](redisKey); err == nil {
+			console.Log("Posts Returned from cache", console.Neutral)
+			return &posts, nil // Returned from cache
+		}
 	}
 
 	url := fmt.Sprintf("https://teddit.net/%s?api&raw_json=1", FeedType)

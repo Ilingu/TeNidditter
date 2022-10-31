@@ -3,8 +3,10 @@ package utils
 import (
 	"crypto/sha256"
 	"fmt"
+	"math/rand"
 	"net/url"
 	"strings"
+	"time"
 	"unicode"
 
 	"github.com/nbutton23/zxcvbn-go"
@@ -49,4 +51,16 @@ func IsStrongPassword(password string) bool {
 
 	result := zxcvbn.PasswordStrength(password, []string{})
 	return result.Score >= 3
+}
+
+func ShuffleSlice[T any](slice []T) {
+	rand.Seed(time.Now().UnixNano())
+	rand.Shuffle(len(slice), func(i, j int) {
+		slice[i], slice[j] = slice[j], slice[i]
+	})
+}
+
+func GenerateKeyFromArgs(args ...any) string {
+	concatenatedArgs := fmt.Sprint(args...)
+	return Hash(concatenatedArgs)
 }
