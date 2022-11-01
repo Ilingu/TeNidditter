@@ -3,6 +3,7 @@ import type {
 	DBSubtedditsShape,
 	TedditHomePageRes,
 	TedditPostInfo,
+	TedditRawPost,
 	TedditUserShape
 } from "./interfaces";
 import type { FeedHomeType } from "./types";
@@ -16,7 +17,8 @@ export type GetRoutes =
 	| "/teddit/u/%s"
 	| "/teddit/home"
 	| "/teddit/r/%s/post/%s"
-	| "/teddit/r/search";
+	| "/teddit/r/search"
+	| "/tedinitter/teddit/feed";
 export type GetReturns<T> = T extends "/tedinitter/userInfo"
 	? User
 	: T extends "/auth/available"
@@ -37,6 +39,8 @@ export type GetReturns<T> = T extends "/tedinitter/userInfo"
 	? TedditPostInfo
 	: T extends "/teddit/r/search"
 	? DBSubtedditsShape[]
+	: T extends "/tedinitter/teddit/feed"
+	? TedditRawPost[]
 	: never;
 export interface GetParams<T> {
 	query?: T extends "/auth/available"
@@ -48,7 +52,11 @@ export interface GetParams<T> {
 		: T extends "/teddit/r/search"
 		? { q: string }
 		: never;
-	headers?: T extends "/tedinitter/userInfo" ? { Authorization: string } : never;
+	headers?: T extends "/tedinitter/userInfo"
+		? { Authorization: string }
+		: T extends "/tedinitter/teddit/feed"
+		? { Authorization: string }
+		: never;
 	params?: T extends "/teddit/r/%s/about"
 		? [subteddit: string]
 		: T extends "/teddit/r/%s/posts"
@@ -86,11 +94,12 @@ export interface PutParams {
 }
 
 /* DELETE */
-export type DeleteRoutes = "/tedinitter/teddit/unsub/%s";
+export type DeleteRoutes = "/tedinitter/teddit/unsub/%s" | "/auth/logout";
 export type DeleteReturns<T> = T extends "/tedinitter/teddit/unsub/%s" ? null : never;
 export interface DeleteParams<T> {
-	query?: never;
+	query?: T extends "/auth/logout" ? { token?: string } : never;
 	headers?: T extends "/tedinitter/teddit/unsub/%s" ? { Authorization: string } : never;
 	params?: T extends "/tedinitter/teddit/unsub/%s" ? [subteddit: string] : never;
 	body?: never;
+	credentials: T extends "/auth/logout" ? true : never;
 }

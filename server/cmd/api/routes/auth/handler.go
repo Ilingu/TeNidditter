@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
+	"golang.org/x/net/websocket"
 )
 
 type RegisterPayload struct {
@@ -62,20 +63,7 @@ func AuthHandler(g *echo.Group) {
 	g.GET("/userChanged", func(c echo.Context) error {
 		res := routes.EchoWrapper{Context: c}
 
-		// get token from query
-		tokenParams := c.QueryParam("token")
-		if utils.IsEmptyString(tokenParams) {
-			return res.HandleResp(http.StatusBadRequest, "missing token argument")
-		}
-
-		// parse token with the server key
-		parsedToken, err := jwt.ParseToken(tokenParams)
-		if err != nil {
-			return res.HandleResp(http.StatusUnauthorized, err.Error())
-		}
-
-		// check and decode the token to its datas
-		token, err := jwt.DecodeToken(parsedToken)
+		token, err := GetTokenFromQuery(c)
 		if err != nil {
 			return res.HandleResp(http.StatusUnauthorized, err.Error())
 		}
@@ -83,6 +71,24 @@ func AuthHandler(g *echo.Group) {
 		cws := ws.EchoWrapper{Context: c}
 		cws.NewWsConn(ws.GenerateUserKey(token.ID, token.Username), make(chan *ws.WebsocketConn)) // reply to the caller
 		return nil
+	})
+
+	g.DELETE("/logout", func(c echo.Context) error {
+		res := routes.EchoWrapper{Context: c}
+
+		// Close all ws connection related to this user
+		if token, err := GetTokenFromQuery(c); err == nil {
+			if wsConns, err := ws.GetWsConn(ws.GenerateUserKey(token.ID, token.Username)); err == nil {
+				for _, conn := range wsConns {
+					websocket.Message.Send(conn.WsConn, "LOGOUT") // logout user of all others client
+					conn.CloseConn()                              // closing ws conn on server
+				}
+			}
+		}
+
+		res.Response().Header().Set("Clear-Site-Data", `"cache", "cookies", "storage", "executionContexts"`)
+		res.Response().Header().Set("Access-Control-Expose-Headers", "Clear-Site-Data")
+		return res.HandleResp(205)
 	})
 }
 
@@ -111,7 +117,7 @@ func login(res routes.EchoWrapper, account *db.AccountModel, password string) er
 	res.InjectSubs(subs)
 
 	// adding jwt token into httpOnly cookies in the client (for future request)
-	res.SetCookie(&http.Cookie{Name: "JwtToken", Value: token, Expires: time.Now().Add(30 * 24 * time.Hour), Secure: true, HttpOnly: true, SameSite: 4 /* 4 = None */})
+	res.SetCookie(&http.Cookie{Name: "JwtToken", Value: token, Expires: time.Now().Add(30 * 24 * time.Hour), Secure: true, HttpOnly: true, SameSite: 4 /* 4 = None */, Path: "/"})
 
 	return res.HandleResp(http.StatusAccepted, token)
 }

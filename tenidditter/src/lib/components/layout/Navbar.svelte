@@ -29,16 +29,16 @@
 		</Link>
 	</div>
 
-	{#if $AuthStore.loggedIn}
-		<p class="gap-x-2 font-nerd text-xl">
-			<i class="fas fa-user" />
-			{$AuthStore.user?.username}
-		</p>
-	{:else}
-		<Link href="/auth">
+	<Link href="/auth">
+		{#if $AuthStore.loggedIn}
+			<p class="gap-x-2 font-nerd text-xl">
+				<i class="fas fa-user" />
+				{$AuthStore.user?.username}
+			</p>
+		{:else}
 			<button class="btn btn-primary btn-sm transition-all gap-x-3 text-lg"
 				><i class="fa-solid fa-fire text-white" /> Get Started</button
 			>
-		</Link>
-	{/if}
+		{/if}
+	</Link>
 </nav>

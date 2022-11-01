@@ -2,7 +2,7 @@
 	import type { TedditCommmentShape, TedditPost } from "$lib/types/interfaces";
 
 	import { fade } from "svelte/transition";
-	import { afterUpdate, onMount } from "svelte";
+	import { onMount } from "svelte";
 	import Feed from "./Feed/Feed.svelte";
 	import Loader from "$lib/components/design/Loader.svelte";
 	import { isValidUrl } from "$lib/utils";
@@ -11,16 +11,7 @@
 	export let loading = false;
 	export let rawPosts: (TedditPost | TedditCommmentShape)[];
 
-	type HandlePostParams = { afterId?: string; appendResult?: boolean };
-	export let queryMorePostHandler: ({
-		afterId,
-		appendResult
-	}: HandlePostParams) => Promise<void> = async () => {};
-
-	let InfiniteScrollObserver: IntersectionObserver;
 	onMount(() => {
-		InfiniteScrollObserver = new IntersectionObserver(ObserverHandler);
-
 		document.querySelectorAll(".md a").forEach((a) => {
 			const href = a.getAttribute("href");
 			if (href?.startsWith("/r/")) a.setAttribute("href", `/teddit${href}`);
@@ -33,46 +24,6 @@
 			}
 		});
 	});
-
-	const ObserverId = (from: number) =>
-		new Promise<number>((res, rej) => {
-			let i = from;
-
-			const ChooseAgain = () => {
-				if (i >= 25) return rej();
-				if (Object.hasOwn(rawPosts.at(-i) || {}, "id")) return res(i);
-
-				i++;
-				ChooseAgain();
-			};
-			ChooseAgain();
-		});
-
-	afterUpdate(async () => {
-		try {
-			InfiniteScrollObserver.disconnect();
-			InfiniteScrollObserver.observe(
-				document.getElementById((rawPosts.at(-(await ObserverId(5))) as any)?.id || "")!
-			);
-		} catch (err) {}
-	});
-
-	const ObserverHandler: IntersectionObserverCallback = async ([lastPost]) => {
-		if (!lastPost.isIntersecting) return;
-		QueryMorePost();
-	};
-
-	const QueryMorePost = async () => {
-		try {
-			InfiniteScrollObserver.unobserve(
-				document.getElementById((rawPosts.at(-(await ObserverId(5))) as any)?.id || "")!
-			);
-			queryMorePostHandler({
-				afterId: (rawPosts.at(-(await ObserverId(1))) as any)?.id,
-				appendResult: true
-			});
-		} catch (err) {}
-	};
 </script>
 
 <div id="PostContainer" class="w-full relative" data-loading={loading}>
@@ -84,11 +35,6 @@
 		{/if}
 		<div class="my-5" />
 	{/each}
-	<div class="flex flex-col items-center">
-		<button class="btn gap-x-2" on:click={QueryMorePost}
-			>Next <i class="fa-solid fa-arrow-right icon" /></button
-		>
-	</div>
 
 	{#if loading}
 		<div class="flex justify-center">

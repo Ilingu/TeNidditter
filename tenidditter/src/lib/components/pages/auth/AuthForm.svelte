@@ -4,7 +4,7 @@
 	import { FormatUsername, IsEmptyString, IsValidJSON, pushAlert } from "$lib/utils";
 	import { GetZxcvbn, ScoreToColor, ScoreToText } from "$lib/zxcvbn";
 	import { onMount } from "svelte";
-	import { SignIn } from "$lib/services/auth";
+	import { LogOut, SignIn } from "$lib/services/auth";
 
 	/* TYPES */
 	interface PswReport {
@@ -190,25 +190,35 @@
 		</div>
 
 		<!-- Submit (Login/signup) -->
-		<div class="grid grid-cols-2 w-full">
-			<button
-				disabled={loading ||
-					(PswStrenghtReport && PswStrenghtReport?.score.number < 3) ||
-					$AuthStore.loggedIn}
-				class={`btn  bg-base-300 flex gap-2 btn-sm md:btn-md ${loading ? "loading" : ""}`}
-				type="submit"
-				on:click={() => (AuthMethod = "login")}
-				><i class="fas fa-right-to-bracket icon" /> Sign in</button
-			>
-			<button
-				disabled={loading ||
-					(PswStrenghtReport && PswStrenghtReport?.score.number < 3) ||
-					$AuthStore.loggedIn}
-				class={`btn  bg-base-300 flex gap-2 btn-sm md:btn-md ${loading ? "loading" : ""}`}
-				type="submit"
-				on:click={() => (AuthMethod = "signup")}><i class="fas fa-user icon" /> Sign up</button
-			>
-		</div>
+		{#if $AuthStore.loggedIn}
+			<div class="w-full">
+				<button
+					class="btn btn-error btn-wide gap-2 btn-sm md:btn-md"
+					on:click={() => LogOut(true, $AuthStore.JwtToken)}
+					><i class="fa-solid fa-right-from-bracket icon" /> Sign out</button
+				>
+			</div>
+		{:else}
+			<div class="grid grid-cols-2 w-full">
+				<button
+					disabled={loading ||
+						(PswStrenghtReport && PswStrenghtReport?.score.number < 3) ||
+						$AuthStore.loggedIn}
+					class={`btn bg-base-300 gap-2 btn-sm md:btn-md ${loading ? "loading" : ""}`}
+					type="submit"
+					on:click={() => (AuthMethod = "login")}
+					><i class="fas fa-right-to-bracket icon" /> Sign in</button
+				>
+				<button
+					disabled={loading ||
+						(PswStrenghtReport && PswStrenghtReport?.score.number < 3) ||
+						$AuthStore.loggedIn}
+					class={`btn bg-base-300 gap-2 btn-sm md:btn-md ${loading ? "loading" : ""}`}
+					type="submit"
+					on:click={() => (AuthMethod = "signup")}><i class="fas fa-user icon" /> Sign up</button
+				>
+			</div>
+		{/if}
 	</form>
 </div>
 

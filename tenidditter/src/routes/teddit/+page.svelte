@@ -1,14 +1,39 @@
 <!-- Feed -->
 <script lang="ts">
+	import AlertChild from "$lib/components/design/Alert/AlertChild.svelte";
+	import Link from "$lib/components/design/Link.svelte";
 	import Tabs from "$lib/components/design/Tabs.svelte";
 	import Feeds from "$lib/components/pages/teddit/Feeds.svelte";
 	import { QueryHomePost } from "$lib/services/teddit";
 	import { FeedTypeEnum } from "$lib/types/enums";
+	import { afterUpdate, onMount } from "svelte";
 
 	export let data: import("./$types").PageData;
 
 	let FeedDisplayType = FeedTypeEnum.Hot;
 	let loading = false;
+
+	let minusFifthPostId = data.data?.at(-5)?.id ?? "";
+	$: minusFifthPostId = data.data?.at(-5)?.id ?? "";
+
+	let lastPostId = data.data?.at(-1)?.id ?? "";
+	$: lastPostId = data.data?.at(-1)?.id ?? "";
+
+	console.log({ minusFifthPostId, lastPostId });
+
+	let InfiniteScrollObserver: IntersectionObserver;
+	onMount(() => {
+		if (data.type === "home_feed") {
+			InfiniteScrollObserver = new IntersectionObserver(ObserverHandler);
+			InfiniteScrollObserver.observe(document.getElementById(minusFifthPostId)!);
+		}
+	});
+
+	let execAfterUpdate: Function[] = [];
+	afterUpdate(() => {
+		execAfterUpdate.forEach((fn) => fn());
+		execAfterUpdate = [];
+	});
 
 	const ChangeFeedType = (active: number) => {
 		if (active === FeedDisplayType) return;
@@ -16,13 +41,37 @@
 		HandleQueryingPost({ appendResult: false });
 	};
 
+	// Querying post observer
 	type HandlePostParams = { afterId?: string; appendResult?: boolean };
 	const HandleQueryingPost = async ({ afterId, appendResult }: HandlePostParams) => {
+		if (data.type !== "home_feed") return;
 		loading = !appendResult;
 		const { success, data: newPosts } = await QueryHomePost(FeedDisplayType, afterId);
-		if (success && newPosts && newPosts?.length > 0)
-			data.data = appendResult ? [...(data.data || []), ...newPosts] : newPosts;
+		if (success && newPosts && newPosts?.length > 0) {
+			const newRender = appendResult ? [...(data.data || []), ...newPosts] : newPosts;
+
+			execAfterUpdate.push(() =>
+				InfiniteScrollObserver.observe(document.getElementById(newRender?.at(-5)?.id ?? "")!)
+			);
+			data.data = newRender;
+		}
 		loading = false;
+	};
+
+	const ObserverHandler: IntersectionObserverCallback = async ([lastPost]) => {
+		if (!lastPost.isIntersecting) return;
+		console.log(lastPost.isIntersecting);
+		QueryMorePost();
+	};
+
+	const QueryMorePost = async () => {
+		try {
+			InfiniteScrollObserver.unobserve(document.getElementById(minusFifthPostId)!);
+			HandleQueryingPost({
+				afterId: lastPostId,
+				appendResult: true
+			});
+		} catch (err) {}
 	};
 </script>
 
@@ -41,7 +90,22 @@
 				cb={ChangeFeedType}
 			/>
 		{/if}
-		<Feeds rawPosts={data?.data || []} queryMorePostHandler={HandleQueryingPost} {loading} />
+		<Feeds rawPosts={data?.data || []} {loading} />
+		{#if data.type === "user_feed"}
+			<div class="text-center">
+				<AlertChild type="info"
+					>This is the end of your feed, to see more content: <Link href="/teddit?type=home_feed">
+						<button class="btn btn-warning">Click Here</button>
+					</Link>
+				</AlertChild>
+			</div>
+		{:else}
+			<div class="flex flex-col items-center">
+				<button class="btn gap-x-2" on:click={QueryMorePost}
+					>Next <i class="fa-solid fa-arrow-right icon" /></button
+				>
+			</div>
+		{/if}
 	</div>
 </main>
 

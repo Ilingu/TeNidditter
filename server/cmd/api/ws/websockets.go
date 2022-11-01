@@ -52,6 +52,8 @@ func (c EchoWrapper) NewWsConn(key string, returns chan *WebsocketConn) {
 		connHandler <- ws
 
 		defer func() {
+			websocket.Message.Send(ws, "CLOSING") // for the client to handle the closing of the ws if it's an error of the server (so that he can reconnect)
+
 			delete(globalWsConns[key], ConnId) // remove conn from global
 			ws.Close()                         // Close WS Connection
 
@@ -103,6 +105,7 @@ func GetWsConn(key string) (map[int]WebsocketConn, error) {
 }
 
 func (wst *WebsocketConn) CloseConn() bool {
+	websocket.Message.Send(wst.WsConn, "CLOSING") // warn the client of the ws closing
 	if err := wst.WsConn.Close(); err != nil {
 		return false
 	}

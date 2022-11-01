@@ -1,25 +1,32 @@
+import api from "$lib/api";
 import { QueryHomePost } from "$lib/services/teddit";
 import { FeedTypeEnum } from "$lib/types/enums";
 import type { FeedResult } from "$lib/types/interfaces";
-import { IsEmptyString } from "$lib/utils";
+import { IsEmptyString, MakeBearerToken } from "$lib/utils";
 import { error } from "@sveltejs/kit";
 
 export const load: import("./$types").PageServerLoad = async ({
 	cookies,
-	fetch
+	fetch,
+	url
 }): Promise<FeedResult> => {
 	const eToken = cookies.get("JwtToken");
-	console.log({ eToken });
-	if (!eToken || IsEmptyString(eToken)) return fetchHomePage(fetch);
+	if (!eToken || IsEmptyString(eToken) || url.searchParams.get("type") === "home_feed")
+		return fetchHomePage(fetch);
 
-	const userFeed = await fetchUserFeed();
+	const userFeed = await fetchUserFeed(eToken);
 	if (!userFeed.success || !userFeed.data) return fetchHomePage(fetch);
 
 	return userFeed;
 };
 
-const fetchUserFeed = async (): Promise<FeedResult> => {
-	return { success: false, type: "user_feed" };
+const fetchUserFeed = async (JwtToken: string): Promise<FeedResult> => {
+	const { success, data: Feed } = await api.get("/tedinitter/teddit/feed", {
+		headers: MakeBearerToken(JwtToken)
+	});
+	if (!success || typeof Feed !== "object" || Feed.length <= 0) return { success: false };
+
+	return { success: true, data: Feed, type: "user_feed" };
 };
 
 const fetchHomePage = async (customFetch: typeof fetch): Promise<FeedResult> => {

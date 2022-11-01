@@ -23,7 +23,7 @@ import (
 // FeedType is whether "hot" or "new" or "top" or "rising" or "controversial"
 func GetHomePosts(FeedType, afterId string, nocache bool) (*map[string]any, error) {
 	// Check If content already cached:
-	redisKey := rediskeys.NewKey(rediskeys.TEDDIT_HOME, FeedType)
+	redisKey := rediskeys.NewKey(rediskeys.TEDDIT_HOME, FeedType+afterId)
 	if !nocache {
 		if posts, err := redis.Get[map[string]any](redisKey); err == nil {
 			console.Log("Posts Returned from cache", console.Neutral)

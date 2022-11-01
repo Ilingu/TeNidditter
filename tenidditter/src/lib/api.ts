@@ -81,14 +81,15 @@ export default class api {
 
 	static async delete<T extends DeleteRoutes>(
 		uri: T,
-		{ body, headers, params, query }: DeleteParams<T>
+		{ body, headers, params, query, credentials }: DeleteParams<T>
 	): Promise<ApiClientResp<DeleteReturns<T>>> {
 		uri = BuildURI<T>(uri, { params, query });
 		return await callApi<DeleteReturns<T>>({
 			uri,
 			method: "DELETE",
 			body,
-			headers
+			headers,
+			credentials
 		});
 	}
 }

@@ -31,11 +31,16 @@ export const AutoLogin = async () => {
 	if (!validJwt) return LogOut();
 };
 
-export const LogOut = () => {
-	window.localStorage.removeItem("JWT_TOKEN");
-	window.localStorage.removeItem("user");
-	window.localStorage.removeItem("teddit_subs");
+export const LogOut = async (serverLogout = false, JwtToken?: string) => {
+	window.localStorage.clear();
 	AuthStore.set({ loggedIn: false });
+
+	if (serverLogout)
+		await api.delete("/auth/logout", {
+			credentials: true,
+			query: JwtToken ? { token: JwtToken } : undefined
+		});
+	// "executionContexts" should handle the reload part
 };
 
 const DispatchUserChange = async (data: unknown) => {

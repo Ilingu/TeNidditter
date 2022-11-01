@@ -1,3 +1,4 @@
+import { LogOut } from "./services/auth";
 import type { FunctionJob } from "./types/interfaces";
 import { isValidUrl } from "./utils";
 
@@ -39,6 +40,8 @@ export const HandleWsConn = (socket: WebSocket, { onMessage, onClose, onError }:
 	// Listen for messages
 	socket.addEventListener("message", (event) => {
 		if (event.data === "PING") return socket.send("OK_PING");
+		if (event.data === "CLOSING") return socket.close();
+		if (event.data === "LOGOUT") return LogOut(true); // received a logout instruction from server
 		onMessage(event.data);
 	});
 };

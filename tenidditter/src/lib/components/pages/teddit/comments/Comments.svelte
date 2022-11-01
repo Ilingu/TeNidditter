@@ -39,7 +39,7 @@
 		class="min-w-[32px] min-w-8 h-8 bg-teddit rounded font-fancy text-lg flex justify-center items-center"
 		title="⬆ Ups"
 	>
-		{comment?.ups}
+		{`${comment?.ups}`.replace(/\D/g, "") || "none"}
 	</div>
 
 	<details class="translate-y-1 w-full" {open}>
