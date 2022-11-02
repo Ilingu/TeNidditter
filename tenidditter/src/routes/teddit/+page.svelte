@@ -80,11 +80,11 @@
 		{#if data.type === "home_feed"}
 			<Tabs
 				elems={[
-					`<i class="fa-brands fa-hotjar icon"></i> Hot`,
-					`<i class="fa-solid fa-star icon"></i> New`,
-					`<i class="fa-solid fa-bolt icon"></i> Top`,
-					`<i class="fa-solid fa-chart-line icon"></i> Rising`,
-					`<i class="fa-solid fa-comment icon"></i> Controversial`
+					`<i class="fa-brands fa-hotjar icon"></i> <span>Hot</span>`,
+					`<i class="fa-solid fa-star icon"></i> <span>New</span>`,
+					`<i class="fa-solid fa-bolt icon"></i> <span>Top</span>`,
+					`<i class="fa-solid fa-chart-line icon"></i> <span>Rising</span>`,
+					`<i class="fa-solid fa-comment icon"></i> <span>Controversial</span>`
 				]}
 				active={FeedDisplayType}
 				cb={ChangeFeedType}
@@ -133,5 +133,19 @@
 	}
 	:global(.tabs-component p.tab-active:hover) {
 		color: #fff;
+	}
+	@media (max-width: 640px) {
+		:global(.tabs-component p) {
+			font-size: 0.8rem;
+			column-gap: 2px;
+		}
+	}
+	@media (max-width: 470px) {
+		:global(.tabs-component p span) {
+			display: none;
+		}
+		:global(.tabs-component i) {
+			font-size: 1.1rem;
+		}
 	}
 </style>

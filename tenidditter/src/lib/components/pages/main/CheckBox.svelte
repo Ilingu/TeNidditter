@@ -15,19 +15,19 @@
 
 		const IconEl = IconRef.children[0];
 		if (isIntersecting) {
-			IconRef.classList.add("animate");
+			IconRef?.classList.add("animate");
 
 			{
-				IconEl.classList.remove("fa-check");
-				IconEl.classList.add("fa-xmark");
+				IconEl?.classList.remove("fa-check");
+				IconEl?.classList.add("fa-xmark");
 			}
 
 			setTimeout(() => {
-				IconRef.classList.remove("animate");
+				IconRef?.classList.remove("animate");
 
 				{
-					IconEl.classList.remove("fa-xmark");
-					IconEl.classList.add("fa-check");
+					IconEl?.classList.remove("fa-xmark");
+					IconEl?.classList.add("fa-check");
 				}
 			}, Math.round(Math.random() * 3000) + 1000);
 		}

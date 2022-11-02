@@ -125,7 +125,7 @@
 	};
 </script>
 
-<div class="col-span-2 bg-base-200 h-full flex flex-col justify-center items-center">
+<div class="lg:col-span-2 col-span-6 bg-base-200 h-full flex flex-col justify-center items-center">
 	<h1 class="font-fancy text-4xl mb-10">Welcome 👋</h1>
 	<form
 		on:submit|preventDefault={async () => {
@@ -193,7 +193,7 @@
 		{#if $AuthStore.loggedIn}
 			<div class="w-full">
 				<button
-					class="btn btn-error btn-wide gap-2 btn-sm md:btn-md"
+					class="btn btn-error btn-wide gap-2 btn-md"
 					on:click={() => LogOut(true, $AuthStore.JwtToken)}
 					><i class="fa-solid fa-right-from-bracket icon" /> Sign out</button
 				>
@@ -204,7 +204,7 @@
 					disabled={loading ||
 						(PswStrenghtReport && PswStrenghtReport?.score.number < 3) ||
 						$AuthStore.loggedIn}
-					class={`btn bg-base-300 gap-2 btn-sm md:btn-md ${loading ? "loading" : ""}`}
+					class={`btn bg-base-300 gap-2 btn-md ${loading ? "loading" : ""}`}
 					type="submit"
 					on:click={() => (AuthMethod = "login")}
 					><i class="fas fa-right-to-bracket icon" /> Sign in</button
@@ -213,7 +213,7 @@
 					disabled={loading ||
 						(PswStrenghtReport && PswStrenghtReport?.score.number < 3) ||
 						$AuthStore.loggedIn}
-					class={`btn bg-base-300 gap-2 btn-sm md:btn-md ${loading ? "loading" : ""}`}
+					class={`btn bg-base-300 gap-2 btn-md ${loading ? "loading" : ""}`}
 					type="submit"
 					on:click={() => (AuthMethod = "signup")}><i class="fas fa-user icon" /> Sign up</button
 				>

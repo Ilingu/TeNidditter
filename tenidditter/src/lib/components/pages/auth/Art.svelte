@@ -51,7 +51,7 @@
 	onMount(DrawLines);
 </script>
 
-<aside class="col-span-4 relative">
+<aside class="lg:col-span-4 lg:block hidden relative">
 	<canvas id="LinesCanvas" class="w-full h-full" />
 	<div class="quote mockup-window border bg-base-300 absolute bottom-0 w-3/4">
 		<div class="font-mono px-4 pt-2 h-32 bg-base-200">

@@ -5,7 +5,8 @@
 	import { FormatNumbers } from "$lib/utils";
 	import FeedHeader from "./FeedHeader.svelte";
 
-	export let post: TedditPost;
+	export let post: TedditPost & { body_html?: string };
+	export let blur = true;
 
 	const FormattedTedditUrl = post.permalink
 		.replace(/\/+$/, "")
@@ -18,14 +19,16 @@
 
 <div
 	id={post.id}
-	class={`post w-[750px] px-1 pt-4 pb-1 transition-all bg-primary-content hover:bg-light-dark min-h-[128px] rounded-lg ring-1 ring-[#686868] ${
+	class={`post ${
+		blur ? "blurMask" : ""
+	} md:w-[750px] w-[92.5vw] px-1 pt-4 pb-1 transition-all bg-primary-content hover:bg-light-dark min-h-[128px] rounded-lg ring-1 ring-[#686868] ${
 		post.stickied === true ? "stickied" : ""
 	}`}
 >
-	<score class="post-score text-sm text-teddit text-center"
+	<score class="md:block hidden post-score text-sm text-teddit text-center"
 		><i class="fa-solid fa-arrow-up mr-1" /> <br />{FormatNumbers(post.ups)}</score
 	>
-	<header class="post-header flex text-sm">
+	<header class="post-header flex flex-wrap text-sm">
 		<FeedHeader author={post.author} subreddit={post.subreddit} created={post.created} />
 	</header>
 	<div class="post-title mb-2 text-gray-50">
@@ -42,13 +45,19 @@
 		>
 	</div>
 	<div class="post-body flex flex-col items-center">
+		{#if post.body_html}
+			{@html post.body_html
+				.replaceAll("/vids", "https://teddit.net/vids")
+				.replaceAll("/pics", "https://teddit.net/pics")}
+		{/if}
+
 		{#if post.selftext_html}
 			{@html post.selftext_html}
 		{/if}
 
 		{#if post.is_video && post.media}
 			<video
-				class="my-5 max-h-[512px]"
+				class="my-5 max-h-[512px] w-auto"
 				width={post.media?.reddit_video?.width}
 				src={post.media?.reddit_video?.fallback_url}
 				controls
@@ -80,7 +89,10 @@
 		{/if}
 	</div>
 	<div class="post-footer text-sm flex items-end">
-		{FormatNumbers(post.num_comments)} comments
+		<p class="md:hidden block post-score text-sm text-teddit text-center">
+			{FormatNumbers(post.ups)}
+		</p>
+		<span class="mx-1">•</span>{FormatNumbers(post.num_comments)} comments
 	</div>
 </div>
 
@@ -98,6 +110,17 @@
 		/* grid-template-rows: 0.225fr 0.4fr minmax(0, 1fr) 1fr 0.225fr; */
 		grid-template-columns: 45px 1fr;
 	}
+	@media (max-width: 768px) {
+		.post {
+			grid-template-areas:
+				"post-header post-header"
+				"post-title post-title"
+				"post-body post-body"
+				"post-body post-body"
+				"post-footer post-footer";
+		}
+	}
+
 	.post.stickied {
 		border: 2px solid #ff4500;
 		box-shadow: none;
@@ -139,12 +162,15 @@
 	:global(.post .md) {
 		text-align: justify;
 		width: 100%;
-		max-height: 300px;
 		overflow: hidden;
 		position: relative;
+	}
+	:global(.post.blurMask .md) {
 		-webkit-mask-image: linear-gradient(180deg, black, 75%, transparent);
 		mask-image: linear-gradient(180deg, black, 75%, transparent);
+		max-height: 300px;
 	}
+
 	:global(.md > *) {
 		margin-bottom: 12.5px;
 	}

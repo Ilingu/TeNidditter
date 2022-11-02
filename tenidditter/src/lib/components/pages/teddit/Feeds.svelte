@@ -26,7 +26,7 @@
 	});
 </script>
 
-<div id="PostContainer" class="w-full relative" data-loading={loading}>
+<div id="PostContainer" class="w-full grid place-items-center relative" data-loading={loading}>
 	{#each rawPosts as postData}
 		{#if postData.type === "t1"}
 			<Comments comment={postData} />

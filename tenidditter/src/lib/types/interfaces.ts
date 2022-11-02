@@ -36,6 +36,7 @@ export interface TedditPostMetadata {
 	post_created: number;
 	post_ups: string;
 	post_nb_comments: number;
+	body_html: string;
 }
 
 export interface TedditUserShape {

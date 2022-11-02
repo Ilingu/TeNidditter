@@ -65,12 +65,12 @@
 		</button>
 	</Link>
 	<Link href="/teddit" className={$page.url.pathname.includes("/teddit") ? "two" : ""}>
-		<button class="text-primary active">
+		<button class="text-teddit active">
 			<i class="fa-brands fa-reddit-alien" />
 		</button>
 	</Link>
 	<Link href="/nitter" className={$page.url.pathname.includes("/nitter") ? "three" : ""}>
-		<button class="text-primary">
+		<button class="text-nitter">
 			<i class="fa-brands fa-twitter" />
 		</button>
 	</Link>

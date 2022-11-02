@@ -109,6 +109,7 @@ type TedditPostMetadata struct {
 	Created    int64  `json:"post_created"`
 	Ups        string `json:"post_ups"`
 	NbComments int    `json:"post_nb_comments"`
+	Body       string `json:"body_html"`
 }
 
 func GetPostMetadata(doc *goquery.Document) TedditPostMetadata {
@@ -133,7 +134,15 @@ func GetPostMetadata(doc *goquery.Document) TedditPostMetadata {
 		}
 	}
 
-	return TedditPostMetadata{PostAuthor, PostTitle, PostCreated, PostUps, PostNbComments}
+	var Body string
+	for _, bodyType := range []string{"div.image", "div.video", "div.usertext-body"} {
+		if rawbody, err := doc.Find(fmt.Sprintf("#post > %s", bodyType)).Html(); err == nil && !utils.IsEmptyString(rawbody) {
+			Body = rawbody
+			break
+		}
+	}
+
+	return TedditPostMetadata{PostAuthor, PostTitle, PostCreated, PostUps, PostNbComments, Body}
 }
 
 type TedditCommmentShape struct {

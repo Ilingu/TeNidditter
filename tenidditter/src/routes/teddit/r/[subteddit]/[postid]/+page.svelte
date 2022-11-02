@@ -55,6 +55,7 @@
 				title: data.metadata.post_title,
 				author: data.metadata.post_author,
 				created: data.metadata.post_created,
+				body_html: data.metadata.body_html,
 
 				ups: PostUps(),
 				num_comments: data.metadata.post_nb_comments,
@@ -69,6 +70,7 @@
 				domain: "",
 				permalink: ""
 			}}
+			blur={false}
 		/>
 
 		<details class="w-full max-w-xs mt-5">

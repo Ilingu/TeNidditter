@@ -2,7 +2,7 @@
 	import { onMount } from "svelte";
 	import { InitWasm } from "$lib/services/wasm/wasm";
 
-	import AlertProvider from "$lib/AlertProvider.svelte";
+	import AlertProvider from "$lib/components/layout/AlertProvider.svelte";
 	import Navbar from "$lib/components/layout/Navbar.svelte";
 
 	import "../style/app.css";
