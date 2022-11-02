@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { routeWillChange } from "$lib/routing";
 
-	import { isMobile } from "$lib/utils";
-
 	import { onMount } from "svelte";
 	import { fade } from "svelte/transition";
 
@@ -22,8 +20,6 @@
 	let AnimationReq: number;
 
 	onMount(() => {
-		if (isMobile()) return;
-
 		ViewportHeight = innerHeight;
 		ViewportWidth = innerWidth;
 

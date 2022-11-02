@@ -19,9 +19,9 @@
 		else changeAppTheme("tenidditter");
 
 		// ReTrigger All Animation
-		document
-			.querySelectorAll(".scrollAnimate")
-			.forEach((el) => ScrollAnimationObserver.observe(el));
+		document.querySelectorAll(".scrollAnimate").forEach((el) => {
+			ScrollAnimationObserver.observe(el);
+		});
 	});
 
 	let ScrollAnimationObserver: IntersectionObserver;
@@ -29,7 +29,9 @@
 		await InitWasm();
 		AutoLogin();
 
-		ScrollAnimationObserver = new IntersectionObserver(ScrollAnimation, { threshold: 1.0 });
+		ScrollAnimationObserver = new IntersectionObserver(ScrollAnimation, {
+			threshold: innerWidth > 1280 ? 1.0 : undefined
+		});
 		document
 			.querySelectorAll(".scrollAnimate")
 			.forEach((el) => ScrollAnimationObserver.observe(el));

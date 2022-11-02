@@ -1,5 +1,5 @@
 <script lang="ts">
-	import CheckBox from "$lib/components/design/CheckBox.svelte";
+	import CheckBox from "$lib/components/pages/main/CheckBox.svelte";
 
 	const PropsText = [
 		"<strong>No</strong> JavaScript or ads",
@@ -13,9 +13,14 @@
 </script>
 
 <section id="Props" class="w-screen flex justify-center">
-	<ul class="text-justify text-xl leading-[50px]">
+	<ul class="sm:text-justify sm:text-xl text-lg flex flex-col gap-y-4">
 		{#each PropsText as text}
-			<li class="scrollAnimate flex items-center gap-x-2"><CheckBox /> {@html text}</li>
+			<li class="scrollAnimate flex items-center gap-x-2 sm:leading-normal leading-5">
+				<CheckBox />
+				<div>
+					{@html text}
+				</div>
+			</li>
 		{/each}
 	</ul>
 </section>

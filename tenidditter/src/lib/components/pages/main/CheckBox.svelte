@@ -36,7 +36,7 @@
 
 <div
 	bind:this={IconRef}
-	class="checkbox animate flex justify-center items-center h-10 w-10 rounded-full"
+	class="checkbox sm:scale-100 scale-75 animate flex justify-center items-center h-10 w-10 rounded-full"
 >
 	<i class="icon fas text-lg text-success" />
 </div>

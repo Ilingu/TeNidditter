@@ -1,5 +1,5 @@
 <script>
-	import HomeCard from "$lib/components/design/HomeCard.svelte";
+	import HomeCard from "$lib/components/pages/main/HomeCard.svelte";
 </script>
 
 <div class="min-h-[30vh] text-center pt-7">
