@@ -37,14 +37,16 @@
 	};
 </script>
 
-<main class="max-w-[1500px] m-auto flex justify-center gap-x-8 px-2 py-5">
-	<div class="max-w-[750px]">
+<main
+	class="max-w-[1500px] m-auto flex xl:flex-row flex-col-reverse justify-center xl:items-start items-center xl:gap-y-0 gap-y-4 gap-x-8 px-2 py-5"
+>
+	<div class="max-w-[750px] md:mt-0 mt-2">
 		<Feeds rawPosts={data?.Feed || []} />
 	</div>
 	<!-- Subreddit's info -->
 	<aside class="flex flex-col gap-y-5">
 		<header
-			class="max-w-[350px] min-w-[280px] px-3 py-5 bg-light-dark ring-1 ring-[#686868] flex flex-col items-center rounded-lg"
+			class="xl:max-w-[350px] max-w-[750px] min-w-[280px] px-3 py-5 bg-light-dark ring-1 ring-[#686868] flex flex-col items-center rounded-lg"
 		>
 			<h1
 				class="text-3xl font-bold	mt-2  tracking-widest text-teddit"
@@ -64,7 +66,9 @@
 				>
 			{/if}
 		</header>
-		<details class="max-w-[350px] p-3 bg-light-dark ring-1 ring-[#686868] rounded-lg">
+		<details
+			class="xl:max-w-[350px] max-w-[750px] p-3 bg-light-dark ring-1 ring-[#686868] rounded-lg"
+		>
 			<summary class="text-xl font-bold">Rules</summary>
 			{@html data.Info?.rules}
 		</details>

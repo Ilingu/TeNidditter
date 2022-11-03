@@ -80,7 +80,7 @@ export interface PostParams<T> {
 	headers?: T extends "/tedinitter/teddit/sub/%s" ? { Authorization: string } : never;
 	params?: T extends "/tedinitter/teddit/sub/%s" ? [subteddit: string] : never;
 	body?: T extends "/auth/" ? { username: string; password: string } : never;
-	credentials: T extends "/auth/" ? true : never;
+	credentials?: T extends "/auth/" ? true : never;
 }
 
 /* PUT */
@@ -101,5 +101,5 @@ export interface DeleteParams<T> {
 	headers?: T extends "/tedinitter/teddit/unsub/%s" ? { Authorization: string } : never;
 	params?: T extends "/tedinitter/teddit/unsub/%s" ? [subteddit: string] : never;
 	body?: never;
-	credentials: T extends "/auth/logout" ? true : never;
+	credentials?: T extends "/auth/logout" ? true : never;
 }

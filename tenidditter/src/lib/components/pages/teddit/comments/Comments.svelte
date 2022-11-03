@@ -5,6 +5,7 @@
 	import { page } from "$app/stores";
 	import { getContext } from "svelte";
 	import { onMount } from "svelte";
+	import { IsEmptyString, isMobile } from "$lib/utils";
 
 	type Comments = TedditCommmentShape & { id?: number; parentId?: number };
 	export let comment: Comments;
@@ -33,24 +34,31 @@
 				.join("/");
 </script>
 
-<div class="flex gap-x-2 w-[750px] relative">
-	<div class="littleBar absolute bottom-0 left-3 translate-x-0.5 rounded-2xl w-1 bg-accent" />
+<div class="flex justify-center gap-x-2 md:w-[750px] w-[92.5vw] relative">
 	<div
-		class="min-w-[32px] min-w-8 h-8 bg-teddit rounded font-fancy text-lg flex justify-center items-center"
+		class="littleBar lg:block hidden absolute bottom-0 left-3 translate-x-0.5 rounded-2xl w-1 bg-accent"
+	/>
+	<div
+		class="min-w-[32px] lg:flex hidden min-w-8 h-8 bg-teddit rounded font-fancy text-lg  justify-center items-center"
 		title="⬆ Ups"
 	>
 		{`${comment?.ups}`.replace(/\D/g, "") || "none"}
 	</div>
 
-	<details class="translate-y-1 w-full" {open}>
+	<details class={`translate-y-1 w-full ${isMobile() && !open ? "ml-5" : ""}`} {open}>
 		<summary>
 			<div class="inline-block">
-				<div class="flex text-sm">
-					<Link href={FormattedTedditUrl || ""}>
-						<p class="truncate-word text-white hover:underline" title={comment?.link_title}>
-							{comment?.link_title || ""}
-						</p>
-					</Link> •
+				<div class="flex flex-wrap text-sm">
+					<p class="mr-2 lg:hidden text-teddit font-fancy -translate-y-0.5" title="⬆ Ups">
+						⬆ {`${comment?.ups}`.replace(/\D/g, "") || "none"}
+					</p>
+					{#if !IsEmptyString(comment?.link_title)}
+						<Link href={FormattedTedditUrl || ""}>
+							<p class="truncate-word text-white hover:underline" title={comment?.link_title}>
+								{comment?.link_title || ""}
+							</p>
+						</Link> •
+					{/if}
 					<FeedHeader
 						author={comment?.link_author}
 						created={comment?.created || Date.now() / 1000}
@@ -68,7 +76,7 @@
 		</div>
 		{#each childrenComments as nextComment}
 			<div class="my-2" />
-			<svelte:self {idxCtx} comment={nextComment} open recursive />
+			<svelte:self {idxCtx} comment={nextComment} open={!isMobile()} recursive />
 		{/each}
 	</details>
 </div>

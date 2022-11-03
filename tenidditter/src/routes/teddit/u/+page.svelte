@@ -20,7 +20,7 @@
 	</header>
 	<form
 		method="POST"
-		class="bg-[#2e2d2f] w-1/2 p-5 rounded-lg flex flex-col items-center"
+		class="bg-[#2e2d2f] lg:w-1/2 sm:w-3/4 w-full p-5 rounded-lg flex flex-col items-center"
 		use:enhance={() => {
 			loading = true;
 

@@ -11,6 +11,7 @@ export const isValidUrl = (url: string): boolean => {
 	}
 };
 export const isMobile = () =>
+	typeof navigator !== "undefined" &&
 	/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Windows Phone/i.test(
 		navigator.userAgent
 	);

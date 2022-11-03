@@ -31,11 +31,14 @@
 
 	let MatchedSubs: DBSubtedditsShape[] = [];
 	const FetchDBSubteddit = async () => {
+		const SecureSubname = encodeURI(FormatUsername(subname));
+		if (IsEmptyString(SecureSubname) || SecureSubname.length < 3) return;
+
 		loading = true; // loading state true
 
 		// Fetch
 		const { success, data: matchedSubs } = await api.get("/teddit/r/search", {
-			query: { q: encodeURI(FormatUsername(subname)) }
+			query: { q: SecureSubname }
 		});
 
 		// Reset
@@ -65,7 +68,7 @@
 	</header>
 	<form
 		method="POST"
-		class="bg-[#2e2d2f] w-1/2 p-5 rounded-lg flex flex-col items-center relative"
+		class="bg-[#2e2d2f] lg:w-1/2 sm:w-3/4 w-full p-5 rounded-lg flex flex-col items-center relative"
 		use:enhance={() => {
 			loading = true;
 

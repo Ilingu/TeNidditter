@@ -19,8 +19,6 @@
 	let lastPostId = data.data?.at(-1)?.id ?? "";
 	$: lastPostId = data.data?.at(-1)?.id ?? "";
 
-	console.log({ minusFifthPostId, lastPostId });
-
 	let InfiniteScrollObserver: IntersectionObserver;
 	onMount(() => {
 		if (data.type === "home_feed") {
@@ -60,7 +58,6 @@
 
 	const ObserverHandler: IntersectionObserverCallback = async ([lastPost]) => {
 		if (!lastPost.isIntersecting) return;
-		console.log(lastPost.isIntersecting);
 		QueryMorePost();
 	};
 
@@ -76,7 +73,7 @@
 </script>
 
 <main class="max-w-[1000px] m-auto flex justify-center px-2 py-5">
-	<div class="max-w-[750px]">
+	<div class="max-w-[750px] md:mt-0 mt-2">
 		{#if data.type === "home_feed"}
 			<Tabs
 				elems={[

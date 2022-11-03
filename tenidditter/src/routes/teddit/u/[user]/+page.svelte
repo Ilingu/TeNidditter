@@ -1,21 +1,23 @@
 <script lang="ts">
+	import ProfilePicture from "$lib/components/layout/ProfilePicture.svelte";
 	import Feeds from "$lib/components/pages/teddit/Feeds.svelte";
-	import { GenerateRandomPPUrl } from "$lib/services/ProfilesPictures";
 	import { FormatNumbers } from "$lib/utils";
 
 	export let data: import("./$types").PageData;
 </script>
 
-<main class="max-w-[1150px] m-auto flex justify-center gap-x-8 px-2 py-5">
-	<div class="max-w-[750px]">
+<main
+	class="max-w-[1500px] m-auto flex xl:flex-row flex-col-reverse justify-center xl:items-start items-center xl:gap-y-0 gap-y-4 gap-x-8 px-2 py-5"
+>
+	<div class="max-w-[750px] md:mt-0 mt-2">
 		<Feeds rawPosts={data.posts} />
 	</div>
 
-	<aside class="bg-[#2e2d2f] w-full p-5 rounded-lg h-1/4">
+	<aside
+		class="bg-[#2e2d2f] xl:max-w-[350px] max-w-[750px] min-w-[280px] w-full p-5 rounded-lg h-1/4"
+	>
 		<div class="flex justify-center avatar mb-1">
-			<div class="w-24 mask mask-hexagon">
-				<img src={GenerateRandomPPUrl(96)} alt="fake profile pictures" />
-			</div>
+			<ProfilePicture size="big" />
 		</div>
 		<h1 class="text-3xl mb-4 text-center text-teddit font-semibold tracking-wide">
 			{data.username}
