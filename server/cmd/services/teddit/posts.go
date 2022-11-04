@@ -58,7 +58,7 @@ func GetHomePosts(FeedType, afterId string, nocache bool) (*map[string]any, erro
 	}
 
 	// Caching
-	go redis.Set(redisKey, jsonDatas)
+	go redis.Set(redisKey, jsonDatas, 2*time.Hour)
 
 	return &jsonDatas, nil
 }

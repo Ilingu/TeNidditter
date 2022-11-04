@@ -64,3 +64,9 @@ func GenerateKeyFromArgs(args ...any) string {
 	concatenatedArgs := fmt.Sprint(args...)
 	return Hash(concatenatedArgs)
 }
+
+// sdsd,
+func IsUrlEncoded(str string) bool {
+	dec, err := url.QueryUnescape(str)
+	return err != nil && dec != str
+}

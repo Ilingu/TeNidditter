@@ -45,7 +45,7 @@ func GetUserInfos(username string) (*map[string]any, error) {
 	}
 
 	// Caching
-	go redis.Set(redisKey, userInfo, 2*time.Hour)
+	go redis.Set(redisKey, userInfo, 4*24*time.Hour) // 4d
 
 	return &userInfo, nil
 }

@@ -79,7 +79,7 @@ func Get[T any](key rediskeys.RedisKeys) (T, error) {
 }
 
 // Set a value in redis cache
-func Set(key rediskeys.RedisKeys, data any, exp ...time.Duration) bool {
+func Set(key rediskeys.RedisKeys, data any, exp time.Duration) bool {
 	if redisConn == nil {
 		return false
 	}
@@ -89,11 +89,6 @@ func Set(key rediskeys.RedisKeys, data any, exp ...time.Duration) bool {
 		return false
 	}
 
-	expiration := 12 * time.Hour
-	if len(exp) == 1 {
-		expiration = exp[0]
-	}
-
-	err = redisConn.Set(context.Background(), string(key), jsonBlob, expiration).Err()
+	err = redisConn.Set(context.Background(), string(key), jsonBlob, exp).Err()
 	return err == nil
 }

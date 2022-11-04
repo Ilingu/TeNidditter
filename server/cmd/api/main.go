@@ -10,10 +10,11 @@ import (
 
 	auth_routes "teniditter-server/cmd/api/routes/auth"
 	cron_routes "teniditter-server/cmd/api/routes/cron"
+	nitter_routes "teniditter-server/cmd/api/routes/nitter"
 	teddit_routes "teniditter-server/cmd/api/routes/teddit"
 	tedinitter_routes "teniditter-server/cmd/api/routes/tedinitter"
-	"teniditter-server/cmd/db"
 	"teniditter-server/cmd/global/console"
+	ps "teniditter-server/cmd/planetscale"
 	"teniditter-server/cmd/redis"
 
 	"github.com/labstack/echo/v4"
@@ -24,8 +25,8 @@ func main() {
 	LoadEnv() // load env if not in prod
 
 	{
-		go db.DBManager.NewDB() // Connect to DB in bg
-		defer db.DBManager.Disconnect()
+		go ps.DBManager.NewDB() // Connect to DB in bg
+		defer ps.DBManager.Disconnect()
 
 		go redis.ConnectRedis()
 		defer redis.DisconnectRedis()
@@ -57,15 +58,18 @@ func main() {
 	tedditG := e.Group("/teddit")
 	teddit_routes.TedditHandler(tedditG)
 
+	nitterG := e.Group("/nitter")
+	nitter_routes.NitterHandler(nitterG)
+
 	cronG := e.Group("/cron")
 	cron_routes.CronListener(cronG)
-	// cron_routes.RegisterCron()
+	// go cron_routes.RegisterCron()
 
 	// Start Server
 	go func() {
 		PORT := fmt.Sprintf(":%s", os.Getenv("PORT"))
 		if err := e.Start(PORT); err != nil && err != http.ErrServerClosed {
-			db.DBManager.Disconnect()
+			ps.DBManager.Disconnect()
 			redis.DisconnectRedis()
 			e.Logger.Fatal("shutting down the server")
 		}

@@ -2,6 +2,7 @@ package db
 
 import (
 	"errors"
+	ps "teniditter-server/cmd/planetscale"
 )
 
 // Query Subteddit by its name from DB; if the subteddit is not yet in the db this function will insert it.
@@ -10,16 +11,16 @@ func GetSubteddit(subname string, depth ...int) (*SubtedditModel, error) {
 		return nil, errors.New("recursion emergency stop triggered")
 	}
 
-	db := DBManager.Connect()
+	db := ps.DBManager.Connect()
 	if db == nil {
-		return nil, ErrDbNotFound
+		return nil, ps.ErrDbNotFound
 	}
 
 	var result SubtedditModel
 	err := db.QueryRow("SELECT * FROM Subteddits WHERE subname=?", subname).Scan(&result.SubID, &result.Subname)
 	if err != nil || result.Subname != subname {
 		// Not in db --> insert it
-		if _, err = db.Exec("INSERT INTO Subteddits (subname) VALUES (?);", subname); err == nil {
+		if ok := SetSubteddit(subname); ok {
 			var depthVal int
 			if len(depth) == 1 {
 				depthVal = depth[0]
@@ -34,11 +35,20 @@ func GetSubteddit(subname string, depth ...int) (*SubtedditModel, error) {
 	return &result, nil
 }
 
-// Query Subteddit by its name from DB; if the subteddit is not yet in the db this function will insert it.
-func SearchSubteddit(subname string) ([]SubtedditModel, error) {
-	db := DBManager.Connect()
+func SetSubteddit(subname string) bool {
+	db := ps.DBManager.Connect()
 	if db == nil {
-		return nil, ErrDbNotFound
+		return false
+	}
+
+	_, err := db.Exec("INSERT INTO Subteddits (subname) VALUES (?);", subname)
+	return err == nil
+}
+
+func SearchSubteddit(subname string) ([]SubtedditModel, error) {
+	db := ps.DBManager.Connect()
+	if db == nil {
+		return nil, ps.ErrDbNotFound
 	}
 
 	rows, err := db.Query("SELECT * FROM Subteddits WHERE subname LIKE ?", "%"+subname+"%")

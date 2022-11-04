@@ -18,3 +18,7 @@ type SubtedditModel struct {
 	SubID   uint   `json:"subteddit_id"`
 	Subname string `json:"subname"`
 }
+type NittosModel struct {
+	NittosID uint   `json:"twittos_id"`
+	Username string `json:"username"`
+}

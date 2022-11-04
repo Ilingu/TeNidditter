@@ -1,3 +1,1 @@
-<!-- Feed -->
-
-<template />
+<p />

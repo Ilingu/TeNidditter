@@ -6,11 +6,13 @@ so it was just unsunstainable (import cycle errors with convertions everywhere) 
 package db
 
 import (
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"sync"
 	"teniditter-server/cmd/api/ws"
 	"teniditter-server/cmd/global/utils"
+	ps "teniditter-server/cmd/planetscale"
 	"teniditter-server/cmd/redis"
 	"teniditter-server/cmd/redis/rediskeys"
 	"teniditter-server/cmd/services/teddit"
@@ -26,9 +28,9 @@ func (u *AccountModel) PasswordMatch(passwordInput string) bool {
 }
 
 func (user AccountModel) GetTedditSubs() ([]string, error) {
-	db := DBManager.Connect()
+	db := ps.DBManager.Connect()
 	if db == nil {
-		return []string{}, ErrDbNotFound
+		return []string{}, ps.ErrDbNotFound
 	}
 
 	rows, err := db.Query("SELECT subname FROM Teship INNER JOIN Subteddits ON Subteddits.subteddit_id = Teship.subteddit_id WHERE follower_id=?", user.AccountId)
@@ -120,12 +122,56 @@ func (u *AccountModel) GenerateTedditFeed() (*[]map[string]any, error) {
 	return &allSubPosts, nil
 }
 
-func (user AccountModel) SubToSubteddit(sub *SubtedditModel) bool {
-	db := DBManager.Connect()
+/* User follows */
+
+// Sub user to a subteddit or a nittos, if successful the update will be transmitted to user via websocket
+// entity is whether "SubtedditModel" or "NittosModel"
+func (user AccountModel) SubTo(entity any) (success bool) {
+	db := ps.DBManager.Connect()
 	if db == nil {
 		return false
 	}
 
+	defer func() {
+		if success {
+			user.HasChange() // Calls ws
+		}
+	}()
+
+	switch model := entity.(type) {
+	case SubtedditModel:
+		return user._subToSubteddit(&model, db)
+	case NittosModel:
+		return user._subToNittos(&model, db)
+	}
+	return false
+}
+
+// Unsub user from a subteddit or a nittos, if successful the update will be transmitted to user via websocket
+// entity is whether "SubtedditModel" or "NittosModel"
+func (user AccountModel) UnsubFrom(entity any) (success bool) {
+	db := ps.DBManager.Connect()
+	if db == nil {
+		return false
+	}
+
+	defer func() {
+		if success {
+			user.HasChange() // Calls ws
+		}
+	}()
+
+	switch model := entity.(type) {
+	case SubtedditModel:
+		return user._unsubFromSubteddit(&model, db)
+	case NittosModel:
+		return user._unsubFromNittos(&model, db)
+	}
+	return false
+}
+
+// low level function that actually sub a user to a subteddit
+func (user AccountModel) _subToSubteddit(sub *SubtedditModel, db *sql.DB) bool {
 	var count int
 	err := db.QueryRow("SELECT COUNT(*) FROM Teship WHERE follower_id=? AND subteddit_id=?;", user.AccountId, sub.SubID).Scan(&count)
 	if err == nil && count != 0 {
@@ -133,29 +179,34 @@ func (user AccountModel) SubToSubteddit(sub *SubtedditModel) bool {
 	}
 
 	_, err = db.Exec("INSERT INTO Teship (follower_id, subteddit_id) VALUES (?,?);", user.AccountId, sub.SubID)
-	if err != nil {
-		return false
-	}
-
-	user.HasChange() // Calls ws
-	return true
+	return err == nil
 }
 
-func (user AccountModel) UnsubFromSubteddit(sub *SubtedditModel) bool {
-	db := DBManager.Connect()
-	if db == nil {
-		return false
-	}
-
+// low level function that actually unsub a user from a subteddit
+func (user AccountModel) _unsubFromSubteddit(sub *SubtedditModel, db *sql.DB) bool {
 	_, err := db.Exec("DELETE FROM Teship WHERE follower_id=? AND subteddit_id=?;", user.AccountId, sub.SubID)
-	if err != nil {
+	return err == nil
+}
+
+// low level function that actually sun a user to a nittos
+func (user AccountModel) _subToNittos(sub *NittosModel, db *sql.DB) bool {
+	var count int
+	err := db.QueryRow("SELECT COUNT(*) FROM Twiship WHERE follower_id=? AND twittos_id=?;", user.AccountId, sub.NittosID).Scan(&count)
+	if err == nil && count != 0 {
 		return false
 	}
 
-	user.HasChange() // Calls ws
-	return true
+	_, err = db.Exec("INSERT INTO Twiship (follower_id, twittos_id) VALUES (?,?);", user.AccountId, sub.NittosID)
+	return err == nil
 }
 
+// low level function that actually unsub a user from a nittos
+func (user AccountModel) _unsubFromNittos(sub *NittosModel, db *sql.DB) bool {
+	_, err := db.Exec("DELETE FROM Twiship WHERE follower_id=? AND twittos_id=?;", user.AccountId, sub.NittosID)
+	return err == nil
+}
+
+/* Websocket */
 type SubsPayload struct {
 	Teddit []string `json:"teddit"`
 	Nitter []string `json:"nitter"`

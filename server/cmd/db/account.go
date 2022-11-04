@@ -3,6 +3,7 @@ package db
 import (
 	"errors"
 	"teniditter-server/cmd/global/utils"
+	ps "teniditter-server/cmd/planetscale"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -14,9 +15,9 @@ type UserInfoAcceptedArg interface {
 }
 
 func CreateAccount(username string, password string) (*AccountModel, error) {
-	db := DBManager.Connect()
+	db := ps.DBManager.Connect()
 	if db == nil {
-		return nil, ErrDbNotFound
+		return nil, ps.ErrDbNotFound
 	}
 
 	username = utils.FormatToSafeString(username)
@@ -41,9 +42,9 @@ func CreateAccount(username string, password string) (*AccountModel, error) {
 }
 
 func DeleteAccount(u *AccountModel) error {
-	db := DBManager.Connect()
+	db := ps.DBManager.Connect()
 	if db == nil {
-		return ErrDbNotFound
+		return ps.ErrDbNotFound
 	}
 
 	_, err := db.Exec("DELETE FROM Account WHERE account_id=?;", u.AccountId)
@@ -54,9 +55,9 @@ func DeleteAccount(u *AccountModel) error {
 }
 
 func GetAllAccounts(onlySubbedOne bool) ([]AccountModel, error) {
-	db := DBManager.Connect()
+	db := ps.DBManager.Connect()
 	if db == nil {
-		return nil, ErrDbNotFound
+		return nil, ps.ErrDbNotFound
 	}
 
 	sqlQuery := "SELECT * FROM Account"
@@ -97,9 +98,9 @@ func GetAccount[T UserInfoAcceptedArg](username_or_userId T) (*AccountModel, err
 	}
 }
 func GetAccountByID(ID uint) (*AccountModel, error) {
-	db := DBManager.Connect()
+	db := ps.DBManager.Connect()
 	if db == nil {
-		return nil, ErrDbNotFound
+		return nil, ps.ErrDbNotFound
 	}
 
 	var user AccountModel
@@ -112,9 +113,9 @@ func GetAccountByID(ID uint) (*AccountModel, error) {
 	return &user, nil
 }
 func GetAccountByUsername(username string) (*AccountModel, error) {
-	db := DBManager.Connect()
+	db := ps.DBManager.Connect()
 	if db == nil {
-		return nil, ErrDbNotFound
+		return nil, ps.ErrDbNotFound
 	}
 
 	username = utils.FormatToSafeString(username)

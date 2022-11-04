@@ -34,15 +34,18 @@ func TedinitterUserHandler(t *echo.Group) {
 			return res.HandleResp(http.StatusUnauthorized, err.Error())
 		}
 
+		res.SetAuthCache()
 		return res.HandleResp(http.StatusOK, token)
 	})
 
-	t.POST("/teddit/sub/:subname", func(c echo.Context) error {
-		return SubUnsubTeddit(c, "sub")
+	/* TEDDIT */
+
+	t.POST("/teddit/sub/:name", func(c echo.Context) error {
+		return SubUnsub(c, "teddit", "sub")
 	})
 
-	t.DELETE("/teddit/unsub/:subname", func(c echo.Context) error {
-		return SubUnsubTeddit(c, "unsub")
+	t.DELETE("/teddit/unsub/:name", func(c echo.Context) error {
+		return SubUnsub(c, "teddit", "unsub")
 	})
 
 	t.GET("/teddit/feed", func(c echo.Context) error {
@@ -57,6 +60,7 @@ func TedinitterUserHandler(t *echo.Group) {
 
 		if feed, err := user.GetTedditFeed(); err == nil {
 			console.Log("Feed Returned from cache", console.Neutral)
+			res.SetAuthCache(1800) // 30min
 			return res.HandleRespBlob(http.StatusOK, *feed)
 		}
 
@@ -65,18 +69,30 @@ func TedinitterUserHandler(t *echo.Group) {
 		if err != nil {
 			return res.HandleResp(http.StatusInternalServerError, "failed to retreive and generate this user feed: "+err.Error())
 		}
+
+		res.SetAuthCache(1800) // 30min
 		return res.HandleRespBlob(http.StatusOK, *feed)
+	})
+
+	/* NITTER */
+	t.POST("/nitter/sub/:name", func(c echo.Context) error {
+		return SubUnsub(c, "nitter", "sub")
+	})
+
+	t.DELETE("/nitter/unsub/:name", func(c echo.Context) error {
+		return SubUnsub(c, "nitter", "unsub")
 	})
 
 	console.Log("TedinitterUserHandler Registered ✅", console.Info)
 }
 
-func SubUnsubTeddit(c echo.Context, method string) error {
+// service is whether "teddit" or "nitter" and action is whether "sub" or "unsub"
+func SubUnsub(c echo.Context, service, action string) error {
 	res := routes.EchoWrapper{Context: c}
 
-	subname, err := url.QueryUnescape(c.Param("subname"))
-	if err != nil || utils.IsEmptyString(subname) {
-		return res.HandleResp(http.StatusBadRequest, "invalid subname")
+	entityName, err := url.QueryUnescape(c.Param("name"))
+	if err != nil || utils.IsEmptyString(entityName) {
+		return res.HandleResp(http.StatusBadRequest, "invalid name")
 	}
 
 	token, err := jwt.DecodeToken(jwt.RetrieveToken(&c))
@@ -85,18 +101,32 @@ func SubUnsubTeddit(c echo.Context, method string) error {
 	}
 
 	user := db.AccountModel{AccountId: token.ID, Username: token.Username}
-	subteddit, err := db.GetSubteddit(subname)
-	if err != nil {
-		return res.HandleResp(http.StatusBadRequest, "failed to query this subteddit")
+
+	var entity any
+	switch service {
+	case "teddit":
+		if subteddit, err := db.GetSubteddit(entityName); err == nil {
+			entity = subteddit
+		} else {
+			return res.HandleResp(http.StatusBadRequest, "failed to query this subteddit")
+		}
+	case "nitter":
+		if nittos, err := db.GetNittos(entityName); err == nil {
+			entity = nittos
+		} else {
+			return res.HandleResp(http.StatusBadRequest, "failed to query this subteddit")
+		}
+	default:
+		return res.HandleResp(http.StatusBadRequest, "invalid service")
 	}
 
-	switch method {
+	switch action {
 	case "sub":
-		if ok := user.SubToSubteddit(subteddit); !ok {
+		if ok := user.SubTo(entity); !ok {
 			return res.HandleResp(http.StatusInternalServerError, "couldn't subscribe you to this subteddit")
 		}
 	case "unsub":
-		if ok := user.UnsubFromSubteddit(subteddit); !ok {
+		if ok := user.UnsubFrom(entity); !ok {
 			return res.HandleResp(http.StatusInternalServerError, "couldn't unsubscibe you to this subteddit")
 		}
 	default:

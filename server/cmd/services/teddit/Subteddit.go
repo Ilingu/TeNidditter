@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"teniditter-server/cmd/global/console"
 	"teniditter-server/cmd/global/utils"
+	ps "teniditter-server/cmd/planetscale"
 	"teniditter-server/cmd/redis"
 	"teniditter-server/cmd/redis/rediskeys"
 	"time"
@@ -100,7 +101,13 @@ func GetSubredditMetadatas(subreddit string) (*subredditInfos, error) {
 	}
 
 	// Caching
-	go redis.Set(redisKey, respPayload, 24*time.Hour)
+	go redis.Set(redisKey, respPayload, 7*24*time.Hour) // 7d
+	go func(subname string) {
+		db := ps.DBManager.Connect()
+		if db != nil {
+			db.Exec("INSERT INTO Subteddits (subname) VALUES (?);", subname)
+		}
+	}(subreddit)
 
 	return &respPayload, nil
 }

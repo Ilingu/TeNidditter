@@ -2,6 +2,7 @@ package routes
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -56,4 +57,18 @@ func (c EchoWrapper) InjectSubs(subs []string) {
 	}
 
 	c.Response().Header().Set("TedditSubs", string(stringifiedSubs))
+}
+
+func (c EchoWrapper) SetPublicCache(maxage int) {
+	if maxage == 0 {
+		maxage = 1800 // 30min in seconds
+	}
+	c.Response().Header().Set("Cache-Control", fmt.Sprintf("public,max-age=%d", maxage))
+}
+func (c EchoWrapper) SetAuthCache(maxage ...int) {
+	var ma = 129600 // 1.5d in seconds
+	if len(maxage) == 1 {
+		ma = maxage[0]
+	}
+	c.Response().Header().Set("Cache-Control", fmt.Sprintf("max-age=%d", ma))
 }

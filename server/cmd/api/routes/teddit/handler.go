@@ -25,6 +25,7 @@ func TedditHandler(t *echo.Group) {
 			return res.HandleResp(http.StatusForbidden, err.Error())
 		}
 
+		res.SetPublicCache(48 * 60 * 60) // 48h
 		return res.HandleResp(http.StatusOK, userInfos)
 	})
 
@@ -47,6 +48,8 @@ func TedditHandler(t *echo.Group) {
 		if err != nil {
 			return res.HandleResp(http.StatusBadRequest, "no data returned")
 		}
+
+		res.SetPublicCache(48 * 60 * 60) // 48h
 		return res.HandleResp(http.StatusOK, postDatas)
 	})
 
@@ -63,6 +66,7 @@ func TedditHandler(t *echo.Group) {
 			return res.HandleResp(http.StatusForbidden, err.Error())
 		}
 
+		res.SetPublicCache(30 * 60) // 30min
 		return res.HandleResp(http.StatusOK, matchSubs)
 	})
 
@@ -79,6 +83,7 @@ func TedditHandler(t *echo.Group) {
 			return res.HandleResp(http.StatusForbidden, err.Error())
 		}
 
+		res.SetPublicCache(7 * 24 * 60 * 60) // 1w
 		return res.HandleResp(http.StatusOK, subredditMetadatas)
 	})
 
@@ -95,6 +100,7 @@ func TedditHandler(t *echo.Group) {
 			return res.HandleResp(http.StatusForbidden, err.Error())
 		}
 
+		res.SetPublicCache(12 * 60 * 60) // 1/2d
 		return res.HandleRespBlob(http.StatusOK, *subredditPosts)
 	})
 
@@ -116,6 +122,7 @@ func TedditHandler(t *echo.Group) {
 			return res.HandleResp(http.StatusForbidden, err.Error())
 		}
 
+		res.SetPublicCache(1 * 60 * 60) // 1h
 		return res.HandleRespBlob(http.StatusOK, *posts)
 	})
 
