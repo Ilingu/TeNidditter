@@ -101,7 +101,7 @@ func TedditHandler(t *echo.Group) {
 		}
 
 		res.SetPublicCache(12 * 60 * 60) // 1/2d
-		return res.HandleRespBlob(http.StatusOK, *subredditPosts)
+		return res.HandleRespBlob(http.StatusOK, subredditPosts)
 	})
 
 	t.GET("/home", func(c echo.Context) error {
@@ -123,7 +123,7 @@ func TedditHandler(t *echo.Group) {
 		}
 
 		res.SetPublicCache(1 * 60 * 60) // 1h
-		return res.HandleRespBlob(http.StatusOK, *posts)
+		return res.HandleRespBlob(http.StatusOK, posts)
 	})
 
 	console.Log("TedditHandler Registered", console.Info)

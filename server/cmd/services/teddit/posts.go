@@ -112,6 +112,9 @@ type TedditPostMetadata struct {
 	Body       string `json:"body_html"`
 }
 
+// date layout
+const layout = "Mon, 02 Jan 2006 15:04:05 GMT"
+
 func GetPostMetadata(doc *goquery.Document) TedditPostMetadata {
 	PostAuthor := doc.Find("#post > div.info .title .submitted > a").Text()
 	PostTitle := doc.Find("#post > div.info .title > a").Text()
@@ -119,7 +122,6 @@ func GetPostMetadata(doc *goquery.Document) TedditPostMetadata {
 
 	var PostCreated int64
 	if creationISO, exist := doc.Find("#post > div.info .title .submitted > span").Attr("title"); exist {
-		layout := "Mon, 02 Jan 2006 15:04:05 GMT"
 		if t, err := time.Parse(layout, creationISO); err == nil {
 			PostCreated = t.Unix()
 		}
@@ -136,10 +138,11 @@ func GetPostMetadata(doc *goquery.Document) TedditPostMetadata {
 
 	var Body string
 	for _, bodyType := range []string{"div.image", "div.video", "div.usertext-body"} {
-		if rawbody, err := doc.Find(fmt.Sprintf("#post > %s", bodyType)).Html(); err == nil && !utils.IsEmptyString(rawbody) {
+		if rawbody, err := doc.Find(fmt.Sprintf("#post > %s", bodyType)).Html(); err == nil && !utils.IsEmptyString(rawbody) && !utils.ContainsScript(rawbody) {
 			Body = rawbody
 			break
 		}
+
 	}
 
 	return TedditPostMetadata{PostAuthor, PostTitle, PostCreated, PostUps, PostNbComments, Body}
@@ -193,10 +196,12 @@ func RecursiveSearch(elem *goquery.Selection, idIdx int, parentId int) []TedditC
 	CoAuthor := elem.Find(detailsElem + " > .meta .author").First().Text()
 	CoUps := strings.TrimSuffix(elem.Find(detailsElem+" > .meta .ups").First().Text(), " points")
 	BodyHtml, _ := elem.Find(detailsElem + " > .body").First().Html()
+	if utils.ContainsScript(BodyHtml) {
+		BodyHtml = ""
+	}
 
 	var CoCreated int64
 	if creationISO, exist := elem.Find(detailsElem + " > .meta .created").First().Attr("title"); exist {
-		layout := "Mon, 02 Jan 2006 15:04:05 GMT"
 		if t, err := time.Parse(layout, creationISO); err == nil {
 			CoCreated = t.Unix()
 		}

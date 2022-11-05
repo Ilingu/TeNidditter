@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"fmt"
 	"math/rand"
@@ -10,6 +11,7 @@ import (
 	"unicode"
 
 	"github.com/nbutton23/zxcvbn-go"
+	"golang.org/x/net/html"
 )
 
 func Hash(str string) string {
@@ -27,21 +29,27 @@ func SafeString(str string) string {
 	return url.QueryEscape(strings.ToLower(strings.TrimSpace(str)))
 }
 
+func TrimString(str string) string {
+	return strings.TrimSpace(strings.ReplaceAll(str, "\n", ""))
+}
+
 func IsValidURL(urlToCheck string) bool {
 	_, err := url.ParseRequestURI(urlToCheck)
 	return err == nil
 }
 
-// Remove all non alphabetic (except "_") characters from string and apply TrimSpace+ToLower+QueryEscape
-func FormatToSafeString(str string) string {
-	formattedStr := ""
+func FormatString(str string) (formattedStr string) {
 	for _, r := range str {
 		if unicode.IsLetter(r) || r == '_' {
 			formattedStr += string(r)
 		}
 	}
+	return
+}
 
-	return SafeString(formattedStr)
+// Remove all non alphabetic (except "_") characters from string and apply TrimSpace+ToLower+QueryEscape
+func FormatToSafeString(str string) string {
+	return SafeString(FormatString(str))
 }
 
 func IsStrongPassword(password string) bool {
@@ -65,8 +73,32 @@ func GenerateKeyFromArgs(args ...any) string {
 	return Hash(concatenatedArgs)
 }
 
-// sdsd,
 func IsUrlEncoded(str string) bool {
 	dec, err := url.QueryUnescape(str)
 	return err != nil && dec != str
+}
+
+func ContainsScript(rawHtml string) bool {
+	reader := bytes.NewReader([]byte(rawHtml))
+	doc, err := html.Parse(reader)
+	if err != nil {
+		return true // by precaution, I return true since we cannot know if this html contains script
+	}
+
+	return findScriptInHtml(doc)
+}
+func findScriptInHtml(doc *html.Node) bool {
+	for child := doc.FirstChild; child != nil; child = child.NextSibling {
+		if child.Type == html.ElementNode && child.Data == "script" {
+			return true
+		}
+		if found := findScriptInHtml(child); found {
+			return true
+		}
+	}
+	return false
+}
+
+func FastCheckScript(html string) bool {
+	return strings.Contains(html, "script")
 }

@@ -7,17 +7,17 @@ import (
 	"net/http"
 	"teniditter-server/cmd/global/utils"
 	"teniditter-server/cmd/services/xml"
+
+	"github.com/PuerkitoBio/goquery"
 )
 
-type Tweets xml.Rss[xml.TweetItem]
-
 // q must be encoded before calling this func
-func SearchTweets(q string) ([]xml.TweetItem, error) {
-	if utils.IsEmptyString(q) {
-		return nil, errors.New("invalid query param")
+func SearchTweets(q string) ([]TweetItem, error) {
+	URL := fmt.Sprintf("https://nitter.pussthecat.org/search/rss?f=tweets&q=%s", q)
+	if !utils.IsValidURL(URL) {
+		return nil, errors.New("invalid URL")
 	}
 
-	URL := fmt.Sprintf("https://nitter.pussthecat.org/search/rss?f=tweets&q=%s", q)
 	resp, err := http.Get(URL)
 	if err != nil || resp.StatusCode != 200 {
 		return nil, err
@@ -29,9 +29,62 @@ func SearchTweets(q string) ([]xml.TweetItem, error) {
 		return nil, err
 	}
 
-	searchData, err := xml.ParseNitterSearch(rawXml)
+	tweetsXml, err := xml.ParseRSS[TweetItem](rawXml)
 	if err != nil {
 		return nil, err
 	}
-	return searchData.Channel.Items, nil
+
+	for _, tweet := range tweetsXml.Channel.Items {
+		if utils.ContainsScript(tweet.Desc) {
+			return nil, errors.New("dangerous html detected")
+		}
+	}
+
+	return tweetsXml.Channel.Items, nil
+}
+
+type NittosPreview struct {
+	Username    string `json:"username"`
+	Description string `json:"description"`
+	AvatarUrl   string `json:"avatarUrl"`
+}
+
+func SearchNittos(username string) (*[]NittosPreview, error) {
+	URL := fmt.Sprintf("https://nitter.pussthecat.org/search?f=users&q=%s", utils.FormatString(username))
+	if !utils.IsValidURL(URL) {
+		return nil, errors.New("invalid URL")
+	}
+
+	htmlPage, err := http.Get(URL)
+	if err != nil || htmlPage.StatusCode != 200 {
+		return nil, err
+	}
+	defer htmlPage.Body.Close()
+
+	doc, err := goquery.NewDocumentFromReader(htmlPage.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	result := []NittosPreview{}
+	doc.Find(".timeline-item").Each(func(i int, s *goquery.Selection) {
+		username := s.Find(".tweet-body .tweet-header .username").Text()
+		desc, _ := s.Find(".tweet-body .tweet-content").Html()
+		if utils.ContainsScript(desc) {
+			desc = ""
+		}
+
+		var avatarUrl string
+		if avatarRaw, ok := s.Find(".tweet-body .tweet-header .tweet-avatar img").Attr("src"); ok {
+			avatarUrl = "https://nitter.pussthecat.org" + avatarRaw
+		}
+
+		result = append(result, NittosPreview{username, desc, avatarUrl})
+	})
+
+	if len(result) <= 0 {
+		return nil, errors.New("no users found")
+	}
+
+	return &result, nil
 }

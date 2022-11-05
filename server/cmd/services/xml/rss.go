@@ -1,5 +1,9 @@
 package xml
 
+import (
+	XML "encoding/xml"
+)
+
 type Rss[T any] struct {
 	Channel Channel[T] `xml:"channel"`
 }
@@ -11,10 +15,12 @@ type Channel[T any] struct {
 	Items []T    `xml:"item"`
 }
 
-type TweetItem struct {
-	Title   string `xml:"title"`
-	Creator string `xml:"dc:creator"`
-	Desc    string `xml:"description"`
-	PubDate string `xml:"pubDate"`
-	Guid    string `xml:"guid"`
+func ParseRSS[T any](xml []byte) (*Rss[T], error) {
+	var parsed Rss[T]
+	err := XML.Unmarshal(xml, &parsed)
+	if err != nil {
+		return nil, err
+	}
+
+	return &parsed, nil
 }
