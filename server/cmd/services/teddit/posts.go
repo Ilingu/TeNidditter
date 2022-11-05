@@ -15,6 +15,7 @@ import (
 	"teniditter-server/cmd/global/utils"
 	"teniditter-server/cmd/redis"
 	"teniditter-server/cmd/redis/rediskeys"
+	"teniditter-server/cmd/services"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
@@ -77,18 +78,8 @@ func GetPostInfo(subteddit, id, sort string) (TedditPostInfo, error) {
 		return postInfo, nil // Returned from cache
 	}
 
-	Url := fmt.Sprintf("https://teddit.net/r/%s/comments/%s/?sort=%s", url.QueryEscape(subteddit), url.QueryEscape(id), sort)
-	if !utils.IsValidURL(Url) {
-		return TedditPostInfo{}, errors.New("invalid url")
-	}
-
-	htmlPage, err := http.Get(Url)
-	if err != nil || htmlPage.StatusCode != 200 {
-		return TedditPostInfo{}, errors.New("request failed")
-	}
-	defer htmlPage.Body.Close()
-
-	doc, err := goquery.NewDocumentFromReader(htmlPage.Body)
+	URL := fmt.Sprintf("https://teddit.net/r/%s/comments/%s/?sort=%s", url.QueryEscape(subteddit), url.QueryEscape(id), sort)
+	doc, err := services.GetHTMLDocument(URL)
 	if err != nil {
 		return TedditPostInfo{}, err
 	}
@@ -109,7 +100,7 @@ type TedditPostMetadata struct {
 	Created    int64  `json:"post_created"`
 	Ups        string `json:"post_ups"`
 	NbComments int    `json:"post_nb_comments"`
-	Body       string `json:"body_html"`
+	Body       string `json:"body_html,omitempty"`
 }
 
 // date layout

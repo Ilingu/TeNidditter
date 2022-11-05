@@ -12,9 +12,8 @@ import (
 	ps "teniditter-server/cmd/planetscale"
 	"teniditter-server/cmd/redis"
 	"teniditter-server/cmd/redis/rediskeys"
+	"teniditter-server/cmd/services"
 	"time"
-
-	"github.com/PuerkitoBio/goquery"
 )
 
 func GetSubredditPosts(subreddit string) (*map[string]any, error) {
@@ -67,18 +66,8 @@ func GetSubredditMetadatas(subreddit string) (*subredditInfos, error) {
 		return &subDatas, nil
 	}
 
-	Url := fmt.Sprintf("https://teddit.net/r/%s", url.QueryEscape(subreddit))
-	if !utils.IsValidURL(Url) {
-		return nil, errors.New("invalid URL")
-	}
-
-	htmlPage, err := http.Get(Url)
-	if err != nil || htmlPage.StatusCode != 200 {
-		return nil, err
-	}
-	defer htmlPage.Body.Close()
-
-	doc, err := goquery.NewDocumentFromReader(htmlPage.Body)
+	URL := fmt.Sprintf("https://teddit.net/r/%s", url.QueryEscape(subreddit))
+	doc, err := services.GetHTMLDocument(URL)
 	if err != nil {
 		return nil, err
 	}

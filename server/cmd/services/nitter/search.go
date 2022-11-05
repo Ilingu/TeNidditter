@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"teniditter-server/cmd/global/utils"
+	"teniditter-server/cmd/services"
 	"teniditter-server/cmd/services/xml"
 
 	"github.com/PuerkitoBio/goquery"
@@ -51,17 +52,7 @@ type NittosPreview struct {
 
 func SearchNittos(username string) (*[]NittosPreview, error) {
 	URL := fmt.Sprintf("https://nitter.pussthecat.org/search?f=users&q=%s", utils.FormatString(username))
-	if !utils.IsValidURL(URL) {
-		return nil, errors.New("invalid URL")
-	}
-
-	htmlPage, err := http.Get(URL)
-	if err != nil || htmlPage.StatusCode != 200 {
-		return nil, err
-	}
-	defer htmlPage.Body.Close()
-
-	doc, err := goquery.NewDocumentFromReader(htmlPage.Body)
+	doc, err := services.GetHTMLDocument(URL)
 	if err != nil {
 		return nil, err
 	}

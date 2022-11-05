@@ -3,6 +3,7 @@ package nitter_routes
 import (
 	"net/http"
 	"net/url"
+	"strconv"
 	"teniditter-server/cmd/api/routes"
 	"teniditter-server/cmd/global/console"
 	"teniditter-server/cmd/global/utils"
@@ -85,7 +86,12 @@ func NitterHandler(n *echo.Group) {
 			return res.HandleResp(http.StatusBadRequest, "invalid params")
 		}
 
-		comments, err := nitter.GetNeetComments(username, neetId)
+		queryLimit := 1
+		if limit, err := strconv.ParseInt(c.QueryParam("limit"), 10, 8); err == nil && limit > 0 && limit <= 127 {
+			queryLimit = int(limit)
+		}
+
+		comments, err := nitter.GetNeetComments(username, neetId, queryLimit)
 		if err != nil {
 			return res.HandleResp(http.StatusNotFound, "no comments returned for this neet")
 		}
