@@ -20,7 +20,7 @@ func GetSubteddit(subname string, depth ...int) (*SubtedditModel, error) {
 	err := db.QueryRow("SELECT * FROM Subteddits WHERE subname=?", subname).Scan(&result.SubID, &result.Subname)
 	if err != nil || result.Subname != subname {
 		// Not in db --> insert it
-		if ok := SetSubteddit(subname); ok {
+		if ok := AddSubteddit(subname); ok {
 			var depthVal int
 			if len(depth) == 1 {
 				depthVal = depth[0]
@@ -35,7 +35,7 @@ func GetSubteddit(subname string, depth ...int) (*SubtedditModel, error) {
 	return &result, nil
 }
 
-func SetSubteddit(subname string) bool {
+func AddSubteddit(subname string) bool {
 	db := ps.DBManager.Connect()
 	if db == nil {
 		return false

@@ -5,3 +5,4 @@ https://codesource.io/how-to-setup-golang-authentication-with-jwt-token/
 https://go.dev/doc/database/change-data
 https://go.dev/doc/database/querying
 https://github.com/ProtonMail/gopenpgp
+https://tip.golang.org/doc/comment

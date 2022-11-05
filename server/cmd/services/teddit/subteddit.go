@@ -94,12 +94,12 @@ func GetSubredditMetadatas(subreddit string) (*subredditInfos, error) {
 
 	// Caching
 	go redis.Set(redisKey, respPayload, 7*24*time.Hour) // 7d
-	go func(subname string) {
+	go func() {
 		db := ps.DBManager.Connect()
 		if db != nil {
-			db.Exec("INSERT INTO Subteddits (subname) VALUES (?);", subname)
+			db.Exec("INSERT INTO Subteddits (subname) VALUES (?);", subreddit)
 		}
-	}(subreddit)
+	}()
 
 	return &respPayload, nil
 }

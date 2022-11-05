@@ -20,7 +20,7 @@ func GetNittos(username string, depth ...int) (*NittosModel, error) {
 	err := db.QueryRow("SELECT * FROM Twittos WHERE username=?", username).Scan(&result.NittosID, &result.Username)
 	if err != nil || result.Username != username {
 		// Not in db --> insert it
-		if _, err = db.Exec("INSERT INTO Twittos (username) VALUES (?);", username); err == nil {
+		if ok := AddTwittos(username); ok {
 			var depthVal int
 			if len(depth) == 1 {
 				depthVal = depth[0]
@@ -33,6 +33,16 @@ func GetNittos(username string, depth ...int) (*NittosModel, error) {
 	}
 
 	return &result, nil
+}
+
+func AddTwittos(username string) bool {
+	db := ps.DBManager.Connect()
+	if db == nil {
+		return false
+	}
+
+	_, err := db.Exec("INSERT INTO Twittos (username) VALUES (?);", username)
+	return err == nil
 }
 
 func SearchNittos(username string) ([]NittosModel, error) {

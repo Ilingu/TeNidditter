@@ -7,30 +7,17 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"teniditter-server/cmd/global/console"
 	"teniditter-server/cmd/global/utils"
+	ps "teniditter-server/cmd/planetscale"
+	"teniditter-server/cmd/redis"
+	"teniditter-server/cmd/redis/rediskeys"
 	"teniditter-server/cmd/services"
 	"teniditter-server/cmd/services/xml"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
 )
-
-type Nittos struct {
-	Username  string      `json:"username"`
-	Bio       string      `json:"bio"`
-	AvatarUrl string      `json:"avatarUrl"`
-	Location  string      `json:"location"`
-	Website   string      `json:"website"`
-	JoinDate  string      `json:"joinDate"`
-	Stats     NittosStats `json:"stats"`
-	BannerUrl string      `json:"bannerUrl"`
-}
-
-type NittosStats struct {
-	TweetsCounts    int `json:"tweets_counts"`
-	FollowingCounts int `json:"following_counts"`
-	FollowersCounts int `json:"followers_counts"`
-	LikesCounts     int `json:"likes_counts"`
-}
 
 func NittosMetadata(username string) (*Nittos, error) {
 	URL := fmt.Sprintf("https://nitter.pussthecat.org/%s", username)
@@ -81,10 +68,37 @@ func NittosMetadata(username string) (*Nittos, error) {
 	stats := NittosStats{tweetsCount, followingCounts, followersCounts, likesCounts}
 	metadata := Nittos{nittosName, bio, avatarUrl, location, websiteLink, joinDate, stats, bannerUrl}
 
+	// Caching
+	go func() {
+		db := ps.DBManager.Connect()
+		if db != nil {
+			db.Exec("INSERT INTO Twittos (username) VALUES (?);", username)
+		}
+	}()
+
 	return &metadata, nil
 }
 
-func NittosTweets(username string) ([]TweetItem, error) {
+func NittosTweetsScrap(username string, limit int) ([]NeetComment, error) {
+	redisKey := rediskeys.NewKey(rediskeys.NITTER_NITTOS_TWEETS, utils.GenerateKeyFromArgs(username, limit))
+	if comments, err := redis.Get[[]NeetComment](redisKey); err == nil {
+		console.Log("Neets Returned from cache", console.Neutral)
+		return comments, nil // Returned from cache
+	}
+
+	URL := fmt.Sprintf("https://nitter.pussthecat.org/%s", username)
+	tweets, err := fetchTweets(URL, limit)
+	if err != nil {
+		return nil, err
+	}
+
+	// Caching
+	go redis.Set(redisKey, tweets, 30*time.Minute)
+
+	return tweets, nil
+}
+
+func NittosTweetsXML(username string) ([]NeetComment, error) {
 	URL := fmt.Sprintf("https://nitter.pussthecat.org/%s/rss", username)
 	if !utils.IsValidURL(URL) {
 		return nil, errors.New("invalid URL")
@@ -101,16 +115,20 @@ func NittosTweets(username string) ([]TweetItem, error) {
 		return nil, err
 	}
 
-	tweetsXml, err := xml.ParseRSS[TweetItem](rawXml)
+	tweetsXml, err := xml.ParseRSS[XmlTweetItem](rawXml)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, tweet := range tweetsXml.Channel.Items {
-		if utils.ContainsScript(tweet.Desc) {
+	tweets := make([]NeetComment, len(tweetsXml.Channel.Items))
+	for i, tweetXml := range tweetsXml.Channel.Items {
+		if utils.ContainsScript(tweetXml.Desc) {
 			return nil, errors.New("dangerous html detected")
 		}
+
+		tweet, _ := tweetXml.ToJSON(true) // no error possible when ToJSON is set to `true`
+		tweets[i] = *tweet
 	}
 
-	return tweetsXml.Channel.Items, nil
+	return tweets, nil
 }

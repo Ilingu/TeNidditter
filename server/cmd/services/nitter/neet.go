@@ -3,44 +3,18 @@ package nitter
 import (
 	"errors"
 	"fmt"
-	"net/url"
 	"strconv"
 	"strings"
 	"sync"
+	"teniditter-server/cmd/global/console"
 	"teniditter-server/cmd/global/utils"
+	"teniditter-server/cmd/redis"
+	"teniditter-server/cmd/redis/rediskeys"
 	"teniditter-server/cmd/services"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
 )
-
-type NeetComments struct {
-	MainThread []NeetComment   `json:"main"`
-	Reply      [][]NeetComment `json:"reply"`
-}
-
-type NeetComment struct {
-	NeetBasicComment
-	Quote *NeetBasicComment `json:"quote,omitempty"`
-}
-type NeetBasicComment struct {
-	Title       string           `json:"title"`
-	Creator     NittosPreview    `json:"creator"`
-	CreatedAt   int              `json:"createdAt"`
-	Stats       NeetCommentStats `json:"stats"`
-	Attachments *Attachments     `json:"attachment,omitempty"`
-}
-type Attachments struct {
-	ImagesUrls []string `json:"images,omitempty"`
-	VideosUrls []string `json:"videos,omitempty"`
-}
-type NeetCommentStats struct {
-	ReplyCounts  int `json:"reply_counts"`
-	RTCounts     int `json:"rt_counts"`
-	QuotesCounts int `json:"quotes_counts,omitempty"`
-	LikesCounts  int `json:"likes_counts"`
-	PlayCounts   int `json:"play_counts,omitempty"`
-}
 
 func GetNeetContext(nittos, neetId string) (*NeetComment, error) {
 	URL := fmt.Sprintf("https://nitter.pussthecat.org/%s/status/%s", nittos, neetId)
@@ -50,14 +24,31 @@ func GetNeetContext(nittos, neetId string) (*NeetComment, error) {
 	}
 
 	commentSelector := doc.Find("#m > .timeline-item").First()
-	commentData := extractCommentDatas(commentSelector)
+	commentData := extractNeetDatas(commentSelector)
 	return &commentData, nil
 }
 
-func GetNeetComments(nittos, neetId string, limit int) (*NeetComments, error) {
-	mainTheadSelector, repliesSelectors := queryCommentsSelectors(nittos, neetId, limit)
+func GetNeetComments(nittos, neetId string, limit int) (*NeetInfo, error) {
+	redisKey := rediskeys.NewKey(rediskeys.NITTER_NEET_COMMENTS, utils.GenerateKeyFromArgs(nittos, neetId, limit))
+	if neetInfo, err := redis.Get[NeetInfo](redisKey); err == nil {
+		console.Log("Neet Returned from cache", console.Neutral)
+		return &neetInfo, nil // Returned from cache
+	}
+
+	URL := fmt.Sprintf("https://nitter.pussthecat.org/%s/status/%s", nittos, neetId)
+	replies, nextQuery := "#r .reply", "#r .show-more > a"
+
+	doc, repliesSelectors := queryMoreSelectors(URL, replies, nextQuery, limit)
+	if doc == nil {
+		return nil, errors.New("no doc returned")
+	}
+
+	mainTheadSelector := doc.Find("div.main-thread .timeline-item")
 	if mainTheadSelector == nil || repliesSelectors == nil {
 		return nil, errors.New("no selectors returned")
+	}
+	if mainTheadSelector.Length() <= 0 {
+		return nil, errors.New("context tweets not found")
 	}
 
 	MainThread, Reply := make([]NeetComment, mainTheadSelector.Length()), make([][]NeetComment, repliesSelectors.Length())
@@ -68,7 +59,7 @@ func GetNeetComments(nittos, neetId string, limit int) (*NeetComments, error) {
 	go mainTheadSelector.Each(func(i int, s *goquery.Selection) {
 		go func() {
 			defer wg.Done()
-			MainThread[i] = extractCommentDatas(s)
+			MainThread[i] = extractNeetDatas(s)
 		}()
 	})
 
@@ -79,7 +70,7 @@ func GetNeetComments(nittos, neetId string, limit int) (*NeetComments, error) {
 			ReplyGroup := []NeetComment{}
 			s.Find(".timeline-item").Each(func(i int, t *goquery.Selection) {
 				if !t.HasClass("more-replies") {
-					ReplyGroup = append(ReplyGroup, extractCommentDatas(t))
+					ReplyGroup = append(ReplyGroup, extractNeetDatas(t))
 				}
 			})
 			Reply[i] = ReplyGroup
@@ -87,51 +78,19 @@ func GetNeetComments(nittos, neetId string, limit int) (*NeetComments, error) {
 	})
 
 	wg.Wait()
+	result := NeetInfo{MainThread, Reply}
 
-	return &NeetComments{MainThread, Reply}, nil
-}
-
-// This function is error-less so check by yourself if the returned value are nil.
-//
-// It'll query the commentsSelector of a post by scrapping the page and hitting the "show more" button, and repeat this process "limit" times. It then return the main thread selector and the concatenated version of all the commentsSelectors
-func queryCommentsSelectors(nittos, neetId string, limit int) (mainTheadSelector, commentsSelector *goquery.Selection) {
-	var allComments *goquery.Selection
-
-	URL := fmt.Sprintf("https://nitter.pussthecat.org/%s/status/%s", nittos, neetId)
-	for i := 0; i < limit; i++ {
-		doc, err := services.GetHTMLDocument(URL)
-		if err != nil {
-			return mainTheadSelector, allComments
-		}
-
-		replies := doc.Find("#r .reply")
-		if allComments == nil {
-			allComments = replies
-			mainTheadSelector = doc.Find("div.main-thread .timeline-item")
-		} else {
-			allComments = allComments.AddNodes(replies.Nodes...)
-		}
-		nextQuery, exist := doc.Find("#r .show-more > a").Attr("href")
-		if !exist {
-			return mainTheadSelector, allComments // no comments left, return comments already fetched
-		}
-
-		nextUrl, err := url.Parse(URL)
-		if err != nil {
-			return mainTheadSelector, allComments
-		}
-
-		q := nextUrl.Query()
-		q.Set("cursor", strings.TrimPrefix(nextQuery, "?cursor="))
-		nextUrl.RawQuery, _ = url.QueryUnescape(q.Encode())
-
-		URL = nextUrl.String()
+	// caching
+	exp := time.Hour
+	if MainThread[0].Stats.LikesCounts < 100 {
+		exp = 12 * time.Hour
 	}
+	go redis.Set(redisKey, result, exp)
 
-	return mainTheadSelector, allComments
+	return &result, nil
 }
 
-func extractCommentDatas(s *goquery.Selection) NeetComment {
+func extractNeetDatas(s *goquery.Selection) NeetComment {
 	selector := ".tweet-body "
 
 	// Header (creator, createdAt)
@@ -197,11 +156,14 @@ func extractCommentDatas(s *goquery.Selection) NeetComment {
 	// Potential Quote
 	var quote *NeetBasicComment
 	if quoteUrl, exist := s.Find(selector + "> .quote > a.quote-link").Attr("href"); exist {
-		if quoteData, err := fetchQuote(quoteUrl); err == nil {
+		if quoteData, err := fetchCtxNeetFromUrl(quoteUrl); err == nil {
 			quote = &quoteData.NeetBasicComment
 		}
 	}
 
-	commentData := NeetBasicComment{content, creator, int(createdAt), stats, attachments}
+	// Potential Link Card
+	linkCard, _ := s.Find(selector + "> .card > a.card-container").Attr("href")
+
+	commentData := NeetBasicComment{content, creator, int(createdAt), stats, attachments, linkCard}
 	return NeetComment{NeetBasicComment: commentData, Quote: quote}
 }

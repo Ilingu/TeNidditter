@@ -16,5 +16,6 @@ func GenerateFeeds() {
 	console.Log(fmt.Sprintf("Generating feeds for %d users...", len(accounts)), console.Info)
 	for _, user := range accounts {
 		go user.GenerateTedditFeed()
+		go user.GenerateNitterFeed()
 	}
 }

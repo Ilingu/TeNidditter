@@ -41,27 +41,49 @@ func TedinitterUserHandler(t *echo.Group) {
 	/* TEDDIT */
 
 	t.POST("/teddit/sub/:name", func(c echo.Context) error {
-		return SubUnsub(c, "teddit", "sub")
+		return handleSubUnsub(c, "teddit", "sub")
 	})
 
 	t.DELETE("/teddit/unsub/:name", func(c echo.Context) error {
-		return SubUnsub(c, "teddit", "unsub")
+		return handleSubUnsub(c, "teddit", "unsub")
 	})
 
 	t.GET("/teddit/feed", func(c echo.Context) error {
-		res := routes.EchoWrapper{Context: c}
+		return handleGetFeed(c, "teddit")
+	})
 
-		token, err := jwt.DecodeToken(jwt.RetrieveToken(&c))
-		if err != nil {
-			return res.HandleResp(http.StatusUnauthorized, err.Error())
-		}
+	/* NITTER */
+	t.POST("/nitter/sub/:name", func(c echo.Context) error {
+		return handleSubUnsub(c, "nitter", "sub")
+	})
 
-		user := db.AccountModel{AccountId: token.ID, Username: token.Username}
+	t.DELETE("/nitter/unsub/:name", func(c echo.Context) error {
+		return handleSubUnsub(c, "nitter", "unsub")
+	})
 
+	t.GET("/nitter/feed", func(c echo.Context) error {
+		return handleGetFeed(c, "nitter")
+	})
+
+	console.Log("TedinitterUserHandler Registered ✅", console.Info)
+}
+
+func handleGetFeed(c echo.Context, service string) error {
+	res := routes.EchoWrapper{Context: c}
+
+	token, err := jwt.DecodeToken(jwt.RetrieveToken(&c))
+	if err != nil {
+		return res.HandleResp(http.StatusUnauthorized, err.Error())
+	}
+
+	user := db.AccountModel{AccountId: token.ID, Username: token.Username}
+
+	switch service {
+	case "teddit":
 		if feed, err := user.GetTedditFeed(); err == nil {
 			console.Log("Feed Returned from cache", console.Neutral)
 			res.SetAuthCache(1800) // 30min
-			return res.HandleRespBlob(http.StatusOK, *feed)
+			return res.HandleRespBlob(http.StatusOK, feed)
 		}
 
 		// not cached: generate on the fly
@@ -69,25 +91,29 @@ func TedinitterUserHandler(t *echo.Group) {
 		if err != nil {
 			return res.HandleResp(http.StatusInternalServerError, "failed to retreive and generate this user feed: "+err.Error())
 		}
-
 		res.SetAuthCache(1800) // 30min
-		return res.HandleRespBlob(http.StatusOK, *feed)
-	})
+		return res.HandleRespBlob(http.StatusOK, feed)
+	case "nitter":
+		if feed, err := user.GetNitterFeed(); err == nil {
+			console.Log("Feed Returned from cache", console.Neutral)
+			res.SetAuthCache(1800) // 30min
+			return res.HandleRespBlob(http.StatusOK, feed)
+		}
 
-	/* NITTER */
-	t.POST("/nitter/sub/:name", func(c echo.Context) error {
-		return SubUnsub(c, "nitter", "sub")
-	})
-
-	t.DELETE("/nitter/unsub/:name", func(c echo.Context) error {
-		return SubUnsub(c, "nitter", "unsub")
-	})
-
-	console.Log("TedinitterUserHandler Registered ✅", console.Info)
+		// not cached: generate on the fly
+		feed, err := user.GenerateNitterFeed()
+		if err != nil {
+			return res.HandleResp(http.StatusInternalServerError, "failed to retreive and generate this user feed: "+err.Error())
+		}
+		res.SetAuthCache(1800) // 30min
+		return res.HandleRespBlob(http.StatusOK, feed)
+	default:
+		return res.HandleRespBlob(http.StatusNotAcceptable, "service not found")
+	}
 }
 
 // service is whether "teddit" or "nitter" and action is whether "sub" or "unsub"
-func SubUnsub(c echo.Context, service, action string) error {
+func handleSubUnsub(c echo.Context, service, action string) error {
 	res := routes.EchoWrapper{Context: c}
 
 	entityName, err := url.QueryUnescape(c.Param("name"))

@@ -50,13 +50,13 @@ func (c EchoWrapper) HandleRespBlob(code uint, data ...any) error {
 	return c.JSONBlob(resp.Code, blob)
 }
 
-func (c EchoWrapper) InjectSubs(subs []string) {
+func (c EchoWrapper) InjectSubs(headerName string, subs []string) {
 	stringifiedSubs, err := json.Marshal(subs)
 	if err != nil {
 		stringifiedSubs = []byte{}
 	}
 
-	c.Response().Header().Set("TedditSubs", string(stringifiedSubs))
+	c.Response().Header().Set(headerName, string(stringifiedSubs))
 }
 
 func (c EchoWrapper) SetPublicCache(maxage int) {

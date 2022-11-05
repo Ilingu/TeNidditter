@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"bytes"
 	"crypto/sha256"
 	"fmt"
 	"math/rand"
@@ -10,8 +9,10 @@ import (
 	"time"
 	"unicode"
 
+	"teniditter-server/cmd/services/html"
+
 	"github.com/nbutton23/zxcvbn-go"
-	"golang.org/x/net/html"
+	htmlpkg "golang.org/x/net/html"
 )
 
 func Hash(str string) string {
@@ -78,27 +79,19 @@ func IsUrlEncoded(str string) bool {
 	return err != nil && dec != str
 }
 
-func ContainsScript(rawHtml string) bool {
-	reader := bytes.NewReader([]byte(rawHtml))
-	doc, err := html.Parse(reader)
+// Will parse and tokenize the html and goes through every element of the document to check whether there is a script tag or not. If the html is invalid it'll return "true" by default
+func ContainsScript(rawHtml string) (found bool) {
+	err := html.FindElements(rawHtml, "script", func(elem *htmlpkg.Node) (stop bool) {
+		found = true
+		return true
+	})
 	if err != nil {
-		return true // by precaution, I return true since we cannot know if this html contains script
+		return true
 	}
-
-	return findScriptInHtml(doc)
-}
-func findScriptInHtml(doc *html.Node) bool {
-	for child := doc.FirstChild; child != nil; child = child.NextSibling {
-		if child.Type == html.ElementNode && child.Data == "script" {
-			return true
-		}
-		if found := findScriptInHtml(child); found {
-			return true
-		}
-	}
-	return false
+	return
 }
 
-func FastCheckScript(html string) bool {
-	return strings.Contains(html, "script")
+// A faster but less precise ContainsScript function: it will only look for the keyword "script" in the html, so if there is this word in a text or an attribute ect... this will return true even though there is no actual "script" tag
+func ContainsScriptFast(rawHtml string) bool {
+	return strings.Contains(rawHtml, "script")
 }

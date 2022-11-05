@@ -112,9 +112,12 @@ func login(res routes.EchoWrapper, account *db.AccountModel, password string) er
 	}
 
 	// custom headers
-	res.Response().Header()["Access-Control-Expose-Headers"] = []string{"Set-Cookie", "TedditSubs"}
-	subs, _ := account.GetTedditSubs()
-	res.InjectSubs(subs)
+	res.Response().Header()["Access-Control-Expose-Headers"] = []string{"Set-Cookie", "TedditSubs", "NitterSubs"}
+	Tsubs, _ := account.GetTedditSubs()
+	res.InjectSubs("TedditSubs", Tsubs)
+
+	Nsubs, _ := account.GetNitterSubs()
+	res.InjectSubs("NitterSubs", Nsubs)
 
 	// adding jwt token into httpOnly cookies in the client (for future request)
 	res.SetCookie(&http.Cookie{Name: "JwtToken", Value: token, Expires: time.Now().Add(30 * 24 * time.Hour), Secure: true, HttpOnly: true, SameSite: 4 /* 4 = None */, Path: "/"})

@@ -15,6 +15,7 @@ import (
 	ps "teniditter-server/cmd/planetscale"
 	"teniditter-server/cmd/redis"
 	"teniditter-server/cmd/redis/rediskeys"
+	"teniditter-server/cmd/services/nitter"
 	"teniditter-server/cmd/services/teddit"
 	"time"
 
@@ -28,12 +29,22 @@ func (u *AccountModel) PasswordMatch(passwordInput string) bool {
 }
 
 func (user AccountModel) GetTedditSubs() ([]string, error) {
+	q := "SELECT subname FROM Teship INNER JOIN Subteddits ON Subteddits.subteddit_id = Teship.subteddit_id WHERE follower_id=?"
+	return user._getSubs(q)
+}
+
+func (user AccountModel) GetNitterSubs() ([]string, error) {
+	q := "SELECT username FROM Twiship INNER JOIN Twittos ON Twittos.twittos_id = Twiship.twittos_id WHERE follower_id=?"
+	return user._getSubs(q)
+}
+
+func (user AccountModel) _getSubs(q string) ([]string, error) {
 	db := ps.DBManager.Connect()
 	if db == nil {
 		return []string{}, ps.ErrDbNotFound
 	}
 
-	rows, err := db.Query("SELECT subname FROM Teship INNER JOIN Subteddits ON Subteddits.subteddit_id = Teship.subteddit_id WHERE follower_id=?", user.AccountId)
+	rows, err := db.Query(q, user.AccountId)
 	if err != nil {
 		return []string{}, err
 	}
@@ -64,13 +75,62 @@ func (u *AccountModel) GetTedditFeed() (*[]map[string]any, error) {
 	}
 	return nil, errors.New("no sub posts cached for this user")
 }
+func (u *AccountModel) GetNitterFeed() (*[]nitter.NeetComment, error) {
+	userKey := utils.GenerateKeyFromArgs(u.AccountId, u.Username /* if not enough add: u.CreatedAt.String() */)
+	redisKey := rediskeys.NewKey(rediskeys.NITTER_USER_FEED, userKey)
 
+	if subPosts, err := redis.Get[[]nitter.NeetComment](redisKey); err == nil {
+		return &subPosts, nil // Returned from cache
+	}
+	return nil, errors.New("no tweets cached for this user")
+}
+
+func (u *AccountModel) GenerateNitterFeed() (*[]nitter.NeetComment, error) {
+	Nsubs, err := u.GetNitterSubs()
+	if err != nil {
+		return nil, err
+	} else if len(Nsubs) <= 0 {
+		return nil, errors.New("cannot generate feed on a user subscribed to nothing")
+	}
+
+	var allTweets []nitter.NeetComment
+
+	var wg sync.WaitGroup
+	var mutex sync.Mutex
+
+	wg.Add(len(Nsubs))
+	for _, username := range Nsubs {
+		go func(username string) {
+			defer wg.Done()
+			tweets, err := nitter.NittosTweetsScrap(username, 2)
+			if err != nil {
+				return
+			}
+
+			mutex.Lock()
+			allTweets = append(allTweets, tweets...)
+			mutex.Unlock()
+		}(username)
+	}
+	wg.Wait()
+
+	if len(allTweets) <= 0 {
+		return nil, errors.New("no posts returned")
+	}
+	utils.ShuffleSlice(allTweets)
+
+	userKey := utils.GenerateKeyFromArgs(u.AccountId, u.Username /* if not enough add: u.CreatedAt.String() */)
+	redisKey := rediskeys.NewKey(rediskeys.NITTER_USER_FEED, userKey)
+	go redis.Set(redisKey, allTweets, 8*time.Hour) // cache datas
+
+	return &allTweets, nil
+}
 func (u *AccountModel) GenerateTedditFeed() (*[]map[string]any, error) {
 	Tsubs, err := u.GetTedditSubs()
 	if err != nil {
 		return nil, err
 	} else if len(Tsubs) <= 0 {
-		return nil, errors.New("cannot generate feed on a user subbed to nothing")
+		return nil, errors.New("cannot generate feed on a user subscribed to nothing")
 	}
 
 	var allSubPosts []map[string]any
@@ -218,12 +278,9 @@ func (user AccountModel) HasChange() {
 		return
 	}
 
-	TedditSubs, err := user.GetTedditSubs()
-	if err != nil {
-		return
-	}
-
-	respData := SubsPayload{Teddit: TedditSubs, Nitter: []string{}}
+	TedditSubs, _ := user.GetTedditSubs()
+	NitterSubs, _ := user.GetNitterSubs()
+	respData := SubsPayload{Teddit: TedditSubs, Nitter: NitterSubs}
 
 	stringifiedSubs, err := json.Marshal(respData)
 	if err != nil {
