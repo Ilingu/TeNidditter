@@ -2,7 +2,6 @@ package tedinitter_routes
 
 import (
 	"net/http"
-	"net/url"
 	"os"
 	"teniditter-server/cmd/api/jwt"
 	"teniditter-server/cmd/api/routes"
@@ -116,8 +115,8 @@ func handleGetFeed(c echo.Context, service string) error {
 func handleSubUnsub(c echo.Context, service, action string) error {
 	res := routes.EchoWrapper{Context: c}
 
-	entityName, err := url.QueryUnescape(c.Param("name"))
-	if err != nil || utils.IsEmptyString(entityName) {
+	entityName := c.Param("name")
+	if utils.IsEmptyString(entityName) {
 		return res.HandleResp(http.StatusBadRequest, "invalid name")
 	}
 
@@ -140,7 +139,7 @@ func handleSubUnsub(c echo.Context, service, action string) error {
 		if nittos, err := db.GetNittos(entityName); err == nil {
 			entity = nittos
 		} else {
-			return res.HandleResp(http.StatusBadRequest, "failed to query this subteddit")
+			return res.HandleResp(http.StatusBadRequest, "failed to query this nittos")
 		}
 	default:
 		return res.HandleResp(http.StatusBadRequest, "invalid service")
@@ -149,11 +148,11 @@ func handleSubUnsub(c echo.Context, service, action string) error {
 	switch action {
 	case "sub":
 		if ok := user.SubTo(entity); !ok {
-			return res.HandleResp(http.StatusInternalServerError, "couldn't subscribe you to this subteddit")
+			return res.HandleResp(http.StatusInternalServerError, "couldn't subscribe you to this entity")
 		}
 	case "unsub":
 		if ok := user.UnsubFrom(entity); !ok {
-			return res.HandleResp(http.StatusInternalServerError, "couldn't unsubscibe you to this subteddit")
+			return res.HandleResp(http.StatusInternalServerError, "couldn't unsubscibe you from this entity")
 		}
 	default:
 		return res.HandleResp(http.StatusForbidden)

@@ -199,10 +199,10 @@ func (user AccountModel) SubTo(entity any) (success bool) {
 	}()
 
 	switch model := entity.(type) {
-	case SubtedditModel:
-		return user._subToSubteddit(&model, db)
-	case NittosModel:
-		return user._subToNittos(&model, db)
+	case *SubtedditModel:
+		return user._subToSubteddit(model, db)
+	case *NittosModel:
+		return user._subToNittos(model, db)
 	}
 	return false
 }
@@ -222,10 +222,10 @@ func (user AccountModel) UnsubFrom(entity any) (success bool) {
 	}()
 
 	switch model := entity.(type) {
-	case SubtedditModel:
-		return user._unsubFromSubteddit(&model, db)
-	case NittosModel:
-		return user._unsubFromNittos(&model, db)
+	case *SubtedditModel:
+		return user._unsubFromSubteddit(model, db)
+	case *NittosModel:
+		return user._unsubFromNittos(model, db)
 	}
 	return false
 }
