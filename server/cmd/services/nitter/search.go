@@ -51,9 +51,9 @@ func SearchTweetsXML(q string) ([]NeetComment, error) {
 	return tweets, nil
 }
 
-func SearchTweetsScrap(q string, limit int) ([]NeetComment, error) {
+func SearchTweetsScrap(q string, limit int) ([][]NeetComment, error) {
 	redisKey := rediskeys.NewKey(rediskeys.NITTER_SEARCH_TWEETS, utils.GenerateKeyFromArgs(q, limit))
-	if comments, err := redis.Get[[]NeetComment](redisKey); err == nil {
+	if comments, err := redis.Get[[][]NeetComment](redisKey); err == nil {
 		console.Log("Neets Returned from cache", console.Neutral)
 		return comments, nil // Returned from cache
 	}

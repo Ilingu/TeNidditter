@@ -79,8 +79,16 @@ func (neet XmlTweetItem) ToJSON(fromXmlDatas bool) (*NeetComment, error) {
 			return false
 		})
 
+		retweetedByRegex := regexp.MustCompile("(?mi:RT by @([A-Za-z0-9]+))")
+		submatchs := retweetedByRegex.FindStringSubmatch(neet.Title)
+
+		var reweetedBy string
+		if len(submatchs) == 2 && !utils.IsEmptyString(submatchs[1]) {
+			reweetedBy = submatchs[1]
+		}
+
 		// missing: stats and videos
-		commentMetadata := NeetBasicComment{neet.Desc, NittosPreview{Username: neet.Creator}, int(createdAt), NeetCommentStats{}, &Attachments{ImagesUrls: imgSrc}, linkCard}
+		commentMetadata := NeetBasicComment{neet.Desc, NittosPreview{Username: neet.Creator}, int(createdAt), NeetCommentStats{}, &Attachments{ImagesUrls: imgSrc}, linkCard, reweetedBy, false}
 		comment := NeetComment{NeetBasicComment: commentMetadata}
 
 		return &comment, nil

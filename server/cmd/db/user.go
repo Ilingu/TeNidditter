@@ -85,7 +85,7 @@ func (u *AccountModel) GetNitterFeed() (*[]nitter.NeetComment, error) {
 	return nil, errors.New("no tweets cached for this user")
 }
 
-func (u *AccountModel) GenerateNitterFeed() (*[]nitter.NeetComment, error) {
+func (u *AccountModel) GenerateNitterFeed() (*[][]nitter.NeetComment, error) {
 	Nsubs, err := u.GetNitterSubs()
 	if err != nil {
 		return nil, err
@@ -93,7 +93,7 @@ func (u *AccountModel) GenerateNitterFeed() (*[]nitter.NeetComment, error) {
 		return nil, errors.New("cannot generate feed on a user subscribed to nothing")
 	}
 
-	var allTweets []nitter.NeetComment
+	var allTweets [][]nitter.NeetComment
 
 	var wg sync.WaitGroup
 	var mutex sync.Mutex

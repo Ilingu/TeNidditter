@@ -46,15 +46,25 @@ func queryMoreSelectors(URL, elemsSelector, nextQuerySelector string, limit int)
 	return pageDoc, allSelectors
 }
 
-func fetchTweets(URL string, limit int) ([]NeetComment, error) {
+func fetchTweets(URL string, limit int) ([][]NeetComment, error) {
 	_, tweetsSelectors := queryMoreSelectors(URL, ".timeline-item", "div.timeline > div.show-more > a", limit)
 	if tweetsSelectors == nil {
 		return nil, errors.New("no tweets found")
 	}
 
-	Tweets := make([]NeetComment, tweetsSelectors.Length())
+	var skip int
+
+	Tweets := [][]NeetComment{}
 	tweetsSelectors.Each(func(i int, s *goquery.Selection) {
-		Tweets[i] = extractNeetDatas(s)
+		if skip > 0 {
+			skip--
+			return
+		}
+
+		thread, toExclude := fetchNeetThread(s)
+
+		skip = toExclude
+		Tweets = append(Tweets, thread)
 	})
 	return Tweets, nil
 }

@@ -54,13 +54,13 @@ func NittosMetadata(username string) (*Nittos, error) {
 	StatSelector.Each(func(i int, s *goquery.Selection) {
 		num, _ := strconv.Atoi(strings.ReplaceAll(utils.TrimString(s.Text()), ",", ""))
 		switch i {
-		case 1:
+		case 0:
 			tweetsCount = num
-		case 2:
+		case 1:
 			followingCounts = num
-		case 3:
+		case 2:
 			followersCounts = num
-		case 4:
+		case 3:
 			likesCounts = num
 		}
 	})
@@ -79,9 +79,9 @@ func NittosMetadata(username string) (*Nittos, error) {
 	return &metadata, nil
 }
 
-func NittosTweetsScrap(username string, limit int) ([]NeetComment, error) {
+func NittosTweetsScrap(username string, limit int) ([][]NeetComment, error) {
 	redisKey := rediskeys.NewKey(rediskeys.NITTER_NITTOS_TWEETS, utils.GenerateKeyFromArgs(username, limit))
-	if comments, err := redis.Get[[]NeetComment](redisKey); err == nil {
+	if comments, err := redis.Get[[][]NeetComment](redisKey); err == nil {
 		console.Log("Neets Returned from cache", console.Neutral)
 		return comments, nil // Returned from cache
 	}

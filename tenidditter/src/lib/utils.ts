@@ -85,3 +85,5 @@ export const IsValidJSON = (jsonBlob: string): boolean => {
 };
 
 export const MakeBearerToken = (JwtToken: string) => ({ Authorization: "Bearer " + JwtToken });
+
+export const EscapeHTML = (str: string): string => new Option(str).innerHTML;

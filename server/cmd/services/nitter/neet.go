@@ -90,11 +90,33 @@ func GetNeetComments(nittos, neetId string, limit int) (*NeetInfo, error) {
 	return &result, nil
 }
 
+func fetchNeetThread(s *goquery.Selection) ([]NeetComment, int) {
+	currComment := extractNeetDatas(s)
+	thread, toExclude := []NeetComment{currComment}, 0
+	if s.HasClass("thread") && !s.HasClass("thread-last") && s.Next().Length() != 0 {
+		toExclude++
+		childThread, childToExclude := fetchNeetThread(s.Next())
+
+		thread = append(thread, childThread...)
+		toExclude += childToExclude
+	}
+
+	return thread, toExclude
+}
+
 func extractNeetDatas(s *goquery.Selection) NeetComment {
 	selector := ".tweet-body "
 
 	// Header (creator, createdAt)
 	nittos := s.Find(selector + "> div a.username").Text()
+	pinned := s.Find(selector+"> div > .pinned").Length() == 1
+
+	var retweetedBy string
+	if retweet := utils.TrimString(s.Find(selector + "> div > .retweet-header").Text()); !utils.IsEmptyString(retweet) {
+		if rtDatas := strings.Split(retweet, " "); len(rtDatas) > 0 {
+			retweetedBy = rtDatas[0]
+		}
+	}
 
 	var avatarUrl string
 	if avatarRaw, ok := s.Find(selector + "> div a.tweet-avatar > img.avatar").Attr("src"); ok {
@@ -139,15 +161,15 @@ func extractNeetDatas(s *goquery.Selection) NeetComment {
 	s.Find(selector + "> .tweet-stats .tweet-stat").Each(func(i int, s *goquery.Selection) {
 		num, _ := strconv.Atoi(strings.ReplaceAll(utils.TrimString(s.Text()), ",", ""))
 		switch i {
-		case 1:
+		case 0:
 			replyCounts = num
-		case 2:
+		case 1:
 			rtCounts = num
-		case 3:
+		case 2:
 			quotesCounts = num
-		case 4:
+		case 3:
 			likesCounts = num
-		case 5:
+		case 4:
 			playCounts = num
 		}
 	})
@@ -164,6 +186,6 @@ func extractNeetDatas(s *goquery.Selection) NeetComment {
 	// Potential Link Card
 	linkCard, _ := s.Find(selector + "> .card > a.card-container").Attr("href")
 
-	commentData := NeetBasicComment{content, creator, int(createdAt), stats, attachments, linkCard}
+	commentData := NeetBasicComment{content, creator, int(createdAt), stats, attachments, linkCard, retweetedBy, pinned}
 	return NeetComment{NeetBasicComment: commentData, Quote: quote}
 }

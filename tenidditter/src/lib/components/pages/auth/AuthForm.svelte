@@ -80,11 +80,14 @@
 	};
 
 	const AfterLogin = async (JwtToken: string, headers?: Headers) => {
-		const tedditSubs = headers?.get("TedditSubs"); // retrieve user subs
+		const tedditSubs = headers?.get("TedditSubs"),
+			nitterSubs = headers?.get("NitterSubs"); // retrieve user subs
 		if (!tedditSubs || IsEmptyString(tedditSubs) || !IsValidJSON(tedditSubs))
 			return pushAlert("Invalid login", "error");
+		if (!nitterSubs || IsEmptyString(nitterSubs) || !IsValidJSON(nitterSubs))
+			return pushAlert("Invalid login", "error");
 
-		await SignIn(JwtToken, { teddit: JSON.parse(tedditSubs), nitter: [] }); // validate user jwt
+		await SignIn(JwtToken, { teddit: JSON.parse(tedditSubs), nitter: JSON.parse(nitterSubs) }); // validate user jwt
 		if (!$AuthStore.loggedIn) return;
 
 		pushAlert("Successfully logged in!", "success");

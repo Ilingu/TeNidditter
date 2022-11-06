@@ -2,7 +2,7 @@
 	import type { TedditPost } from "$lib/types/interfaces";
 
 	import Link from "$lib/components/design/Link.svelte";
-	import { FormatNumbers } from "$lib/utils";
+	import { EscapeHTML, FormatNumbers } from "$lib/utils";
 	import FeedHeader from "./FeedHeader.svelte";
 	import { onMount } from "svelte";
 
@@ -25,9 +25,12 @@
 
 		// code Highlighing
 		const hljs = (await import("highlight.js")).default;
-		document
-			.querySelectorAll(".md pre code")
-			.forEach((el) => hljs.highlightElement(el as HTMLElement));
+		document.querySelectorAll(".md pre code").forEach((el) => {
+			const safeHtml = EscapeHTML(el.innerHTML);
+			el.innerHTML = safeHtml; // XSS protection
+
+			hljs.highlightElement(el as HTMLElement);
+		});
 	});
 </script>
 

@@ -8,7 +8,7 @@
 	import { FeedTypeEnum } from "$lib/types/enums";
 	import { afterUpdate, onMount } from "svelte";
 
-	export let data: import("./$types").PageData;
+	export let data: import("./$types").PageServerData;
 
 	let FeedDisplayType = FeedTypeEnum.Hot;
 	let loading = false;

@@ -1,6 +1,7 @@
 import type { User } from "$lib/stores/auth";
 import type {
 	DBSubtedditsShape,
+	NeetComment,
 	TedditHomePageRes,
 	TedditPostInfo,
 	TedditRawPost,
@@ -18,7 +19,8 @@ export type GetRoutes =
 	| "/teddit/home"
 	| "/teddit/r/%s/post/%s"
 	| "/teddit/r/search"
-	| "/tedinitter/teddit/feed";
+	| "/tedinitter/teddit/feed"
+	| "/tedinitter/nitter/feed";
 export type GetReturns<T> = T extends "/tedinitter/userInfo"
 	? User
 	: T extends "/auth/available"
@@ -41,6 +43,8 @@ export type GetReturns<T> = T extends "/tedinitter/userInfo"
 	? DBSubtedditsShape[]
 	: T extends "/tedinitter/teddit/feed"
 	? TedditRawPost[]
+	: T extends "/tedinitter/nitter/feed"
+	? NeetComment[]
 	: never;
 export interface GetParams<T> {
 	query?: T extends "/auth/available"
@@ -55,6 +59,8 @@ export interface GetParams<T> {
 	headers?: T extends "/tedinitter/userInfo"
 		? { Authorization: string }
 		: T extends "/tedinitter/teddit/feed"
+		? { Authorization: string }
+		: T extends "/tedinitter/nitter/feed"
 		? { Authorization: string }
 		: never;
 	params?: T extends "/teddit/r/%s/about"

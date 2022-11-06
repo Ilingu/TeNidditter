@@ -24,14 +24,7 @@ module.exports = {
 				tenidditter: {
 					...require("daisyui/src/colors/themes")["[data-theme=luxury]"]
 				},
-				nitter: {
-					...require("daisyui/src/colors/themes")["[data-theme=night]"],
-					primary: "#1DA1F2",
-					secondary: "#657786",
-					accent: "#AAB8C2",
-					neutral: "#F5F8FA",
-					"base-100": "#14171A"
-				},
+				nitter: require("daisyui/src/colors/themes")["[data-theme=synthwave]"],
 				teddit: {
 					...require("daisyui/src/colors/themes")["[data-theme=halloween]"],
 					primary: "#FF4500",

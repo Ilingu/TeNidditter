@@ -33,21 +33,14 @@ func NitterHandler(n *echo.Group) {
 
 		switch SearchType {
 		case "tweets":
-			var tweets []nitter.NeetComment
-			var err error
-			if queryLimit > 1 {
-				res.SetPublicCache(15 * 60) // 15min
-				tweets, err = nitter.SearchTweetsScrap(QuerySearch, queryLimit)
-			} else {
-				res.SetPublicCache(1 * 60 * 60) // 1h
-				tweets, err = nitter.SearchTweetsXML(QuerySearch)
-			}
+			tweets, err := nitter.SearchTweetsScrap(QuerySearch, queryLimit)
 			if err != nil {
-				res.Response().Header().Del("Cache-Control")
 				return res.HandleResp(http.StatusNotFound, err.Error())
 			}
 
+			res.SetPublicCache(15 * 60) // 15min
 			return res.HandleResp(http.StatusOK, tweets)
+
 		case "users":
 			nittos, err := nitter.SearchNittos(QuerySearch, queryLimit)
 			if err != nil {
@@ -90,20 +83,12 @@ func NitterHandler(n *echo.Group) {
 			queryLimit = int(limit)
 		}
 
-		var tweets []nitter.NeetComment
-		var err error
-		if queryLimit > 1 {
-			res.SetPublicCache(15 * 60) // 15min
-			tweets, err = nitter.NittosTweetsScrap(username, queryLimit)
-		} else {
-			res.SetPublicCache(1 * 60 * 60) // 1h
-			tweets, err = nitter.NittosTweetsXML(username)
-		}
+		tweets, err := nitter.NittosTweetsScrap(username, queryLimit)
 		if err != nil {
-			res.Response().Header().Del("Cache-Control")
 			return res.HandleResp(http.StatusNotFound, "no tweets returned for this user")
 		}
 
+		res.SetPublicCache(15 * 60) // 15min
 		return res.HandleResp(http.StatusOK, tweets)
 	})
 

@@ -26,6 +26,10 @@ type NeetBasicComment struct {
 	Stats        NeetCommentStats `json:"stats"`
 	Attachments  *Attachments     `json:"attachment,omitempty"`
 	ExternalLink string           `json:"externalLink,omitempty"`
+	RetweetedBy  string           `json:"retweeted,omitempty"`
+	
+	// LikedBy      string           `json:"liked,omitempty"`
+	Pinned bool `json:"pinned,omitempty"`
 }
 type Attachments struct {
 	ImagesUrls []string `json:"images,omitempty"`
