@@ -4,6 +4,7 @@
 	import Link from "$lib/components/design/Link.svelte";
 	import { FormatNumbers } from "$lib/utils";
 	import FeedHeader from "./FeedHeader.svelte";
+	import { onMount } from "svelte";
 
 	export let post: TedditPost & { body_html?: string };
 	export let blur = true;
@@ -15,10 +16,24 @@
 		.split("/")
 		.slice(0, -1)
 		.join("/");
+
+	let PostElem: HTMLDivElement;
+	onMount(async () => {
+		if (!PostElem) return;
+		const codeBlock = PostElem.querySelectorAll(".md pre code");
+		if (codeBlock.length <= 0) return;
+
+		// code Highlighing
+		const hljs = (await import("highlight.js")).default;
+		document
+			.querySelectorAll(".md pre code")
+			.forEach((el) => hljs.highlightElement(el as HTMLElement));
+	});
 </script>
 
 <div
 	id={post.id}
+	bind:this={PostElem}
 	class={`post ${
 		blur ? "blurMask" : ""
 	} md:w-[750px] w-[92.5vw] px-1 pt-4 pb-1 transition-all bg-primary-content hover:bg-light-dark min-h-[128px] rounded-lg ring-1 ring-[#686868] ${
@@ -183,19 +198,15 @@
 		text-decoration: underline wavy;
 		color: #5296dd;
 	}
-	:global(.md code) {
+
+	:global(.md :not(pre) code) {
 		background: #666;
 		border-left: 3px solid #ff4500;
 		color: #fff;
-		page-break-inside: avoid;
 		font-family: monospace;
 		font-size: 15px;
-		line-height: 1.6;
-		margin-bottom: 1.6em;
-		max-width: 100%;
 		overflow: auto;
-		padding: 1em 1.5em;
-		display: block;
+		display: inline;
 		word-wrap: break-word;
 	}
 </style>

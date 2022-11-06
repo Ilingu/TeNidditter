@@ -7,7 +7,6 @@
 	import Link from "$lib/components/design/Link.svelte";
 
 	export let data: import("./$types").PageData;
-	$: console.log(data);
 
 	setContext("COMMEMTS_CTX", data.comments);
 	const PostUps = (): number => {

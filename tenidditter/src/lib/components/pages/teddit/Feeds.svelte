@@ -11,7 +11,7 @@
 	export let loading = false;
 	export let rawPosts: (TedditPost | TedditCommmentShape)[];
 
-	onMount(() => {
+	onMount(async () => {
 		document.querySelectorAll(".md a").forEach((a) => {
 			const href = a.getAttribute("href");
 			if (href?.startsWith("/r/")) a.setAttribute("href", `/teddit${href}`);

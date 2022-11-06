@@ -2,7 +2,6 @@
 
 [REMAINING]: redo for twitter
 [https://doppio.sh/] -> OG Image API
-[highlight.js]
 
 # What I learn form this project
 
