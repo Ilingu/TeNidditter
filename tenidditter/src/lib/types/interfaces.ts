@@ -35,19 +35,20 @@ export interface NeetComment extends NeetBasicComment {
 }
 
 export interface NeetBasicComment {
+	id: string;
 	content: string;
 	creator: NittosPreview;
 	createdAt: number;
 	stats: NeetCommentStats;
 	attachment?: Attachments;
 	externalLink?: string;
+	retweeted?: string;
+	pinned?: boolean;
 }
-
 export interface Attachments {
 	images?: string[];
 	videos?: string[];
 }
-
 export interface NeetCommentStats {
 	reply_counts: number;
 	rt_counts: number;
@@ -61,7 +62,6 @@ export interface NittosPreview {
 	description: string;
 	avatarUrl: string;
 }
-
 export interface Nittos {
 	username: string;
 	bio: string;

@@ -35,6 +35,7 @@ func fetchCtxNeetFromUrl(neetUrl string) (*NeetComment, error) {
 	if utils.IsEmptyString(nittos) || utils.IsEmptyString(neetId) || len(neetId) != 19 {
 		return nil, errors.New("invalid neet url")
 	}
+
 	return GetNeetContext(nittos, neetId)
 }
 
@@ -87,8 +88,13 @@ func (neet XmlTweetItem) ToJSON(fromXmlDatas bool) (*NeetComment, error) {
 			reweetedBy = submatchs[1]
 		}
 
-		// missing: stats and videos
-		commentMetadata := NeetBasicComment{neet.Desc, NittosPreview{Username: neet.Creator}, int(createdAt), NeetCommentStats{}, &Attachments{ImagesUrls: imgSrc}, linkCard, reweetedBy, false}
+		var id string
+		if paths := strings.Split(neet.Guid, "/"); len(paths) > 0 {
+			id = strings.TrimSuffix(paths[len(paths)-1], "#m")
+		}
+
+		// missing: user desc, stats and videos
+		commentMetadata := NeetBasicComment{id, neet.Desc, NittosPreview{Username: neet.Creator}, int(createdAt), NeetCommentStats{}, &Attachments{ImagesUrls: imgSrc}, linkCard, reweetedBy, false}
 		comment := NeetComment{NeetBasicComment: commentMetadata}
 
 		return &comment, nil

@@ -2,7 +2,6 @@ package nitter_routes
 
 import (
 	"net/http"
-	"net/url"
 	"strconv"
 	"teniditter-server/cmd/api/routes"
 	"teniditter-server/cmd/global/console"
@@ -22,10 +21,6 @@ func NitterHandler(n *echo.Group) {
 			return res.HandleResp(http.StatusBadRequest, `invalid query "type" or "q"`)
 		}
 
-		if !utils.IsUrlEncoded(QuerySearch) {
-			QuerySearch = url.QueryEscape(QuerySearch)
-		}
-
 		queryLimit := 1
 		if limit, err := strconv.ParseInt(c.QueryParam("limit"), 10, 8); err == nil && limit > 0 && limit <= 127 {
 			queryLimit = int(limit)
@@ -42,6 +37,10 @@ func NitterHandler(n *echo.Group) {
 			return res.HandleResp(http.StatusOK, tweets)
 
 		case "users":
+			if !utils.IsSafeString(QuerySearch) {
+				return res.HandleResp(http.StatusBadRequest, `invalid username`)
+			}
+
 			nittos, err := nitter.SearchNittos(QuerySearch, queryLimit)
 			if err != nil {
 				return res.HandleResp(http.StatusNotFound, err.Error())
@@ -57,7 +56,7 @@ func NitterHandler(n *echo.Group) {
 	n.GET("/nittos/:name/about", func(c echo.Context) error {
 		res := routes.EchoWrapper{Context: c}
 
-		username := utils.FormatString(c.Param("name"))
+		username := c.Param("name")
 		if utils.IsEmptyString(username) {
 			return res.HandleResp(http.StatusBadRequest, "invalid username param")
 		}
@@ -73,7 +72,7 @@ func NitterHandler(n *echo.Group) {
 	n.GET("/nittos/:name/neets", func(c echo.Context) error {
 		res := routes.EchoWrapper{Context: c}
 
-		username := utils.FormatString(c.Param("name"))
+		username := (c.Param("name"))
 		if utils.IsEmptyString(username) {
 			return res.HandleResp(http.StatusBadRequest, "invalid username param")
 		}
@@ -95,8 +94,8 @@ func NitterHandler(n *echo.Group) {
 	n.GET("/nittos/:name/neets/:id", func(c echo.Context) error {
 		res := routes.EchoWrapper{Context: c}
 
-		username, neetId := utils.FormatString(c.Param("name")), c.Param("id")
-		if utils.IsEmptyString(username) || utils.IsEmptyString(neetId) || len(neetId) < 19 {
+		username, neetId := c.Param("name"), c.Param("id")
+		if utils.IsEmptyString(username) || !utils.IsSafeString(username) || utils.IsEmptyString(neetId) || len(neetId) < 19 {
 			return res.HandleResp(http.StatusBadRequest, "invalid params")
 		}
 

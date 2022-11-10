@@ -3,6 +3,7 @@ package nitter
 import (
 	"errors"
 	"fmt"
+	"net/url"
 	"strconv"
 	"strings"
 	"sync"
@@ -24,7 +25,10 @@ func GetNeetContext(nittos, neetId string) (*NeetComment, error) {
 	}
 
 	commentSelector := doc.Find("#m > .timeline-item").First()
+
 	commentData := extractNeetDatas(commentSelector)
+	commentData.Id = neetId
+
 	return &commentData, nil
 }
 
@@ -59,7 +63,10 @@ func GetNeetComments(nittos, neetId string, limit int) (*NeetInfo, error) {
 	go mainTheadSelector.Each(func(i int, s *goquery.Selection) {
 		go func() {
 			defer wg.Done()
-			MainThread[i] = extractNeetDatas(s)
+
+			neetDatas := extractNeetDatas(s)
+			neetDatas.Id = neetId
+			MainThread[i] = neetDatas
 		}()
 	})
 
@@ -78,6 +85,8 @@ func GetNeetComments(nittos, neetId string, limit int) (*NeetInfo, error) {
 	})
 
 	wg.Wait()
+
+	deleteDuplicatesNeets(&Reply)
 	result := NeetInfo{MainThread, Reply}
 
 	// caching
@@ -105,27 +114,32 @@ func fetchNeetThread(s *goquery.Selection) ([]NeetComment, int) {
 }
 
 func extractNeetDatas(s *goquery.Selection) NeetComment {
+	// ID
+	var id string
+	idLink := s.Find("a.tweet-link").AttrOr("href", "")
+	if paths := strings.Split(idLink, "/"); len(paths) > 0 {
+		id = strings.TrimSuffix(paths[len(paths)-1], "#m")
+	}
+
 	selector := ".tweet-body "
 
 	// Header (creator, createdAt)
-	nittos := s.Find(selector + "> div a.username").Text()
+	nittos := s.Find(selector + "> div a.username").First().Text()
 	pinned := s.Find(selector+"> div > .pinned").Length() == 1
 
 	var retweetedBy string
-	if retweet := utils.TrimString(s.Find(selector + "> div > .retweet-header").Text()); !utils.IsEmptyString(retweet) {
-		if rtDatas := strings.Split(retweet, " "); len(rtDatas) > 0 {
-			retweetedBy = rtDatas[0]
-		}
+	if retweet := utils.TrimString(s.Find(selector + "> div > .retweet-header").First().Text()); !utils.IsEmptyString(retweet) {
+		retweetedBy = strings.TrimSuffix(retweet, " retweeted")
 	}
 
 	var avatarUrl string
-	if avatarRaw, ok := s.Find(selector + "> div a.tweet-avatar > img.avatar").Attr("src"); ok {
+	if avatarRaw, ok := s.Find(selector + "> div a.tweet-avatar > img.avatar").First().Attr("src"); ok {
 		avatarUrl = "https://nitter.pussthecat.org" + avatarRaw
 	}
 	creator := NittosPreview{Username: nittos, AvatarUrl: avatarUrl}
 
 	var createdAt int64
-	if dateFormatted, exist := s.Find(selector + "> div span.tweet-date > a").Attr("title"); exist {
+	if dateFormatted, exist := s.Find(selector + "> div span.tweet-date > a").First().Attr("title"); exist {
 		const layout = "Jan 2, 2006 · 3:04 PM UTC"
 		if t, err := time.Parse(layout, dateFormatted); err == nil {
 			createdAt = t.Unix()
@@ -133,7 +147,7 @@ func extractNeetDatas(s *goquery.Selection) NeetComment {
 	}
 
 	// Body/Title
-	content, _ := s.Find(selector + "> .tweet-content").Html()
+	content, _ := s.Find(selector + "> .tweet-content").First().Html()
 	if utils.ContainsScript(content) {
 		content = ""
 	}
@@ -147,7 +161,11 @@ func extractNeetDatas(s *goquery.Selection) NeetComment {
 	})
 	s.Find(selector + "> .attachments video").Each(func(i int, s *goquery.Selection) {
 		if rawUrl, exist := s.Attr("data-url"); exist {
-			vidUrl = append(vidUrl, "https://nitter.pussthecat.org"+rawUrl)
+			if paths := strings.Split(rawUrl, "/"); len(paths) > 0 {
+				if hostUrl, err := url.QueryUnescape(paths[len(paths)-1]); err == nil {
+					vidUrl = append(vidUrl, hostUrl)
+				}
+			}
 		}
 	})
 
@@ -177,15 +195,15 @@ func extractNeetDatas(s *goquery.Selection) NeetComment {
 
 	// Potential Quote
 	var quote *NeetBasicComment
-	if quoteUrl, exist := s.Find(selector + "> .quote > a.quote-link").Attr("href"); exist {
+	if quoteUrl, exist := s.Find(selector + "> .quote > a.quote-link").First().Attr("href"); exist {
 		if quoteData, err := fetchCtxNeetFromUrl(quoteUrl); err == nil {
 			quote = &quoteData.NeetBasicComment
 		}
 	}
 
 	// Potential Link Card
-	linkCard, _ := s.Find(selector + "> .card > a.card-container").Attr("href")
+	linkCard, _ := s.Find(selector + "> .card > a.card-container").First().Attr("href")
 
-	commentData := NeetBasicComment{content, creator, int(createdAt), stats, attachments, linkCard, retweetedBy, pinned}
+	commentData := NeetBasicComment{id, content, creator, int(createdAt), stats, attachments, linkCard, retweetedBy, pinned}
 	return NeetComment{NeetBasicComment: commentData, Quote: quote}
 }

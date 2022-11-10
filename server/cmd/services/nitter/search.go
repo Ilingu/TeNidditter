@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"teniditter-server/cmd/global/console"
 	"teniditter-server/cmd/global/utils"
 	"teniditter-server/cmd/redis"
@@ -58,7 +59,7 @@ func SearchTweetsScrap(q string, limit int) ([][]NeetComment, error) {
 		return comments, nil // Returned from cache
 	}
 
-	URL := fmt.Sprintf("https://nitter.pussthecat.org/search?f=tweets&q=%s", q)
+	URL := fmt.Sprintf("https://nitter.pussthecat.org/search?f=tweets&q=%s", url.QueryEscape(q))
 	tweets, err := fetchTweets(URL, limit)
 	if err != nil {
 		return nil, err
@@ -77,9 +78,9 @@ func SearchNittos(username string, limit int) (*[]NittosPreview, error) {
 		return &nittos, nil // Returned from cache
 	}
 
-	URL := fmt.Sprintf("https://nitter.pussthecat.org/search?f=users&q=%s", utils.FormatString(username))
+	URL := fmt.Sprintf("https://nitter.pussthecat.org/search?f=users&q=%s", username)
 
-	_, nittosSelectors := queryMoreSelectors(URL, ".timeline-item", "div.timeline > div.show-more > a", limit)
+	_, nittosSelectors := queryMoreSelectors(URL, ".timeline-item", "div.timeline > .show-more:not(.timeline-item) > a", limit)
 	if nittosSelectors == nil {
 		return nil, errors.New("no tweets found")
 	}

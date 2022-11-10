@@ -47,7 +47,7 @@ func queryMoreSelectors(URL, elemsSelector, nextQuerySelector string, limit int)
 }
 
 func fetchTweets(URL string, limit int) ([][]NeetComment, error) {
-	_, tweetsSelectors := queryMoreSelectors(URL, ".timeline-item", "div.timeline > div.show-more > a", limit)
+	_, tweetsSelectors := queryMoreSelectors(URL, ".timeline-item", "div.timeline > .show-more:not(.timeline-item) > a", limit)
 	if tweetsSelectors == nil {
 		return nil, errors.New("no tweets found")
 	}
@@ -66,5 +66,20 @@ func fetchTweets(URL string, limit int) ([][]NeetComment, error) {
 		skip = toExclude
 		Tweets = append(Tweets, thread)
 	})
+	deleteDuplicatesNeets(&Tweets)
+
 	return Tweets, nil
+}
+
+func deleteDuplicatesNeets(neets *[][]NeetComment) {
+	seen := map[string]bool{}
+	for i, thread := range *neets {
+		for j, neet := range thread {
+			if _, exist := seen[neet.Id]; exist {
+				(*neets)[i] = append(thread[:j], thread[j+1:]...)
+			} else {
+				seen[neet.Id] = true
+			}
+		}
+	}
 }

@@ -26,6 +26,10 @@ func IsEmptyString(str any) bool {
 	return !isStr || len(strings.TrimSpace(realStr)) <= 0
 }
 
+func IsSafeString(str string) bool {
+	return url.QueryEscape(str) == str
+}
+
 func SafeString(str string) string {
 	return url.QueryEscape(strings.ToLower(strings.TrimSpace(str)))
 }

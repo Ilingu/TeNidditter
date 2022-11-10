@@ -20,6 +20,7 @@ type NeetComment struct {
 	Quote *NeetBasicComment `json:"quote,omitempty"`
 }
 type NeetBasicComment struct {
+	Id           string           `json:"id"`
 	Content      string           `json:"content"`
 	Creator      NittosPreview    `json:"creator"`
 	CreatedAt    int              `json:"createdAt"`
@@ -27,7 +28,7 @@ type NeetBasicComment struct {
 	Attachments  *Attachments     `json:"attachment,omitempty"`
 	ExternalLink string           `json:"externalLink,omitempty"`
 	RetweetedBy  string           `json:"retweeted,omitempty"`
-	
+
 	// LikedBy      string           `json:"liked,omitempty"`
 	Pinned bool `json:"pinned,omitempty"`
 }

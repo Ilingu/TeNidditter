@@ -16,7 +16,7 @@ func TedditHandler(t *echo.Group) {
 		res := routes.EchoWrapper{Context: c}
 
 		username := c.Param("username")
-		if utils.IsEmptyString(username) {
+		if utils.IsEmptyString(username) || !utils.IsSafeString(username) {
 			return res.HandleResp(http.StatusBadRequest, "invalid username")
 		}
 
@@ -32,7 +32,7 @@ func TedditHandler(t *echo.Group) {
 	t.GET("/r/:subreddit/post/:id", func(c echo.Context) error {
 		res := routes.EchoWrapper{Context: c}
 
-		subreddit := utils.FormatToSafeString(c.Param("subreddit"))
+		subreddit := c.Param("subreddit")
 		postId := utils.SafeString(c.Param("id"))
 		sort := c.QueryParam("sort")
 
@@ -56,7 +56,7 @@ func TedditHandler(t *echo.Group) {
 	t.GET("/r/search", func(c echo.Context) error {
 		res := routes.EchoWrapper{Context: c}
 
-		subreddit := utils.FormatToSafeString(c.QueryParam("q"))
+		subreddit := c.QueryParam("q")
 		if utils.IsEmptyString(subreddit) {
 			return res.HandleResp(http.StatusBadRequest, "invalid subreddit")
 		}
@@ -73,7 +73,7 @@ func TedditHandler(t *echo.Group) {
 	t.GET("/r/:subreddit/about", func(c echo.Context) error {
 		res := routes.EchoWrapper{Context: c}
 
-		subreddit := utils.FormatToSafeString(c.Param("subreddit"))
+		subreddit := c.Param("subreddit")
 		if utils.IsEmptyString(subreddit) {
 			return res.HandleResp(http.StatusBadRequest, "invalid subreddit")
 		}
@@ -90,7 +90,7 @@ func TedditHandler(t *echo.Group) {
 	t.GET("/r/:subreddit/posts", func(c echo.Context) error {
 		res := routes.EchoWrapper{Context: c}
 
-		subreddit := utils.FormatToSafeString(c.Param("subreddit"))
+		subreddit := c.Param("subreddit")
 		if utils.IsEmptyString(subreddit) {
 			return res.HandleResp(http.StatusBadRequest, "invalid subreddit")
 		}

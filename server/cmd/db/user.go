@@ -75,11 +75,11 @@ func (u *AccountModel) GetTedditFeed() (*[]map[string]any, error) {
 	}
 	return nil, errors.New("no sub posts cached for this user")
 }
-func (u *AccountModel) GetNitterFeed() (*[]nitter.NeetComment, error) {
+func (u *AccountModel) GetNitterFeed() (*[][]nitter.NeetComment, error) {
 	userKey := utils.GenerateKeyFromArgs(u.AccountId, u.Username /* if not enough add: u.CreatedAt.String() */)
 	redisKey := rediskeys.NewKey(rediskeys.NITTER_USER_FEED, userKey)
 
-	if subPosts, err := redis.Get[[]nitter.NeetComment](redisKey); err == nil {
+	if subPosts, err := redis.Get[[][]nitter.NeetComment](redisKey); err == nil {
 		return &subPosts, nil // Returned from cache
 	}
 	return nil, errors.New("no tweets cached for this user")
@@ -102,7 +102,7 @@ func (u *AccountModel) GenerateNitterFeed() (*[][]nitter.NeetComment, error) {
 	for _, username := range Nsubs {
 		go func(username string) {
 			defer wg.Done()
-			tweets, err := nitter.NittosTweetsScrap(username, 2)
+			tweets, err := nitter.NittosTweetsScrap(username, 3)
 			if err != nil {
 				return
 			}
