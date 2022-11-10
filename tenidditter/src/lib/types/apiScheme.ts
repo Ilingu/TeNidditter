@@ -44,7 +44,7 @@ export type GetReturns<T> = T extends "/tedinitter/userInfo"
 	: T extends "/tedinitter/teddit/feed"
 	? TedditRawPost[]
 	: T extends "/tedinitter/nitter/feed"
-	? NeetComment[]
+	? NeetComment[][]
 	: never;
 export interface GetParams<T> {
 	query?: T extends "/auth/available"

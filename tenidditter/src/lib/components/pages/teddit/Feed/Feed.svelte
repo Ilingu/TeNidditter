@@ -2,9 +2,8 @@
 	import type { TedditPost } from "$lib/types/interfaces";
 
 	import Link from "$lib/components/design/Link.svelte";
-	import { EscapeHTML, FormatNumbers } from "$lib/utils";
+	import { FormatNumbers } from "$lib/utils";
 	import FeedHeader from "./FeedHeader.svelte";
-	import { onMount } from "svelte";
 
 	export let post: TedditPost & { body_html?: string };
 	export let blur = true;
@@ -16,27 +15,10 @@
 		.split("/")
 		.slice(0, -1)
 		.join("/");
-
-	let PostElem: HTMLDivElement;
-	onMount(async () => {
-		if (!PostElem) return;
-		const codeBlock = PostElem.querySelectorAll(".md pre code");
-		if (codeBlock.length <= 0) return;
-
-		// code Highlighing
-		const hljs = (await import("highlight.js")).default;
-		document.querySelectorAll(".md pre code").forEach((el) => {
-			const safeHtml = EscapeHTML(el.innerHTML);
-			el.innerHTML = safeHtml; // XSS protection
-
-			hljs.highlightElement(el as HTMLElement);
-		});
-	});
 </script>
 
 <div
 	id={post.id}
-	bind:this={PostElem}
 	class={`post ${
 		blur ? "blurMask" : ""
 	} md:w-[750px] w-[92.5vw] px-1 pt-4 pb-1 transition-all bg-primary-content hover:bg-light-dark min-h-[128px] rounded-lg ring-1 ring-[#686868] ${

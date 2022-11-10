@@ -5,8 +5,15 @@
 
 <div class="md:hidden dropdown w-screen mt-2">
 	<div class="grid place-items-center">
-		<label tabindex="0" for="" class="btn btn-outline btn-sm btn-primary btn-wide text-xl gap-x-2">
-			<i class="fa-solid fa-magnifying-glass" />Search
+		<label tabindex="0" for="" class="text-xl gap-x-2">
+			<div class="form-control">
+				<div class="input-group">
+					<input type="text" placeholder="Search teddit" readonly class="input input-bordered" />
+					<button class="btn btn-square">
+						<i class="fa-solid fa-magnifying-glass" />
+					</button>
+				</div>
+			</div>
 		</label>
 	</div>
 

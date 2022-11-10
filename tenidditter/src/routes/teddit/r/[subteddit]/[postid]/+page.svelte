@@ -1,10 +1,10 @@
 <script lang="ts">
-	import Feed from "$lib/components/pages/teddit/Feed/Feed.svelte";
 	import { page } from "$app/stores";
 	import { setContext } from "svelte";
 	import Comments from "$lib/components/pages/teddit/comments/Comments.svelte";
 	import { humanElapsedTime } from "$lib/utils";
 	import Link from "$lib/components/design/Link.svelte";
+	import Feeds from "$lib/components/pages/teddit/Feeds.svelte";
 
 	export let data: import("./$types").PageData;
 
@@ -48,28 +48,31 @@
 
 <main class="max-w-[1500px] m-auto flex flex-col items-center gap-x-8 px-2 py-5">
 	<div class="max-w-[750px]">
-		<Feed
-			post={{
-				id: $page.params.postid,
-				title: data.metadata.post_title,
-				author: data.metadata.post_author,
-				created: data.metadata.post_created,
-				body_html: data.metadata.body_html,
+		<Feeds
+			rawPosts={[
+				{
+					id: $page.params.postid,
+					title: data.metadata.post_title,
+					author: data.metadata.post_author,
+					created: data.metadata.post_created,
+					body_html: data.metadata.body_html,
 
-				ups: PostUps(),
-				num_comments: data.metadata.post_nb_comments,
+					ups: PostUps(),
+					num_comments: data.metadata.post_nb_comments,
 
-				subreddit: $page.params.subteddit,
+					subreddit: $page.params.subteddit,
 
-				is_self_link: true,
-				is_video: false,
-				stickied: false,
+					is_self_link: true,
+					is_video: false,
+					stickied: false,
 
-				url: "",
-				domain: "",
-				permalink: ""
-			}}
-			blur={false}
+					url: "",
+					domain: "",
+					permalink: "",
+
+					blur: false
+				}
+			]}
 		/>
 
 		<details class="w-full max-w-xs mt-5">

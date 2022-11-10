@@ -5,7 +5,7 @@ import { error, redirect } from "@sveltejs/kit";
 
 export const load: import("./$types").PageServerLoad = async ({
 	cookies
-}): Promise<{ comments: NeetComment[] }> => {
+}): Promise<{ comments: NeetComment[][] }> => {
 	const eToken = cookies.get("JwtToken");
 	if (!eToken || IsEmptyString(eToken)) throw redirect(307, `/nitter/search`);
 

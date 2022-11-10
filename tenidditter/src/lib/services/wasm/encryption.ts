@@ -4,6 +4,15 @@ import { WasmInitiate } from "./wasm";
 
 import { PUBLIC_ENCRYPT_KEY } from "$env/static/public";
 
+export const HashDatas = (str: string): string => {
+	if (IsEmptyString(str)) return "";
+
+	if (!WasmInitiate || !Hash) return "";
+	const hashed = Hash(str);
+
+	if (IsEmptyString(hashed)) return "";
+	return hashed;
+};
 export const EncryptDatas = (str: string): FunctionJob<string> => {
 	if (IsEmptyString(str)) return { success: false };
 

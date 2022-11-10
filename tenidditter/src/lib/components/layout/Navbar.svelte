@@ -19,7 +19,7 @@
 </script>
 
 <!-- Desktop Version -->
-<nav class="navbar bg-base-100 sticky top-0 z-10 hidden md:flex">
+<nav class="navbar bg-base-200 sticky top-0 z-10 hidden md:flex">
 	<div class="navbar-start">
 		<Link href="/">
 			<button class="btn btn-ghost lg:text-3xl text-2xl font-nerd font-bold">
@@ -55,14 +55,14 @@
 					class="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-72"
 				>
 					<li>
-						<Link href={"/teddit/r"}
+						<Link href="/teddit/r"
 							><button class="btn btn-primary gap-x-3 w-full"
 								><i class="fa-solid fa-magnifying-glass" /> Search Subteddit</button
 							></Link
 						>
 					</li>
 					<li>
-						<Link href={"/teddit/u"}
+						<Link href="/teddit/u"
 							><button class="btn btn-warning gap-x-3 w-full">
 								<i class="fas fa-user" />
 								Search Teddit's User</button
@@ -71,6 +71,12 @@
 					</li>
 				</ul>
 			</div>
+		{:else if $page.url.pathname.includes("/nitter")}
+			<Link href="/nitter/search">
+				<label tabindex="0" for="" class="btn btn-ghost text-xl">
+					<i class="fa-solid fa-magnifying-glass" />
+				</label></Link
+			>
 		{/if}
 		{#if $AuthStore.loggedIn}
 			<div class="dropdown dropdown-end">

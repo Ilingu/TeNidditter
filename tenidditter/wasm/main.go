@@ -18,5 +18,6 @@ func main() {
 	c := make(chan struct{}, 0)
 	js.Global().Set("EncryptAES", encryption.EncryptDatas())
 	js.Global().Set("DecryptAES", encryption.DecryptDatas())
+	js.Global().Set("Hash", encryption.Hash())
 	<-c
 }

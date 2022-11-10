@@ -3,9 +3,22 @@ package encryption
 import (
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/sha256"
 	"encoding/base64"
+	"fmt"
 	"syscall/js"
 )
+
+func Hash() js.Func {
+	return js.FuncOf(func(this js.Value, args []js.Value) interface{} {
+		if len(args) != 1 {
+			return "Invalid no of arguments passed"
+		}
+
+		toHash := args[0].String()
+		return HashSHA256(toHash)
+	})
+}
 
 func EncryptDatas() js.Func {
 	return js.FuncOf(func(this js.Value, args []js.Value) interface{} {
@@ -76,4 +89,10 @@ func DecryptAES(text, MySecret string) string {
 	cfb.XORKeyStream(plainText, cipherText)
 
 	return string(plainText)
+}
+
+func HashSHA256(str string) string {
+	ByteHash := sha256.Sum256([]byte(str))
+	HashedStr := fmt.Sprintf("%x", ByteHash[:])
+	return HashedStr
 }

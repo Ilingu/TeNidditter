@@ -5,11 +5,11 @@
 	import { onMount } from "svelte";
 	import Feed from "./Feed/Feed.svelte";
 	import Loader from "$lib/components/design/Loader.svelte";
-	import { isValidUrl } from "$lib/utils";
+	import { EscapeHTML, isValidUrl } from "$lib/utils";
 	import Comments from "./comments/Comments.svelte";
 
 	export let loading = false;
-	export let rawPosts: (TedditPost | TedditCommmentShape)[];
+	export let rawPosts: ((TedditPost & { blur?: boolean }) | TedditCommmentShape)[];
 
 	onMount(async () => {
 		document.querySelectorAll(".md a").forEach((a) => {
@@ -23,6 +23,18 @@
 				a.setAttribute("rel", "noopener noreferrer");
 			}
 		});
+
+		const codeBlock = document.querySelectorAll("#PostContainer .md pre code");
+		if (codeBlock.length <= 0) return;
+
+		// code Highlighing (maybe webworker if too much)
+		const hljs = (await import("highlight.js")).default;
+		codeBlock.forEach((el) => {
+			const safeHtml = EscapeHTML(el.innerHTML);
+			el.innerHTML = safeHtml; // XSS protection
+
+			hljs.highlightElement(el as HTMLElement);
+		});
 	});
 </script>
 
@@ -31,7 +43,7 @@
 		{#if postData.type === "t1"}
 			<Comments comment={postData} />
 		{:else}
-			<Feed post={postData} />
+			<Feed post={postData} blur={postData.blur} />
 		{/if}
 		<div class="my-5" />
 	{/each}
