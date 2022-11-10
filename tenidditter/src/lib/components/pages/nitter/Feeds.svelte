@@ -3,8 +3,8 @@
 	import { isValidUrl } from "$lib/utils";
 	import { onMount } from "svelte";
 	import Neet from "./Neet.svelte";
-
 	import type Hls from "hls.js";
+	import PictureZoom from "./PictureZoom.svelte";
 
 	export let neets: NeetComment[][];
 
@@ -13,6 +13,7 @@
 		if (!feedDiv) return;
 
 		feedDiv.querySelectorAll(".neet .neet-body a").forEach((a) => {
+			if (a.classList.contains("not")) return;
 			const href = a.getAttribute("href");
 
 			if (href?.startsWith("http")) {
@@ -62,3 +63,5 @@
 		</div>
 	{/each}
 </div>
+
+<PictureZoom />

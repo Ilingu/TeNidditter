@@ -5,7 +5,6 @@
 	import AuthStore from "$lib/stores/auth";
 
 	export let data: import("./$types").PageServerData;
-	console.log(data);
 </script>
 
 <main class="grid place-items-center mt-5">

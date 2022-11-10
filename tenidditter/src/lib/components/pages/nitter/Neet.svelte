@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Link from "$lib/components/design/Link.svelte";
-	import type { NeetComment } from "$lib/types/interfaces";
+	import type { NeetComment, openImgArgs } from "$lib/types/interfaces";
 	import { FormatNumbers, humanElapsedTime, IsEmptyString } from "$lib/utils";
 
 	export let neet: NeetComment;
@@ -8,6 +8,16 @@
 
 	type threadType = [isThread: boolean, threadId: "first" | "last" | undefined];
 	export let thread: threadType = [false, undefined];
+
+	const openImageDrawer = (urls: string[], currIndex: number) => {
+		const alert = new CustomEvent("openImageDrawer", {
+			detail: {
+				urls,
+				currIndex
+			} as openImgArgs
+		});
+		document.dispatchEvent(alert);
+	};
 </script>
 
 <div
@@ -65,12 +75,12 @@
 	<div class="neet-body">
 		<Link href={`/nitter/${neet.creator.username.slice(1)}/${neet.id}`} className="not">
 			<p class="font-bold">{@html neet.content}</p>
-			<div>
-				{#if neet.quote}
-					<svelte:self neet={neet.quote} quoteMode={true} />
-				{/if}
-			</div></Link
-		>
+		</Link>
+		<div>
+			{#if neet.quote}
+				<svelte:self neet={neet.quote} quoteMode={true} />
+			{/if}
+		</div>
 	</div>
 
 	{#if Object.keys(neet.attachment ?? {}).length > 0}
@@ -81,8 +91,13 @@
 						(neet.attachment?.images?.length ?? 0) > 1 ? "grid-cols-2" : "grid-cols-1"
 					} gap-1`}
 				>
-					{#each neet.attachment?.images ?? [] as imgUrl}
-						<img src={imgUrl} class="rounded cursor-pointer" alt="🖼" />
+					{#each neet.attachment?.images ?? [] as imgUrl, i}
+						<img
+							on:click={() => openImageDrawer(neet.attachment?.images ?? [], i)}
+							src={imgUrl}
+							class="rounded cursor-zoom-in"
+							alt="🖼"
+						/>
 					{/each}
 				</div>
 			{/if}

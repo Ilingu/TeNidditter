@@ -9,6 +9,11 @@ export interface FeedResult extends FunctionJob<TedditRawPost[]> {
 	type?: FeedType;
 }
 
+export interface openImgArgs {
+	urls: string[];
+	currIndex: number;
+}
+
 export interface AlertShape {
 	message: string;
 	duration: number;
