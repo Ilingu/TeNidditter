@@ -2,6 +2,7 @@
 
 [REMAINING]: redo for twitter
 [https://doppio.sh/] -> OG Image API
++Breadcrumbs
 
 # What I learn form this project
 

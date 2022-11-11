@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { NeetComment } from "$lib/types/interfaces";
 	import { isValidUrl } from "$lib/utils";
-	import { onMount } from "svelte";
+	import { afterUpdate } from "svelte";
 	import Neet from "./Neet.svelte";
 	import type Hls from "hls.js";
 	import PictureZoom from "./PictureZoom.svelte";
@@ -9,7 +9,8 @@
 	export let neets: NeetComment[][];
 
 	let feedDiv: HTMLDivElement;
-	onMount(async () => {
+	const initFeed = async () => {
+		console.log("Init");
 		if (!feedDiv) return;
 
 		feedDiv.querySelectorAll(".neet .neet-body a").forEach((a) => {
@@ -30,6 +31,15 @@
 
 		HlsInstance = (await import("hls.js")).default;
 		NeetVideos.forEach((vid) => playVideo(vid as HTMLMediaElement));
+	};
+
+	$: if (neets) execAfterUpdate.add(initFeed);
+
+	let execAfterUpdate = new Set<Function>();
+	afterUpdate(() => {
+		console.log(execAfterUpdate);
+		execAfterUpdate.forEach((fn) => fn());
+		execAfterUpdate.clear();
 	});
 
 	let HlsInstance: typeof Hls;
@@ -50,17 +60,19 @@
 
 <div class="flex flex-col gap-y-5" bind:this={feedDiv}>
 	{#each neets as neetThread}
-		<div class="">
-			{#each neetThread as neet, i}
-				<Neet
-					{neet}
-					thread={[
-						neetThread.length > 1,
-						i === 0 ? "first" : i === neetThread.length - 1 ? "last" : undefined
-					]}
-				/>
-			{/each}
-		</div>
+		{#if neetThread?.length > 0 && neetThread[0].createdAt > 0}
+			<div>
+				{#each neetThread as neet, i}
+					<Neet
+						{neet}
+						thread={[
+							neetThread.length > 1,
+							i === 0 ? "first" : i === neetThread.length - 1 ? "last" : undefined
+						]}
+					/>
+				{/each}
+			</div>
+		{/if}
 	{/each}
 </div>
 

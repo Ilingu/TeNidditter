@@ -36,13 +36,13 @@ interface APIResShape<T = never> {
 
 /* API Client */
 export default class api {
-	static async get<T extends GetRoutes>(
+	static async get<T extends GetRoutes, U>(
 		uri: T,
 		{ query, headers, params }: GetParams<T>,
 		customFetch?: typeof fetch
-	): Promise<ApiClientResp<GetReturns<T>>> {
+	): Promise<ApiClientResp<GetReturns<T, U>>> {
 		uri = BuildURI<T>(uri, { params, query });
-		return await callApi<GetReturns<T>>(
+		return await callApi<GetReturns<T, U>>(
 			{
 				uri,
 				method: "GET",
@@ -143,7 +143,7 @@ const BuildURI = <T extends string>(
 		(uri as string) += "?";
 		for (const [key, val] of Object.entries(query)) {
 			if (val === null || typeof val === "undefined") continue;
-			(uri as string) += `${key}=${encodeURI(val)}&`;
+			(uri as string) += `${key}=${encodeURIComponent(val)}&`;
 		}
 		(uri as string) = uri.replace(/&+$/, "") as "/tedinitter/userInfo" | `/auth/available`; // trim last &
 	}

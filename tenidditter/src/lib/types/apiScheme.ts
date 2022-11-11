@@ -2,6 +2,7 @@ import type { User } from "$lib/stores/auth";
 import type {
 	DBSubtedditsShape,
 	NeetComment,
+	NittosPreview,
 	TedditHomePageRes,
 	TedditPostInfo,
 	TedditRawPost,
@@ -20,8 +21,12 @@ export type GetRoutes =
 	| "/teddit/r/%s/post/%s"
 	| "/teddit/r/search"
 	| "/tedinitter/teddit/feed"
-	| "/tedinitter/nitter/feed";
-export type GetReturns<T> = T extends "/tedinitter/userInfo"
+	| "/tedinitter/nitter/feed"
+	| "/nitter/search"
+	| "/nitter/nittos/%s/about"
+	| "/nitter/nittos/%s/neets"
+	| "/nitter/nittos/%s/neets/%s";
+export type GetReturns<T, U> = T extends "/tedinitter/userInfo"
 	? User
 	: T extends "/auth/available"
 	? boolean
@@ -45,6 +50,14 @@ export type GetReturns<T> = T extends "/tedinitter/userInfo"
 	? TedditRawPost[]
 	: T extends "/tedinitter/nitter/feed"
 	? NeetComment[][]
+	: T extends "/nitter/search"
+	? U extends "tweets"
+		? NeetComment[][]
+		: U extends "users"
+		? NittosPreview[]
+		: NeetComment[][] | NittosPreview[]
+	: T extends "/nitter/nittos/%s/about"
+	? NeetComment[][]
 	: never;
 export interface GetParams<T> {
 	query?: T extends "/auth/available"
@@ -55,6 +68,8 @@ export interface GetParams<T> {
 		? { sort: string }
 		: T extends "/teddit/r/search"
 		? { q: string }
+		: T extends "/nitter/search"
+		? { type: "users" | "tweets"; q: string; limit?: number }
 		: never;
 	headers?: T extends "/tedinitter/userInfo"
 		? { Authorization: string }

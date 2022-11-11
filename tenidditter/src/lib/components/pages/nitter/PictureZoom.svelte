@@ -24,7 +24,7 @@
 			y = ev.clientY - ev.currentTarget.offsetTop;
 
 		ev.currentTarget.style.transformOrigin = `${x}px ${y}px`;
-		ev.currentTarget.style.transform = "scale(2.5)";
+		ev.currentTarget.style.transform = "scale(2)";
 	};
 	const ZoomOut = (ev: MouseEvent & AndInfoEvent) => {
 		ev.currentTarget.style.transformOrigin = "center";
@@ -55,6 +55,7 @@
 			on:mouseleave={ZoomOut}
 			src={imgDrawer[1][imgDrawer[2]]}
 			alt="Zoomed img"
+			class="select-none"
 		/>
 		<button class="btn btn-secondary" on:click={NextPic}>
 			<i class="fa-solid fa-forward" />

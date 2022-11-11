@@ -36,10 +36,11 @@ export const LogOut = async (serverLogout = false, JwtToken?: string) => {
 	AuthStore.set({ loggedIn: false });
 
 	if (serverLogout)
-		await api.delete("/auth/logout", {
+		return await api.delete("/auth/logout", {
 			credentials: true,
 			query: JwtToken ? { token: JwtToken } : undefined
 		});
+	fetch("/api/logout", { method: "delete" });
 	// "executionContexts" should handle the reload part
 };
 
