@@ -3,6 +3,8 @@ import type { NeetComment } from "$lib/types/interfaces";
 import { IsEmptyString, MakeBearerToken } from "$lib/utils";
 import { error, redirect } from "@sveltejs/kit";
 
+export const prerender = false;
+
 export const load: import("./$types").PageServerLoad = async ({
 	cookies
 }): Promise<{ comments: NeetComment[][] }> => {

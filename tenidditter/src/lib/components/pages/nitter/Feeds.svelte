@@ -1,16 +1,16 @@
 <script lang="ts">
 	import type { NeetComment } from "$lib/types/interfaces";
-	import { isValidUrl } from "$lib/utils";
+	import { IsEmptyString, isValidUrl } from "$lib/utils";
 	import { afterUpdate } from "svelte";
 	import Neet from "./Neet.svelte";
 	import type Hls from "hls.js";
 	import PictureZoom from "./PictureZoom.svelte";
 
 	export let neets: NeetComment[][];
+	export let queryMoreCb = () => {};
 
 	let feedDiv: HTMLDivElement;
 	const initFeed = async () => {
-		console.log("Init");
 		if (!feedDiv) return;
 
 		feedDiv.querySelectorAll(".neet .neet-body a").forEach((a) => {
@@ -32,12 +32,29 @@
 		HlsInstance = (await import("hls.js")).default;
 		NeetVideos.forEach((vid) => playVideo(vid as HTMLMediaElement));
 	};
+	const observeQueryMore = () => {
+		const lastCommentId = [5, 4, 3, 2, 1].find(
+			(i) => !IsEmptyString((neets.at(-i) ?? [{ id: "" }])[0].id)
+		);
+		if (!lastCommentId) return;
 
-	$: if (neets) execAfterUpdate.add(initFeed);
+		const latest5Comment = document.getElementById(`neet-${neets.at(-lastCommentId)![0].id}`);
+		if (!latest5Comment) return;
+
+		const commentOberser: IntersectionObserverCallback = ([comment]) => {
+			if (!comment.isIntersecting) return;
+			InfiniteScrollObserver.unobserve(latest5Comment);
+			queryMoreCb();
+		};
+
+		const InfiniteScrollObserver = new IntersectionObserver(commentOberser);
+		InfiniteScrollObserver.observe(latest5Comment);
+	};
+
+	$: if (neets) execAfterUpdate.add(initFeed).add(observeQueryMore);
 
 	let execAfterUpdate = new Set<Function>();
 	afterUpdate(() => {
-		console.log(execAfterUpdate);
 		execAfterUpdate.forEach((fn) => fn());
 		execAfterUpdate.clear();
 	});

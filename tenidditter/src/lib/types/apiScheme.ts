@@ -2,6 +2,8 @@ import type { User } from "$lib/stores/auth";
 import type {
 	DBSubtedditsShape,
 	NeetComment,
+	NeetInfo,
+	Nittos,
 	NittosPreview,
 	TedditHomePageRes,
 	TedditPostInfo,
@@ -57,7 +59,11 @@ export type GetReturns<T, U> = T extends "/tedinitter/userInfo"
 		? NittosPreview[]
 		: NeetComment[][] | NittosPreview[]
 	: T extends "/nitter/nittos/%s/about"
+	? Nittos
+	: T extends "/nitter/nittos/%s/neets"
 	? NeetComment[][]
+	: T extends "/nitter/nittos/%s/neets/%s"
+	? NeetInfo
 	: never;
 export interface GetParams<T> {
 	query?: T extends "/auth/available"
@@ -70,6 +76,10 @@ export interface GetParams<T> {
 		? { q: string }
 		: T extends "/nitter/search"
 		? { type: "users" | "tweets"; q: string; limit?: number }
+		: T extends "/nitter/nittos/%s/neets"
+		? { limit?: number }
+		: T extends "/nitter/nittos/%s/neets/%s"
+		? { limit?: number }
 		: never;
 	headers?: T extends "/tedinitter/userInfo"
 		? { Authorization: string }
@@ -86,6 +96,12 @@ export interface GetParams<T> {
 		? [username: string]
 		: T extends "/teddit/r/%s/post/%s"
 		? [subteddit: string, postId: string]
+		: T extends "/nitter/nittos/%s/about"
+		? [nittosname: string]
+		: T extends "/nitter/nittos/%s/neets"
+		? [nittosname: string]
+		: T extends "/nitter/nittos/%s/neets/%s"
+		? [nittosname: string, neetId: string]
 		: never;
 }
 

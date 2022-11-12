@@ -3,6 +3,8 @@ import type { NeetComment, NittosPreview } from "$lib/types/interfaces";
 import { IsEmptyString } from "$lib/utils";
 import { error } from "@sveltejs/kit";
 
+export const prerender = false;
+
 export const load: import("./$types").PageLoad = async ({
 	url
 }): Promise<{ searchResult: NeetComment[][] | NittosPreview[] }> => {
@@ -13,7 +15,7 @@ export const load: import("./$types").PageLoad = async ({
 	const { success, data } = await api.get("/nitter/search", {
 		query: { q: query, type, limit: 3 }
 	});
-	console.log({ success, data });
 	if (!success || typeof data !== "object") throw error(404, "nothing returned from nitter");
+
 	return { searchResult: data };
 };

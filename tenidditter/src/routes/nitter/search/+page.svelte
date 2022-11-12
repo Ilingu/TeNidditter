@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from "$app/stores";
 	import api from "$lib/api";
+	import Loader from "$lib/components/design/Loader.svelte";
 	import Feeds from "$lib/components/pages/nitter/Feeds.svelte";
 	import NittosPreview from "$lib/components/pages/nitter/NittosPreview.svelte";
 	import { IsEmptyString, pushAlert } from "$lib/utils";
@@ -11,6 +12,8 @@
 
 	let activeTab: "tweets" | "users" = dataType || "tweets";
 	let query = $page.url.searchParams.get("q") ?? "";
+
+	let loading = false;
 
 	onMount(() => UpdateURLSearch());
 	const UpdateURLSearch = () => {
@@ -23,9 +26,15 @@
 		);
 	};
 
+	const SearchWrap = async () => {
+		loading = true;
+		await Search();
+		loading = false;
+	};
+
 	const Search = async () => {
 		if (IsEmptyString(activeTab) || IsEmptyString(query)) return;
-		if (activeTab === "users") query = query.replace(/[^\w\s]+/gi, "");
+		if (activeTab === "users") query = query.replace(/[^\w\s]+/gi, "").replaceAll(" ", ""); // trim special char
 
 		const { success, data: searchResult } = await api.get("/nitter/search", {
 			query: { q: query, type: activeTab, limit: 5 }
@@ -43,7 +52,7 @@
 
 <main class="grid place-items-center mt-5">
 	<div class="w-[500px] flex flex-col items-center">
-		<form on:submit|preventDefault={Search} class="w-full flex flex-col items-center">
+		<form on:submit|preventDefault={SearchWrap} class="w-full flex flex-col items-center">
 			<div class="form-control bg-neutral w-full">
 				<div class="input-group w-full">
 					<input
@@ -53,8 +62,12 @@
 						placeholder={`Search ${activeTab}`}
 						class="input input-bordered input-accent w-full bg-neutral"
 					/>
-					<button class="btn btn-square" type="submit">
-						<i class="fa-solid fa-magnifying-glass" />
+					<button class="btn btn-square" type="submit" disabled={loading}>
+						{#if loading}
+							<Loader h={20} w={20} />
+						{:else}
+							<i class="fa-solid fa-magnifying-glass" />
+						{/if}
 					</button>
 				</div>
 			</div>
@@ -64,14 +77,14 @@
 				class={`gap-x-2  ${activeTab === "tweets" ? "border-b-2 border-accent" : ""}`}
 				on:click={() => {
 					activeTab = "tweets";
-					Search();
+					SearchWrap();
 				}}><i class="fa-brands fa-twitter" /> Tweets</button
 			>
 			<button
 				class={`gap-x-2 ${activeTab === "users" ? "border-b-2 border-accent" : ""}`}
 				on:click={() => {
 					activeTab = "users";
-					Search();
+					SearchWrap();
 				}}
 			>
 				<i class="fa-solid fa-user" /> Users</button

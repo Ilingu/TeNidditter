@@ -50,4 +50,8 @@
 		font-weight: bold;
 		transition: 0.3s all;
 	}
+	:global(.nittosPreviewContainer a:hover) {
+		text-decoration: underline wavy;
+		color: #58c7f3;
+	}
 </style>

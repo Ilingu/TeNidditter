@@ -52,6 +52,11 @@
 				{neet.retweeted}
 			</p>
 		{/if}
+		{#if neet.pinned}
+			<p class="text-neutral-focus">
+				<i class="fa-solid fa-thumbtack" /> pinned
+			</p>
+		{/if}
 
 		<div class="flex flex-wrap gap-x-2">
 			<div class="flex-1 text-accent font-bold">
@@ -67,7 +72,7 @@
 				class="tooltip tooltip-secondary"
 				data-tip={new Date(neet.createdAt * 1000).toLocaleString()}
 			>
-				<p class="">{humanElapsedTime(neet.createdAt * 1000, Date.now())}</p>
+				{humanElapsedTime(neet.createdAt * 1000, Date.now())}
 			</div>
 		</div>
 	</header>

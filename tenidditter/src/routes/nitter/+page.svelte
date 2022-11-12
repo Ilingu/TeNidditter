@@ -9,7 +9,7 @@
 
 <main class="grid place-items-center mt-5">
 	<div class="max-w-[1250px] flex justify-center gap-x-10 z-0">
-		<div class="drawer drawer-mobile rounded-lg h-fit">
+		<div class="drawer drawer-mobile rounded-lg h-fit sticky top-20">
 			<input id="my-drawer-2" type="checkbox" class="drawer-toggle" />
 			<div class="drawer-content flex flex-col items-center justify-center">
 				<!-- Page content here -->
