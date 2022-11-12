@@ -34,7 +34,7 @@
 	};
 	const observeQueryMore = () => {
 		const lastCommentId = [5, 4, 3, 2, 1].find(
-			(i) => !IsEmptyString((neets.at(-i) ?? [{ id: "" }])[0].id)
+			(i) => !IsEmptyString((neets.at(-i) ?? [{ id: "" }])[0]?.id)
 		);
 		if (!lastCommentId) return;
 

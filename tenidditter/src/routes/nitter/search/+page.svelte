@@ -32,12 +32,12 @@
 		loading = false;
 	};
 
-	const Search = async () => {
+	const Search = async (limit = 5) => {
 		if (IsEmptyString(activeTab) || IsEmptyString(query)) return;
 		if (activeTab === "users") query = query.replace(/[^\w\s]+/gi, "").replaceAll(" ", ""); // trim special char
 
 		const { success, data: searchResult } = await api.get("/nitter/search", {
-			query: { q: query, type: activeTab, limit: 5 }
+			query: { q: query, type: activeTab, limit }
 		});
 		if (!success || typeof searchResult !== "object") {
 			activeTab = activeTab === "tweets" ? "users" : "tweets";
@@ -47,6 +47,12 @@
 		dataType = activeTab;
 		data = { searchResult };
 		UpdateURLSearch();
+	};
+
+	let lastLimit = 5;
+	const queryMore = () => {
+		Search(lastLimit + 1);
+		lastLimit++;
 	};
 </script>
 
@@ -93,7 +99,7 @@
 		<div class="mt-2">
 			{#if data}
 				{#if dataType === "tweets"}
-					<Feeds neets={data.searchResult} />
+					<Feeds neets={data.searchResult} queryMoreCb={queryMore} />
 				{:else}
 					<NittosPreview previewDatas={data.searchResult} />
 				{/if}

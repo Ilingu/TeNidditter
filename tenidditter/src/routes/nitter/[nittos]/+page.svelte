@@ -1,4 +1,6 @@
 <script lang="ts">
+	import api from "$lib/api";
+	import { page } from "$app/stores";
 	import Feeds from "$lib/components/pages/nitter/Feeds.svelte";
 	import { FormatNumbers, isValidUrl } from "$lib/utils";
 
@@ -9,6 +11,17 @@
 		const xAxis = (innerWidth / 2 - ev.pageX) / 25,
 			yAxis = (innerHeight / 2 - ev.pageY) / 25;
 		ev.currentTarget.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+	};
+
+	let lastLimit = 3;
+	const queryMore = async () => {
+		const { success, data: Neets } = await api.get("/nitter/nittos/%s/neets", {
+			params: [$page.params.nittos],
+			query: { limit: lastLimit + 1 }
+		});
+		if (!success || typeof Neets !== "object") return;
+		lastLimit++;
+		data.userNeets = Neets;
 	};
 </script>
 
@@ -72,7 +85,7 @@
 		</div>
 		<div class="max-w-[750px]">
 			{#if data.userNeets}
-				<Feeds neets={data.userNeets} />
+				<Feeds neets={data.userNeets} queryMoreCb={queryMore} />
 			{/if}
 		</div>
 	</div>
