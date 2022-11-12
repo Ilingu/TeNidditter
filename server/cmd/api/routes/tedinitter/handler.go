@@ -3,11 +3,13 @@ package tedinitter_routes
 import (
 	"net/http"
 	"os"
+	"strconv"
 	"teniditter-server/cmd/api/jwt"
 	"teniditter-server/cmd/api/routes"
 	"teniditter-server/cmd/db"
 	"teniditter-server/cmd/global/console"
 	"teniditter-server/cmd/global/utils"
+	"teniditter-server/cmd/services/nitter"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -64,7 +66,187 @@ func TedinitterUserHandler(t *echo.Group) {
 		return handleGetFeed(c, "nitter")
 	})
 
+	/* LISTS */
+
+	t.POST("/nitter/list", func(c echo.Context) error {
+		res := routes.EchoWrapper{Context: c}
+
+		token, err := jwt.DecodeToken(jwt.RetrieveToken(&c))
+		if err != nil {
+			return res.HandleResp(http.StatusUnauthorized, err.Error())
+		}
+		user := db.AccountModel{AccountId: token.ID, Username: token.Username}
+
+		type ListPayload struct {
+			Listname string `json:"listname"`
+		}
+		payload := new(ListPayload)
+		if err := c.Bind(payload); err != nil || payload == nil {
+			return res.HandleResp(http.StatusBadRequest, "invalid json payload")
+		}
+
+		listname := utils.FormatToSafeString(payload.Listname)
+		if utils.IsEmptyString(listname) {
+			return res.HandleResp(http.StatusBadRequest, "invalid listname")
+		}
+
+		if ok := db.CreateNitterList(&user, listname); !ok {
+			return res.HandleResp(http.StatusInternalServerError, "failed to create list")
+		}
+		return res.HandleResp(http.StatusCreated)
+	})
+	t.DELETE("/nitter/list/:id", func(c echo.Context) error {
+		res := routes.EchoWrapper{Context: c}
+
+		token, err := jwt.DecodeToken(jwt.RetrieveToken(&c))
+		if err != nil {
+			return res.HandleResp(http.StatusUnauthorized, err.Error())
+		}
+
+		listId, ok := getListId(c)
+		if !ok {
+			return res.HandleResp(http.StatusBadRequest, "invalid list id arg")
+		}
+
+		// authorization
+		list, err := db.GetListById(listId)
+		if err != nil {
+			return res.HandleResp(http.StatusUnauthorized, "cannot check whether you are the true owner of this list or not")
+		} else if list.AccountID != token.ID {
+			return res.HandleResp(http.StatusUnauthorized, "your are not the owner of this list")
+		}
+
+		if ok := db.DeleteNitterListByID(listId); !ok {
+			return res.HandleResp(http.StatusInternalServerError, "failed to delete this list")
+		}
+		return res.HandleResp(http.StatusNoContent)
+	})
+
+	t.GET("/nitter/lists", func(c echo.Context) error {
+		res := routes.EchoWrapper{Context: c}
+
+		token, err := jwt.DecodeToken(jwt.RetrieveToken(&c))
+		if err != nil {
+			return res.HandleResp(http.StatusUnauthorized, err.Error())
+		}
+
+		user := db.AccountModel{AccountId: token.ID, Username: token.Username}
+		lists, err := user.GetNitterLists()
+		if err != nil {
+			return res.HandleResp(http.StatusInternalServerError, "Failed to fetch your lists")
+		}
+		return res.HandleResp(http.StatusOK, lists)
+	})
+
+	t.GET("/nitter/list/:id", func(c echo.Context) error {
+		res := routes.EchoWrapper{Context: c}
+
+		token, err := jwt.DecodeToken(jwt.RetrieveToken(&c))
+		if err != nil {
+			return res.HandleResp(http.StatusUnauthorized, err.Error())
+		}
+
+		listId, ok := getListId(c)
+		if !ok {
+			return res.HandleResp(http.StatusBadRequest, "invalid list id arg")
+		}
+
+		// authorization
+		list, err := db.GetListById(listId)
+		if err != nil {
+			return res.HandleResp(http.StatusUnauthorized, "cannot check whether you are the true owner of this list or not")
+		} else if list.AccountID != token.ID {
+			return res.HandleResp(http.StatusUnauthorized, "your are not the owner of this list")
+		}
+
+		neets, err := db.GetListContentById(listId)
+		if err != nil {
+			return res.HandleResp(http.StatusInternalServerError, "failed to fetch the inner content")
+		} else if len(neets) <= 0 {
+			return res.HandleResp(http.StatusNotFound, "nothing in this list yet")
+		}
+
+		return res.HandleResp(http.StatusOK, neets)
+	})
+	t.POST("/nitter/list/:id/saveNeet", func(c echo.Context) error {
+		res := routes.EchoWrapper{Context: c}
+
+		token, err := jwt.DecodeToken(jwt.RetrieveToken(&c))
+		if err != nil {
+			return res.HandleResp(http.StatusUnauthorized, err.Error())
+		}
+
+		listId, ok := getListId(c)
+		if !ok {
+			return res.HandleResp(http.StatusBadRequest, "invalid list id arg")
+		}
+
+		neetPayload := new(nitter.NeetComment)
+		if err := c.Bind(neetPayload); err != nil || neetPayload == nil || len(neetPayload.Id) != 19 {
+			return res.HandleResp(http.StatusBadRequest, "invalid neet payload")
+		}
+
+		// authorization
+		list, err := db.GetListById(listId)
+		if err != nil {
+			return res.HandleResp(http.StatusUnauthorized, "cannot check whether you are the true owner of this list or not")
+		} else if list.AccountID != token.ID {
+			return res.HandleResp(http.StatusUnauthorized, "your are not the owner of this list")
+		}
+
+		if !db.IsNeetAlreadyExist(neetPayload.Id) {
+			if ok := db.InsertNewNeet(*neetPayload); !ok {
+				return res.HandleResp(http.StatusInternalServerError, "couldn't add this neet to your list")
+			}
+		}
+
+		if ok := list.AddNeet(neetPayload.Id); !ok {
+			return res.HandleResp(http.StatusInternalServerError, "couldn't add this neet to your list")
+		}
+		return res.HandleResp(http.StatusOK)
+	})
+	t.DELETE("/nitter/list/:id/removeNeet/:neetId", func(c echo.Context) error {
+		res := routes.EchoWrapper{Context: c}
+
+		token, err := jwt.DecodeToken(jwt.RetrieveToken(&c))
+		if err != nil {
+			return res.HandleResp(http.StatusUnauthorized, err.Error())
+		}
+
+		listId, ok := getListId(c)
+		neetId := c.Param("neetId")
+		if !ok || utils.IsEmptyString(neetId) || len(neetId) != 19 {
+			return res.HandleResp(http.StatusBadRequest, "invalid args")
+		}
+
+		// authorization
+		list, err := db.GetListById(listId)
+		if err != nil {
+			return res.HandleResp(http.StatusUnauthorized, "cannot check whether you are the true owner of this list or not")
+		} else if list.AccountID != token.ID {
+			return res.HandleResp(http.StatusUnauthorized, "your are not the owner of this list")
+		}
+
+		if ok := list.RemoveNeet(neetId); !ok {
+			return res.HandleResp(http.StatusInternalServerError, "couldn't remove this neet from your list")
+		}
+		return res.HandleResp(http.StatusNoContent)
+	})
+
 	console.Log("TedinitterUserHandler Registered ✅", console.Info)
+}
+
+func getListId(c echo.Context) (listId uint, ok bool) {
+	if listidParams := c.Param("id"); !utils.IsEmptyString(listidParams) {
+		if notCheckedListId, err := strconv.ParseUint(listidParams, 10, 64); err == nil {
+			listId = uint(notCheckedListId)
+		} else {
+			return 0, false
+		}
+	} else {
+		return 0, false
+	}
+	return listId, true
 }
 
 func handleGetFeed(c echo.Context, service string) error {

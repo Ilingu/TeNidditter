@@ -3,7 +3,7 @@ create table Account (
   account_id INT AUTO_INCREMENT
 
   username VARCHAR(255) NOT NULL UNIQUE
-  password CHAR(128) NOT NULL
+  password CHAR(128) NOT NULL CHECK (LENGTH(password) >= 8)
 
   created_at DATETIME NOT NULL DEFAULT GETDATE()
 
@@ -43,3 +43,30 @@ create table Twiship (
   twittos_id INT
 );
 CREATE INDEX follower_id_idx ON Twiship(follower_id);
+
+-- @block
+create table NitterLists (
+  list_id INT AUTO_INCREMENT
+
+  account_id INT
+  title TEXT NOT NULL
+
+  PRIMARY KEY (list_id)
+);
+CREATE INDEX account_id_idx ON NitterLists(account_id);
+
+-- @block
+create table Neets (
+  neet_id VARCHAR(255) NOT NULL UNIQUE CHECK (LENGTH(neet_id) = 19)
+  neet_data JSON NOT NULL
+
+  PRIMARY KEY (neet_id)
+);
+CREATE INDEX neet_id_idx ON Neets(neet_id);
+
+-- @block
+create table ListToNeet (
+  list_id INT
+  neet_id VARCHAR(255) NOT NULL UNIQUE CHECK (LENGTH(neet_id) = 19)
+);
+CREATE INDEX list_id_idx ON ListToNeet(list_id);

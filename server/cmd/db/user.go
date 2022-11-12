@@ -194,7 +194,7 @@ func (user AccountModel) SubTo(entity any) (success bool) {
 
 	defer func() {
 		if success {
-			user.HasChange() // Calls ws
+			user.SubsHasChange() // Calls ws
 		}
 	}()
 
@@ -217,7 +217,7 @@ func (user AccountModel) UnsubFrom(entity any) (success bool) {
 
 	defer func() {
 		if success {
-			user.HasChange() // Calls ws
+			user.SubsHasChange() // Calls ws
 		}
 	}()
 
@@ -266,13 +266,41 @@ func (user AccountModel) _unsubFromNittos(sub *NittosModel, db *sql.DB) bool {
 	return err == nil
 }
 
+/* Lists */
+func (user AccountModel) GetNitterLists() ([]NitterListModel, error) {
+	db := ps.DBManager.Connect()
+	if db == nil {
+		return nil, ps.ErrDbNotFound
+	}
+
+	rows, err := db.Query("SELECT * FROM NitterLists WHERE account_id=?", user.AccountId)
+	if err != nil {
+		return nil, errors.New("error when fetching lists")
+	}
+	defer rows.Close()
+
+	var lists []NitterListModel
+	for rows.Next() {
+		var list NitterListModel
+		if err := rows.Scan(&list.ListID, &list.AccountID, &list.ListName); err != nil {
+			return nil, err
+		}
+		lists = append(lists, list)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return lists, nil
+}
+
 /* Websocket */
 type SubsPayload struct {
 	Teddit []string `json:"teddit"`
 	Nitter []string `json:"nitter"`
 }
 
-func (user AccountModel) HasChange() {
+func (user AccountModel) SubsHasChange() {
 	wsConns, err := ws.GetWsConn(ws.GenerateUserKey(user.AccountId, user.Username))
 	if err != nil || wsConns == nil {
 		return
@@ -283,6 +311,27 @@ func (user AccountModel) HasChange() {
 	respData := SubsPayload{Teddit: TedditSubs, Nitter: NitterSubs}
 
 	stringifiedSubs, err := json.Marshal(respData)
+	if err != nil {
+		return
+	}
+
+	for _, wsClient := range wsConns {
+		go websocket.Message.Send(wsClient.WsConn, stringifiedSubs)
+	}
+}
+
+func (user AccountModel) ListHasChange() {
+	wsConns, err := ws.GetWsConn(ws.GenerateUserKey(user.AccountId, user.Username))
+	if err != nil || wsConns == nil {
+		return
+	}
+
+	NewLists, err := user.GetNitterLists()
+	if err != nil {
+		return
+	}
+
+	stringifiedSubs, err := json.Marshal(NewLists)
 	if err != nil {
 		return
 	}

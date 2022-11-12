@@ -26,8 +26,8 @@ func AuthHandler(g *echo.Group) {
 		res := routes.EchoWrapper{Context: c}
 
 		userInfo := new(RegisterPayload)
-		if err := c.Bind(userInfo); err != nil {
-			return res.HandleResp(http.StatusBadRequest)
+		if err := c.Bind(userInfo); err != nil || userInfo == nil {
+			return res.HandleResp(http.StatusBadRequest, "invalid json payload")
 		}
 
 		account, err := db.GetAccount(userInfo.Username)
