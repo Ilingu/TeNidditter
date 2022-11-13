@@ -5,6 +5,7 @@
 	import { GetZxcvbn, ScoreToColor, ScoreToText } from "$lib/zxcvbn";
 	import { onMount } from "svelte";
 	import { LogOut, SignIn } from "$lib/services/auth";
+	import type { NitterLists } from "$lib/types/interfaces";
 
 	/* TYPES */
 	interface PswReport {
@@ -80,15 +81,24 @@
 	};
 
 	const AfterLogin = async (JwtToken: string, headers?: Headers) => {
-		const tedditSubs = headers?.get("TedditSubs"),
-			nitterSubs = headers?.get("NitterSubs"); // retrieve user subs
-		if (!tedditSubs || IsEmptyString(tedditSubs) || !IsValidJSON(tedditSubs))
-			return pushAlert("Invalid login", "error");
-		if (!nitterSubs || IsEmptyString(nitterSubs) || !IsValidJSON(nitterSubs))
-			return pushAlert("Invalid login", "error");
+		const tedditSubsHeader = headers?.get("TedditSubs") ?? "",
+			nitterSubsHeader = headers?.get("NitterSubs") ?? "",
+			nitterListsHeader = headers?.get("NitterLists") ?? ""; // retrieve user subs
 
-		await SignIn(JwtToken, { teddit: JSON.parse(tedditSubs), nitter: JSON.parse(nitterSubs) }); // validate user jwt
-		if (!$AuthStore.loggedIn) return;
+		let tedditSubs: string[] = [],
+			nitterSubs: string[] = [],
+			nitterLists: NitterLists[] = [];
+
+		if (tedditSubsHeader && !IsEmptyString(tedditSubsHeader) && IsValidJSON(tedditSubsHeader))
+			tedditSubs = JSON.parse(tedditSubsHeader);
+		if (nitterSubsHeader && !IsEmptyString(nitterSubsHeader) && IsValidJSON(nitterSubsHeader))
+			nitterSubs = JSON.parse(nitterSubsHeader);
+		if (nitterListsHeader && !IsEmptyString(nitterListsHeader) && IsValidJSON(nitterListsHeader))
+			nitterLists = JSON.parse(nitterListsHeader);
+
+		const subs = { teddit: tedditSubs, nitter: JSON.parse(nitterSubsHeader) };
+		await SignIn(JwtToken, subs, JSON.parse(nitterListsHeader)); // validate user jwt
+		if (!$AuthStore.loggedIn) return pushAlert("Invalid login", "error");
 
 		pushAlert("Successfully logged in!", "success");
 	};

@@ -1,4 +1,4 @@
-import type { FunctionJob, UserSubs } from "$lib/types/interfaces";
+import type { FunctionJob, NitterLists as UserLists, UserSubs } from "$lib/types/interfaces";
 import { IsEmptyString, IsValidJSON } from "$lib/utils";
 import { DecryptDatas, EncryptDatas } from "$lib/services/wasm/encryption";
 import type { User } from "$lib/stores/auth";
@@ -38,4 +38,14 @@ export const GetUserSubs = (): FunctionJob<UserSubs> => {
 		return { success: false };
 
 	return { success: true, data: subs };
+};
+
+export const GetUserLists = (): FunctionJob<UserLists[]> => {
+	const rawList = window.localStorage.getItem("lists");
+	if (!rawList || IsEmptyString(rawList) || !IsValidJSON(rawList)) return { success: false };
+
+	const lists: UserLists[] = JSON.parse(rawList);
+	if (typeof lists !== "object" || lists.length <= 0) return { success: false };
+
+	return { success: true, data: lists };
 };

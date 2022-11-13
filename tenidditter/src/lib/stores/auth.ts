@@ -1,6 +1,6 @@
 import { ListenToUserChange, LogOut } from "$lib/services/auth";
 import { SetJWT } from "$lib/services/localstorage";
-import type { UserSubs } from "$lib/types/interfaces";
+import type { NitterLists, UserSubs } from "$lib/types/interfaces";
 import { IsEmptyString } from "$lib/utils";
 import { writable } from "svelte/store";
 
@@ -14,6 +14,7 @@ interface AuthStoreShape {
 	user?: User;
 	JwtToken?: string;
 	Subs?: UserSubs;
+	Lists?: NitterLists[];
 }
 
 const JwtTokenRegExp = /^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*$/g;
@@ -28,7 +29,12 @@ export const GetUserSession = (): Promise<AuthStoreShape> =>
 		});
 	});
 
-export const SetUserSession = (user: User, JwtToken: string, Subs: UserSubs) => {
+export const SetUserSession = (
+	user: User,
+	JwtToken: string,
+	Subs: UserSubs,
+	Lists: NitterLists[]
+) => {
 	if (!JwtTokenRegExp.test(JwtToken)) return;
 	if (typeof user !== "object" || IsEmptyString(user?.username) || typeof user?.exp !== "number")
 		return;
@@ -39,14 +45,19 @@ export const SetUserSession = (user: User, JwtToken: string, Subs: UserSubs) => 
 	SetJWT(JwtToken);
 	window.localStorage.setItem("user", JSON.stringify(user));
 	localStorage.setItem("subs", JSON.stringify(Subs));
+	localStorage.setItem("lists", JSON.stringify(Lists));
 
-	AuthStore.set({ loggedIn: true, user, JwtToken, Subs });
+	AuthStore.set({ loggedIn: true, user, JwtToken, Subs, Lists });
 	ListenToUserChange(JwtToken);
 };
 
 export const UpdateUserSubs = (Subs: UserSubs) => {
 	localStorage.setItem("subs", JSON.stringify(Subs));
 	AuthStore.update((s) => ({ ...s, Subs }));
+};
+export const UpdateUserList = (Lists: NitterLists[]) => {
+	localStorage.setItem("lists", JSON.stringify(Lists));
+	AuthStore.update((s) => ({ ...s, Lists }));
 };
 
 export default AuthStore;

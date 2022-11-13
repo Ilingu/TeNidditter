@@ -50,8 +50,8 @@ func (c EchoWrapper) HandleRespBlob(code uint, data ...any) error {
 	return c.JSONBlob(resp.Code, blob)
 }
 
-func (c EchoWrapper) InjectSubs(headerName string, subs []string) {
-	stringifiedSubs, err := json.Marshal(subs)
+func (c EchoWrapper) InjectJsonHeader(headerName string, data any) {
+	stringifiedSubs, err := json.Marshal(data)
 	if err != nil {
 		stringifiedSubs = []byte{}
 	}

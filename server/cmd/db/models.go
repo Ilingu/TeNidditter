@@ -25,7 +25,7 @@ type NittosModel struct {
 
 type NitterListModel struct {
 	ListID    uint   `json:"list_id"`
-	AccountID uint   `json:"account_id"`
+	AccountID uint   `json:"-"`
 	ListName  string `json:"title"`
 }
 

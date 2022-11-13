@@ -1,30 +1,36 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import api from "$lib/api";
-import AuthStore, { SetUserSession, UpdateUserSubs, type User } from "$lib/stores/auth";
-import type { FunctionJob, UserSubs } from "$lib/types/interfaces";
+import AuthStore, {
+	SetUserSession,
+	UpdateUserList,
+	UpdateUserSubs,
+	type User
+} from "$lib/stores/auth";
+import type { FunctionJob, NitterLists, UserSubs } from "$lib/types/interfaces";
 import { HandleWsConn, NewWsConn } from "$lib/ws";
-import { GetJWT, GetLSUser, GetUserSubs } from "./localstorage";
+import { GetJWT, GetLSUser, GetUserLists, GetUserSubs } from "./localstorage";
 import { PUBLIC_API_URL } from "$env/static/public";
 import { IsValidJSON, MakeBearerToken } from "$lib/utils";
 
 /* AUTH FUNC */
-export const SignIn = async (JwtToken: string, Subs: UserSubs) => {
+export const SignIn = async (JwtToken: string, Subs: UserSubs, Lists: NitterLists[]) => {
 	// check if jwt still valid
 	const { success, data: user } = await GetUserInfo(JwtToken);
 	if (!success || !user) return LogOut();
 
-	SetUserSession(user, JwtToken, Subs);
+	SetUserSession(user, JwtToken, Subs, Lists);
 };
 
 export const AutoLogin = async () => {
 	const { success: fetchJwt, data: JwtToken } = await GetJWT();
 	if (!fetchJwt || !JwtToken) return LogOut();
 
-	const { success: FetchUserSubsSucceed, data: Subs } = GetUserSubs();
-	if (!FetchUserSubsSucceed || typeof Subs !== "object" || !Object.hasOwn(Subs, "teddit"))
-		return LogOut();
+	const { data: Subs } = GetUserSubs();
+	const { data: Lists } = GetUserLists();
 
 	const { success, data: user } = GetLSUser();
-	if (success && typeof user === "object") SetUserSession(user, JwtToken, Subs);
+	if (success && typeof user === "object")
+		SetUserSession(user, JwtToken, Subs ?? { nitter: [], teddit: [] }, Lists ?? []);
 
 	// check if jwt still valid
 	const { success: validJwt } = await GetUserInfo(JwtToken);
@@ -44,7 +50,7 @@ export const LogOut = async (serverLogout = false, JwtToken?: string) => {
 	// "executionContexts" should handle the reload part
 };
 
-const DispatchUserChange = async (data: unknown) => {
+const DispatchSessionChange = async (data: unknown) => {
 	console.log("Mew WS Msg: ", { data });
 	const BinaryData = data as Blob;
 
@@ -52,14 +58,14 @@ const DispatchUserChange = async (data: unknown) => {
 		const BinaryUtf8 = await BinaryData.text();
 		if (!IsValidJSON(BinaryUtf8)) return console.warn("WS Msg Failed");
 
-		const NewSubs = JSON.parse(BinaryUtf8);
-		if (
-			typeof NewSubs !== "object" ||
-			!Object.hasOwn(NewSubs, "teddit") ||
-			!Object.hasOwn(NewSubs, "nitter")
-		)
-			return console.warn("WS Msg Failed");
-		UpdateUserSubs(NewSubs);
+		const NewDatas = JSON.parse(BinaryUtf8);
+		if (typeof NewDatas !== "object") return console.warn("WS Msg Failed");
+
+		const IsUserChange = Object.hasOwn(NewDatas, "teddit") && Object.hasOwn(NewDatas, "nitter");
+		if (IsUserChange) return UpdateUserSubs(NewDatas);
+
+		const IsListsChange = NewDatas.length > 0 && Object.hasOwn(NewDatas[0], "title");
+		if (IsListsChange) return UpdateUserList(NewDatas);
 	} catch (err) {
 		console.warn("WS Msg Failed");
 	}
@@ -71,7 +77,7 @@ export const ListenToUserChange = async (JwtToken: string) => {
 	if (!connected || !socket) return;
 	console.log("Listening to userChange...");
 
-	HandleWsConn(socket, { onMessage: DispatchUserChange });
+	HandleWsConn(socket, { onMessage: DispatchSessionChange });
 };
 
 export const GetUserInfo = async (JwtToken: string): Promise<FunctionJob<User>> => {
