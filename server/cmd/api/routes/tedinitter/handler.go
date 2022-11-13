@@ -119,6 +119,11 @@ func TedinitterUserHandler(t *echo.Group) {
 		if ok := db.DeleteNitterListByID(listId); !ok {
 			return res.HandleResp(http.StatusInternalServerError, "failed to delete this list")
 		}
+
+		go func() {
+			user := db.AccountModel{AccountId: token.ID, Username: token.Username}
+			user.ListHasChange()
+		}()
 		return res.HandleResp(http.StatusNoContent)
 	})
 

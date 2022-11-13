@@ -8,8 +8,18 @@ import (
 )
 
 func IsNeetAlreadyExist(neetId string) bool {
-	_, err := GetNeetById(neetId)
-	return err != nil
+	db := ps.DBManager.Connect()
+	if db == nil {
+		return false
+	}
+
+	var count int
+	err := db.QueryRow("SELECT COUNT(*) FROM Neets WHERE neet_id=?;", neetId).Scan(&count)
+	if err != nil {
+		return false
+	}
+
+	return count != 0
 }
 
 func InsertNewNeet(neet nitter.NeetComment) bool {
@@ -34,7 +44,7 @@ func GetNeetById(neetId string) (*DBNeets, error) {
 	}
 
 	var neet DBNeets
-	err := db.QueryRow("SELECT FROM Neets WHERE neet_id=?;", neetId).Scan(&neet.NeetId, &neet.Neet)
+	err := db.QueryRow("SELECT * FROM Neets WHERE neet_id=?;", neetId).Scan(&neet.NeetId, &neet.Neet)
 	if err != nil {
 		return nil, errors.New("cannot fetch neet")
 	}
