@@ -28,7 +28,7 @@
 	};
 </script>
 
-<div class="fixed top-20 right-2 xl:w-1/4 sm:w-1/2 w-3/4 flex flex-col gap-y-2">
+<div class="fixed z-[1000] top-20 right-2 xl:w-1/4 sm:w-1/2 w-3/4 flex flex-col gap-y-2">
 	{#each alerts as alert}
 		<Alert {alert} />
 	{/each}

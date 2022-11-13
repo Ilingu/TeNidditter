@@ -1,4 +1,5 @@
 <script lang="ts">
+	import AuthStore from "$lib/stores/auth";
 	import Link from "$lib/components/design/Link.svelte";
 	import type { NeetComment, openImgArgs } from "$lib/types/interfaces";
 	import { FormatNumbers, humanElapsedTime, IsEmptyString } from "$lib/utils";
@@ -8,6 +9,7 @@
 
 	type threadType = [isThread: boolean, threadId: "first" | "last" | undefined];
 	export let thread: threadType = [false, undefined];
+	export let setNeetIdToAdd: (neetId: string) => void;
 
 	const openImageDrawer = (urls: string[], currIndex: number) => {
 		const alert = new CustomEvent("openImageDrawer", {
@@ -83,7 +85,7 @@
 		</Link>
 		<div>
 			{#if neet.quote}
-				<svelte:self neet={neet.quote} quoteMode={true} />
+				<svelte:self neet={neet.quote} quoteMode={true} {setNeetIdToAdd} />
 			{/if}
 		</div>
 	</div>
@@ -121,12 +123,32 @@
 		</div>
 	{/if}
 	<div class="neet-stats flex gap-x-2 text-neutral mt-1">
-		<p><i class="fa-solid fa-heart" /> {FormatNumbers(neet.stats.likes_counts)}</p>
-		<p><i class="fa-solid fa-retweet" /> {FormatNumbers(neet.stats.rt_counts)}</p>
-		<p><i class="fa-solid fa-reply" /> {FormatNumbers(neet.stats.reply_counts)}</p>
+		<p title="number of likes">
+			<i class="fa-solid fa-heart" />
+			{FormatNumbers(neet.stats.likes_counts)}
+		</p>
+		<p title="number of retweets">
+			<i class="fa-solid fa-retweet" />
+			{FormatNumbers(neet.stats.rt_counts)}
+		</p>
+		<p title="number of replies" class={neet.stats.play_counts !== undefined ? "" : "flex-1"}>
+			<i class="fa-solid fa-reply" />
+			{FormatNumbers(neet.stats.reply_counts)}
+		</p>
 
 		{#if neet.stats.play_counts !== undefined}
-			<p><i class="fa-solid fa-play" /> {FormatNumbers(neet.stats.play_counts)}</p>
+			<p title="number of plays" class="flex-1">
+				<i class="fa-solid fa-play" />
+				{FormatNumbers(neet.stats.play_counts)}
+			</p>
+		{/if}
+
+		{#if $AuthStore.loggedIn}
+			<label for="modal-add-to-list" on:click={() => setNeetIdToAdd(neet.id)}>
+				<div class="tooltip tooltip-secondary" data-tip={"Add to list"}>
+					<i class="fa-solid fa-bookmark" />
+				</div></label
+			>
 		{/if}
 	</div>
 </div>

@@ -30,7 +30,7 @@
 						>
 					</li>
 					<li>
-						<a href="/"><i class="fa-solid fa-list" /> Lists</a>
+						<Link href="/nitter/lists"><i class="fa-solid fa-list" /> Lists</Link>
 					</li>
 					<li class="flex-row items-center text-accent font-bold text-2xl">
 						<i class="fa-solid fa-user" /> Subs

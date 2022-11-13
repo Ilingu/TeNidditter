@@ -40,6 +40,8 @@ export const pushAlert = (message: string, type: AlertTypes, duration = 5000) =>
 export const FormatUsername = (username: string): string =>
 	username.replace(/[\W0-9]+/g, "").toLowerCase();
 
+export const TrimSpecialChars = (str: string): string => str.replace(/[^\w\s]+/gi, "");
+
 export const ConvertHTMLEntities = (str: string): string => {
 	const htmlEntities = {
 		"&": "&amp;",

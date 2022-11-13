@@ -97,6 +97,7 @@ export default class api {
 /* Helpers */
 interface ApiClientResp<T = never> extends FunctionJob<T> {
 	headers?: Headers;
+	status?: number;
 }
 
 export const callApi = async <T = never>(
@@ -118,14 +119,15 @@ export const callApi = async <T = never>(
 			headers: { "Content-Type": "application/json", ...(headers || {}) },
 			credentials: credentials ? "include" : undefined
 		});
-		if (!resp.ok) return { success: false, error: "Request Failed" };
+		if (!resp.ok) return { success: false, status: resp.status, error: "Request Failed" };
+		if (resp.status === 204) return { success: true, status: resp.status };
 
 		const { success, data: apiRes }: APIResShape<T> = await resp.json();
-		if (!success) return { success: false, error: "apiRes" };
+		if (!success) return { success: false, status: resp.status, error: "apiRes" };
 
-		return { success: true, data: apiRes, headers: resp?.headers };
-	} catch (error) {
-		return { success: false, error: error as string };
+		return { success: true, data: apiRes, status: resp.status, headers: resp?.headers };
+	} catch (err) {
+		return { success: false, error: err as string };
 	}
 };
 

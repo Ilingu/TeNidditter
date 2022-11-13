@@ -1,10 +1,12 @@
 <script lang="ts">
 	import type { NeetComment } from "$lib/types/interfaces";
 	import { IsEmptyString, isValidUrl } from "$lib/utils";
+	import AuthStore from "$lib/stores/auth";
 	import { afterUpdate } from "svelte";
 	import Neet from "./Neet.svelte";
 	import type Hls from "hls.js";
 	import PictureZoom from "./PictureZoom.svelte";
+	import { fade } from "svelte/transition";
 
 	export let neets: NeetComment[][];
 	export let queryMoreCb = () => {};
@@ -73,6 +75,9 @@
 			vid.addEventListener("canplay", function () {});
 		}
 	};
+
+	let neetIdToAdd = "";
+	const setNeetIdToAdd = (neetId: string) => (neetIdToAdd = neetId);
 </script>
 
 <div class="flex flex-col gap-y-5" bind:this={feedDiv}>
@@ -82,6 +87,7 @@
 				{#each neetThread as neet, i}
 					<Neet
 						{neet}
+						{setNeetIdToAdd}
 						thread={[
 							neetThread.length > 1,
 							i === 0 ? "first" : i === neetThread.length - 1 ? "last" : undefined
@@ -92,5 +98,34 @@
 		{/if}
 	{/each}
 </div>
-
 <PictureZoom />
+
+<input type="checkbox" id="modal-add-to-list" class="modal-toggle" />
+<div class="modal">
+	<div class="modal-box">
+		<h3 class="font-bold text-lg">Add this tweet to your list</h3>
+		<p class="py-4">Here all your list:</p>
+		<div class="max-h-[300px] overflow-y-auto flex flex-col items-center">
+			{#if $AuthStore?.Lists && $AuthStore.Lists.length > 0}
+				<div class="w-[400px] flex flex-col gap-y-3 mt-2 cursor-pointer">
+					{#each $AuthStore.Lists as list, i}
+						<div
+							in:fade={{ delay: 100 * i }}
+							class="flex gap-x-2 group items-center h-14 bg-neutral rounded-md w-full p-2"
+						>
+							<span
+								class="from-accent to-secondary bg-gradient-to-br bg-clip-text text-clip text-transparent text-bold text-xl capitalize"
+								>{list.title}</span
+							>
+						</div>
+					{/each}
+				</div>
+			{:else}
+				<h2 class="text-xl mt-4">Nothing to show! Create a list first.</h2>
+			{/if}
+		</div>
+		<div class="modal-action">
+			<label for="modal-add-to-list" class="btn">Close</label>
+		</div>
+	</div>
+</div>

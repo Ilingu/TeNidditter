@@ -85,8 +85,8 @@ func TedinitterUserHandler(t *echo.Group) {
 			return res.HandleResp(http.StatusBadRequest, "invalid json payload")
 		}
 
-		listname := utils.FormatToSafeString(payload.Listname)
-		if utils.IsEmptyString(listname) {
+		listname := utils.RemoveSpecialChars(payload.Listname)
+		if utils.IsEmptyString(listname) || len(listname) < 3 || len(listname) >= 30 {
 			return res.HandleResp(http.StatusBadRequest, "invalid listname")
 		}
 
@@ -124,7 +124,7 @@ func TedinitterUserHandler(t *echo.Group) {
 			user := db.AccountModel{AccountId: token.ID, Username: token.Username}
 			user.ListHasChange()
 		}()
-		return res.HandleResp(http.StatusNoContent)
+		return res.HandleResp(http.StatusOK)
 	})
 
 	t.GET("/nitter/lists", func(c echo.Context) error {
@@ -168,7 +168,7 @@ func TedinitterUserHandler(t *echo.Group) {
 		if err != nil {
 			return res.HandleResp(http.StatusInternalServerError, "failed to fetch the inner content")
 		} else if len(neets) <= 0 {
-			return res.HandleResp(http.StatusNotFound, "nothing in this list yet")
+			return res.HandleResp(http.StatusNoContent, "nothing in this list yet")
 		}
 
 		return res.HandleResp(http.StatusOK, neets)
@@ -235,7 +235,7 @@ func TedinitterUserHandler(t *echo.Group) {
 		if ok := list.RemoveNeet(neetId); !ok {
 			return res.HandleResp(http.StatusInternalServerError, "couldn't remove this neet from your list")
 		}
-		return res.HandleResp(http.StatusNoContent)
+		return res.HandleResp(http.StatusOK)
 	})
 
 	console.Log("TedinitterUserHandler Registered ✅", console.Info)

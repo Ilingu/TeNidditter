@@ -27,7 +27,8 @@ export type GetRoutes =
 	| "/nitter/search"
 	| "/nitter/nittos/%s/about"
 	| "/nitter/nittos/%s/neets"
-	| "/nitter/nittos/%s/neets/%s";
+	| "/nitter/nittos/%s/neets/%s"
+	| "/tedinitter/nitter/list/%s";
 export type GetReturns<T, U> = T extends "/tedinitter/userInfo"
 	? User
 	: T extends "/auth/available"
@@ -64,6 +65,8 @@ export type GetReturns<T, U> = T extends "/tedinitter/userInfo"
 	? NeetComment[][]
 	: T extends "/nitter/nittos/%s/neets/%s"
 	? NeetInfo
+	: T extends "/tedinitter/nitter/list/%s"
+	? NeetComment[]
 	: never;
 export interface GetParams<T> {
 	query?: T extends "/auth/available"
@@ -87,6 +90,8 @@ export interface GetParams<T> {
 		? { Authorization: string }
 		: T extends "/tedinitter/nitter/feed"
 		? { Authorization: string }
+		: T extends "/tedinitter/nitter/list/%s"
+		? { Authorization: string }
 		: never;
 	params?: T extends "/teddit/r/%s/about"
 		? [subteddit: string]
@@ -102,21 +107,45 @@ export interface GetParams<T> {
 		? [nittosname: string]
 		: T extends "/nitter/nittos/%s/neets/%s"
 		? [nittosname: string, neetId: string]
+		: T extends "/tedinitter/nitter/list/%s"
+		? [listId: string]
 		: never;
 }
 
 /* POST */
-export type PostRoutes = "/auth/" | "/tedinitter/teddit/sub/%s";
+export type PostRoutes =
+	| "/auth/"
+	| "/tedinitter/teddit/sub/%s"
+	| "/tedinitter/nitter/sub/%s"
+	| "/tedinitter/nitter/list";
 export type PostReturns<T> = T extends "/auth/"
 	? string
 	: T extends "/tedinitter/teddit/sub/%s"
 	? null
+	: T extends "/tedinitter/nitter/sub/%s"
+	? null
+	: T extends "/tedinitter/nitter/list"
+	? null
 	: never;
 export interface PostParams<T> {
 	query?: never;
-	headers?: T extends "/tedinitter/teddit/sub/%s" ? { Authorization: string } : never;
-	params?: T extends "/tedinitter/teddit/sub/%s" ? [subteddit: string] : never;
-	body?: T extends "/auth/" ? { username: string; password: string } : never;
+	headers?: T extends "/tedinitter/teddit/sub/%s"
+		? { Authorization: string }
+		: T extends "/tedinitter/nitter/sub/%s"
+		? { Authorization: string }
+		: T extends "/tedinitter/nitter/list"
+		? { Authorization: string }
+		: never;
+	params?: T extends "/tedinitter/teddit/sub/%s"
+		? [subteddit: string]
+		: T extends "/tedinitter/nitter/sub/%s"
+		? [nittos: string]
+		: never;
+	body?: T extends "/auth/"
+		? { username: string; password: string }
+		: T extends "/tedinitter/nitter/list"
+		? { listname: string }
+		: never;
 	credentials?: T extends "/auth/" ? true : never;
 }
 
@@ -131,12 +160,34 @@ export interface PutParams {
 }
 
 /* DELETE */
-export type DeleteRoutes = "/tedinitter/teddit/unsub/%s" | "/auth/logout";
-export type DeleteReturns<T> = T extends "/tedinitter/teddit/unsub/%s" ? null : never;
+export type DeleteRoutes =
+	| "/tedinitter/teddit/unsub/%s"
+	| "/tedinitter/nitter/unsub/%s"
+	| "/tedinitter/nitter/list/%s"
+	| "/auth/logout";
+export type DeleteReturns<T> = T extends "/tedinitter/teddit/unsub/%s"
+	? null
+	: T extends "/tedinitter/nitter/unsub/%s"
+	? null
+	: T extends "/tedinitter/nitter/list/%s"
+	? null
+	: never;
 export interface DeleteParams<T> {
 	query?: T extends "/auth/logout" ? { token?: string } : never;
-	headers?: T extends "/tedinitter/teddit/unsub/%s" ? { Authorization: string } : never;
-	params?: T extends "/tedinitter/teddit/unsub/%s" ? [subteddit: string] : never;
+	headers?: T extends "/tedinitter/teddit/unsub/%s"
+		? { Authorization: string }
+		: T extends "/tedinitter/nitter/unsub/%s"
+		? { Authorization: string }
+		: T extends "/tedinitter/nitter/list/%s"
+		? { Authorization: string }
+		: never;
+	params?: T extends "/tedinitter/teddit/unsub/%s"
+		? [subteddit: string]
+		: T extends "/tedinitter/nitter/unsub/%s"
+		? [nittos: string]
+		: T extends "/tedinitter/nitter/list/%s"
+		? [listId: string]
+		: never;
 	body?: never;
 	credentials?: T extends "/auth/logout" ? true : never;
 }

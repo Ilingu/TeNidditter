@@ -53,8 +53,17 @@ func FormatString(str string) (formattedStr string) {
 }
 
 // Remove all non alphabetic (except "_") characters from string and apply TrimSpace+ToLower+QueryEscape
-func FormatToSafeString(str string) string {
+func FormatUsername(str string) string {
 	return SafeString(FormatString(str))
+}
+
+func RemoveSpecialChars(str string) (out string) {
+	for _, r := range str {
+		if (!unicode.IsMark(r) && !unicode.IsSymbol(r) && !unicode.IsPunct(r)) || r == '_' {
+			out += string(r)
+		}
+	}
+	return
 }
 
 func IsStrongPassword(password string) bool {

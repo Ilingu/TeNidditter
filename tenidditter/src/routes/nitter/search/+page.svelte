@@ -4,7 +4,7 @@
 	import Loader from "$lib/components/design/Loader.svelte";
 	import Feeds from "$lib/components/pages/nitter/Feeds.svelte";
 	import NittosPreview from "$lib/components/pages/nitter/NittosPreview.svelte";
-	import { IsEmptyString, pushAlert } from "$lib/utils";
+	import { IsEmptyString, pushAlert, TrimSpecialChars } from "$lib/utils";
 	import { onMount } from "svelte";
 
 	let dataType = ($page.url.searchParams.get("type") as "tweets" | "users") ?? "tweets";
@@ -34,7 +34,7 @@
 
 	const Search = async (limit = 5) => {
 		if (IsEmptyString(activeTab) || IsEmptyString(query)) return;
-		if (activeTab === "users") query = query.replace(/[^\w\s]+/gi, "").replaceAll(" ", ""); // trim special char
+		if (activeTab === "users") query = TrimSpecialChars(query).replaceAll(" ", ""); // trim special char
 
 		const { success, data: searchResult } = await api.get("/nitter/search", {
 			query: { q: query, type: activeTab, limit }
