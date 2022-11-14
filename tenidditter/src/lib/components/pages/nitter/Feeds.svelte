@@ -1,15 +1,25 @@
 <script lang="ts">
 	import type { NeetComment } from "$lib/types/interfaces";
-	import { IsEmptyString, isValidUrl } from "$lib/utils";
+	import {
+		IsEmptyString,
+		isValidUrl,
+		MakeBearerToken,
+		pushAlert,
+		removeDuplicates,
+		TrimNonDigitsChars
+	} from "$lib/utils";
 	import AuthStore from "$lib/stores/auth";
 	import { afterUpdate } from "svelte";
 	import Neet from "./Neet.svelte";
 	import type Hls from "hls.js";
 	import PictureZoom from "./PictureZoom.svelte";
 	import { fade } from "svelte/transition";
+	import { page } from "$app/stores";
+	import api from "$lib/api";
 
 	export let neets: NeetComment[][];
 	export let queryMoreCb = () => {};
+	export let onNeetRemovedFromList = (_neetId: string) => {};
 
 	let feedDiv: HTMLDivElement;
 	const initFeed = async () => {
@@ -77,7 +87,49 @@
 	};
 
 	let neetIdToAdd = "";
-	const setNeetIdToAdd = (neetId: string) => (neetIdToAdd = neetId);
+	const setNeetIdToAdd = (neetId: string) => {
+		neetIdToAdd = TrimNonDigitsChars(neetId);
+
+		// This part is only when user is already on his list page (e.g: /nitter/list/[id])
+		// On this page all the neets passed in this components are for sure neets from his list so we add it to the "neetAddedInList" variable when the users clicks on one of these neets
+		const pageListId = TrimNonDigitsChars($page.params?.listId);
+		if (!IsEmptyString(pageListId) && !isNaN(parseInt(pageListId)))
+			neetAddedInList = removeDuplicates([...neetAddedInList, parseInt(pageListId)]);
+	};
+
+	let neetAddedInList: number[] = []; // this variable store in which listId this neet (neetIdToAdd) is saved
+	const AddNeetToList = async (listId: number) => {
+		if (IsEmptyString(neetIdToAdd)) return pushAlert("Please select a neet first", "warning");
+		if (isNaN(listId)) return pushAlert("Invalid List", "warning");
+
+		if (neetAddedInList.includes(listId)) {
+			const { success: deleted } = await api.delete("/tedinitter/nitter/list/%s/removeNeet/%s", {
+				headers: MakeBearerToken($AuthStore.JwtToken ?? ""),
+				params: [`${listId}`, neetIdToAdd]
+			});
+			if (!deleted) return pushAlert("Couldn't remove this neet from this list", "error", 6000);
+			neetAddedInList = neetAddedInList.filter((listIdAdded) => listIdAdded !== listId);
+			onNeetRemovedFromList(neetIdToAdd);
+		} else {
+			const neetDatas = Array<NeetComment>()
+				.concat(...neets)
+				.find(({ id }) => TrimNonDigitsChars(id) === TrimNonDigitsChars(neetIdToAdd));
+			if (!neetDatas) return pushAlert("Couldn't find this neet", "error");
+
+			const { success: saved } = await api.post("/tedinitter/nitter/list/%s/saveNeet", {
+				headers: MakeBearerToken($AuthStore.JwtToken ?? ""),
+				params: [`${listId}`],
+				body: neetDatas
+			});
+			if (!saved)
+				return pushAlert(
+					"Couldn't add this neet to this list (probably because it's already in this list)",
+					"error",
+					10000
+				);
+			neetAddedInList = removeDuplicates([...neetAddedInList, listId]);
+		}
+	};
 </script>
 
 <div class="flex flex-col gap-y-5" bind:this={feedDiv}>
@@ -104,19 +156,28 @@
 <div class="modal">
 	<div class="modal-box">
 		<h3 class="font-bold text-lg">Add this tweet to your list</h3>
-		<p class="py-4">Here all your list:</p>
+		<p class="py-4">Here all your lists:</p>
 		<div class="max-h-[300px] overflow-y-auto flex flex-col items-center">
-			{#if $AuthStore?.Lists && $AuthStore.Lists.length > 0}
+			{#if $AuthStore?.Lists && $AuthStore.Lists.length > 0 && !IsEmptyString(neetIdToAdd)}
 				<div class="w-[400px] flex flex-col gap-y-3 mt-2 cursor-pointer">
 					{#each $AuthStore.Lists as list, i}
 						<div
-							in:fade={{ delay: 100 * i }}
+							in:fade={{ delay: 15 * i }}
+							on:click={() => AddNeetToList(list.list_id)}
 							class="flex gap-x-2 group items-center h-14 bg-neutral rounded-md w-full p-2"
 						>
 							<span
-								class="from-accent to-secondary bg-gradient-to-br bg-clip-text text-clip text-transparent text-bold text-xl capitalize"
+								class="ml-2 from-accent to-secondary bg-gradient-to-br bg-clip-text text-clip text-transparent text-bold text-xl capitalize flex-1"
 								>{list.title}</span
 							>
+
+							{#key neetAddedInList}
+								{#if neetAddedInList.includes(list.list_id)}
+									<span class="text-success mr-2 text-lg" transition:fade
+										><i class="fa-solid fa-circle-check" /></span
+									>
+								{/if}
+							{/key}
 						</div>
 					{/each}
 				</div>
@@ -125,7 +186,14 @@
 			{/if}
 		</div>
 		<div class="modal-action">
-			<label for="modal-add-to-list" class="btn">Close</label>
+			<label
+				for="modal-add-to-list"
+				class="btn"
+				on:click={() => {
+					neetIdToAdd = "";
+					neetAddedInList = [];
+				}}>Done!</label
+			>
 		</div>
 	</div>
 </div>

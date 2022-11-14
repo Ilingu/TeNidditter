@@ -2,13 +2,16 @@
 	import Feeds from "$lib/components/pages/nitter/Feeds.svelte";
 
 	export let data: import("./$types").PageServerData;
-	$: console.log(data);
+
+	const onNeetRemovedFromList = (neetId: string) => {
+		data.savedNeets = data.savedNeets?.filter(({ id }) => id !== neetId) ?? null;
+	};
 </script>
 
 <main class="grid place-items-center mt-5">
-	{#if data.savedNeets}
+	{#if data.savedNeets && (data.savedNeets || []).length > 0}
 		<div class="max-w-[750px]">
-			<Feeds neets={[data.savedNeets]} />
+			<Feeds neets={data.savedNeets.map((thread) => [thread])} {onNeetRemovedFromList} />
 		</div>
 	{:else}
 		<div class="h-[calc(100vh-92px)] mx-4 flex flex-col justify-center">

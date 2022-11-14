@@ -1,6 +1,6 @@
 import api from "$lib/api";
 import type { NeetInfo } from "$lib/types/interfaces";
-import { IsEmptyString, TrimSpecialChars } from "$lib/utils";
+import { IsEmptyString, TrimNonDigitsChars } from "$lib/utils";
 import { error } from "@sveltejs/kit";
 
 export const prerender = false;
@@ -8,7 +8,7 @@ export const prerender = false;
 type ReturnType = { NeetComments: NeetInfo };
 export const load: import("./$types").PageLoad = async ({ params }): Promise<ReturnType> => {
 	const nittosName = params?.nittos,
-		neetId = TrimSpecialChars(params?.neet); //trim special char
+		neetId = TrimNonDigitsChars(params?.neet); //trim special char
 	if (IsEmptyString(nittosName) || IsEmptyString(neetId) || neetId.length < 19)
 		throw error(400, "Bad args");
 

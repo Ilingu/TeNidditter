@@ -41,6 +41,7 @@ export const FormatUsername = (username: string): string =>
 	username.replace(/[\W0-9]+/g, "").toLowerCase();
 
 export const TrimSpecialChars = (str: string): string => str.replace(/[^\w\s]+/gi, "");
+export const TrimNonDigitsChars = (str: string): string => str.replace(/[\D]+/gi, "");
 
 export const ConvertHTMLEntities = (str: string): string => {
 	const htmlEntities = {
@@ -89,3 +90,5 @@ export const IsValidJSON = (jsonBlob: string): boolean => {
 export const MakeBearerToken = (JwtToken: string) => ({ Authorization: "Bearer " + JwtToken });
 
 export const EscapeHTML = (str: string): string => new Option(str).innerHTML;
+
+export const removeDuplicates = <T = never>(ary: T[]) => [...new Set<T>(ary)];

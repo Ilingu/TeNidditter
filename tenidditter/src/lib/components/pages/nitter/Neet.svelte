@@ -2,7 +2,7 @@
 	import AuthStore from "$lib/stores/auth";
 	import Link from "$lib/components/design/Link.svelte";
 	import type { NeetComment, openImgArgs } from "$lib/types/interfaces";
-	import { FormatNumbers, humanElapsedTime, IsEmptyString } from "$lib/utils";
+	import { FormatNumbers, humanElapsedTime, IsEmptyString, TrimNonDigitsChars } from "$lib/utils";
 
 	export let neet: NeetComment;
 	export let quoteMode = false;
@@ -23,7 +23,7 @@
 </script>
 
 <div
-	id={"neet-" + neet.id}
+	id={"neet-" + TrimNonDigitsChars(neet.id)}
 	class={`neet relative ${quoteMode ? "w-full text-primary-content" : "w-[500px]"} gap-x-2 ${
 		quoteMode ? "bg-secondary-focus" : "bg-primary-focus hover:bg-primary"
 	} rounded-md p-2 transition-all ${
@@ -80,7 +80,10 @@
 	</header>
 
 	<div class="neet-body">
-		<Link href={`/nitter/${neet.creator.username.slice(1)}/${neet.id}`} className="not">
+		<Link
+			href={`/nitter/${neet.creator.username.slice(1)}/${TrimNonDigitsChars(neet.id)}`}
+			className="not"
+		>
 			<p class="font-bold">{@html neet.content}</p>
 		</Link>
 		<div>

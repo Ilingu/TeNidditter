@@ -117,7 +117,8 @@ export type PostRoutes =
 	| "/auth/"
 	| "/tedinitter/teddit/sub/%s"
 	| "/tedinitter/nitter/sub/%s"
-	| "/tedinitter/nitter/list";
+	| "/tedinitter/nitter/list"
+	| "/tedinitter/nitter/list/%s/saveNeet";
 export type PostReturns<T> = T extends "/auth/"
 	? string
 	: T extends "/tedinitter/teddit/sub/%s"
@@ -125,6 +126,8 @@ export type PostReturns<T> = T extends "/auth/"
 	: T extends "/tedinitter/nitter/sub/%s"
 	? null
 	: T extends "/tedinitter/nitter/list"
+	? null
+	: T extends "/tedinitter/nitter/list/%s/saveNeet"
 	? null
 	: never;
 export interface PostParams<T> {
@@ -135,16 +138,22 @@ export interface PostParams<T> {
 		? { Authorization: string }
 		: T extends "/tedinitter/nitter/list"
 		? { Authorization: string }
+		: T extends "/tedinitter/nitter/list/%s/saveNeet"
+		? { Authorization: string }
 		: never;
 	params?: T extends "/tedinitter/teddit/sub/%s"
 		? [subteddit: string]
 		: T extends "/tedinitter/nitter/sub/%s"
 		? [nittos: string]
+		: T extends "/tedinitter/nitter/list/%s/saveNeet"
+		? [listId: string]
 		: never;
 	body?: T extends "/auth/"
 		? { username: string; password: string }
 		: T extends "/tedinitter/nitter/list"
 		? { listname: string }
+		: T extends "/tedinitter/nitter/list/%s/saveNeet"
+		? NeetComment
 		: never;
 	credentials?: T extends "/auth/" ? true : never;
 }
@@ -164,12 +173,15 @@ export type DeleteRoutes =
 	| "/tedinitter/teddit/unsub/%s"
 	| "/tedinitter/nitter/unsub/%s"
 	| "/tedinitter/nitter/list/%s"
+	| "/tedinitter/nitter/list/%s/removeNeet/%s"
 	| "/auth/logout";
 export type DeleteReturns<T> = T extends "/tedinitter/teddit/unsub/%s"
 	? null
 	: T extends "/tedinitter/nitter/unsub/%s"
 	? null
 	: T extends "/tedinitter/nitter/list/%s"
+	? null
+	: T extends "/tedinitter/nitter/list/%s/removeNeet/%s"
 	? null
 	: never;
 export interface DeleteParams<T> {
@@ -180,6 +192,8 @@ export interface DeleteParams<T> {
 		? { Authorization: string }
 		: T extends "/tedinitter/nitter/list/%s"
 		? { Authorization: string }
+		: T extends "/tedinitter/nitter/list/%s/removeNeet/%s"
+		? { Authorization: string }
 		: never;
 	params?: T extends "/tedinitter/teddit/unsub/%s"
 		? [subteddit: string]
@@ -187,6 +201,8 @@ export interface DeleteParams<T> {
 		? [nittos: string]
 		: T extends "/tedinitter/nitter/list/%s"
 		? [listId: string]
+		: T extends "/tedinitter/nitter/list/%s/removeNeet/%s"
+		? [listId: string, neetId: string]
 		: never;
 	body?: never;
 	credentials?: T extends "/auth/logout" ? true : never;
