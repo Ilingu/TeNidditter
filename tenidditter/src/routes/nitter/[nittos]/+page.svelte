@@ -68,8 +68,12 @@
 			}}
 		/>
 	</div>
-	<div class="max-w-[1250px] flex justify-center gap-x-10 z-0">
-		<div class="userInfo w-80 h-fit bg-neutral rounded-lg p-3 flex flex-col gap-y-4 sticky top-20">
+	<div
+		class="max-w-[1250px] flex md:flex-row flex-col justify-center gap-y-2 items-center gap-x-10 z-0"
+	>
+		<div
+			class="userInfo w-80 h-fit bg-neutral rounded-lg p-3 flex flex-col gap-y-4 md:sticky top-20"
+		>
 			<div class="flex justify-center">
 				<img
 					src={data.userInfo.avatarUrl}

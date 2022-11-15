@@ -8,16 +8,10 @@
 </script>
 
 <main class="grid place-items-center mt-5">
-	<div class="max-w-[1250px] flex justify-center gap-x-10 z-0">
-		<div class="drawer drawer-mobile rounded-lg h-fit sticky top-20">
-			<input id="my-drawer-2" type="checkbox" class="drawer-toggle" />
-			<div class="drawer-content flex flex-col items-center justify-center">
-				<!-- Page content here -->
-				<label for="my-drawer-2" class="btn btn-primary drawer-button lg:hidden">Open drawer</label>
-			</div>
-			<div class="drawer-side">
-				<label for="my-drawer-2" class="drawer-overlay" />
-				<ul class="menu p-4 w-80 bg-base-300 text-base-content">
+	<div class="max-w-[1250px] flex md:flex-row flex-col gap-y-4 justify-center gap-x-10 z-0">
+		<div class="drawer rounded-lg h-fit md:sticky top-20">
+			<div class="drawer-side flex justify-center">
+				<ul class="menu p-4 md:w-80 w-3/4 rounded bg-base-300 text-base-content">
 					<!-- Sidebar content here -->
 					<li class="flex-row items-center text-accent font-bold text-2xl">
 						<i class="fa-solid fa-rss" />

@@ -8,7 +8,7 @@
 	};
 </script>
 
-<main class="grid place-items-center mt-5">
+<main class="grid place-items-center mt-5 w-screen">
 	{#if data.savedNeets && (data.savedNeets || []).length > 0}
 		<div class="max-w-[750px]">
 			<Feeds neets={data.savedNeets.map((thread) => [thread])} {onNeetRemovedFromList} />

@@ -24,7 +24,9 @@
 
 <div
 	id={"neet-" + TrimNonDigitsChars(neet.id)}
-	class={`neet relative ${quoteMode ? "w-full text-primary-content" : "w-[500px]"} gap-x-2 ${
+	class={`neet relative break-words ${
+		quoteMode ? "w-full text-primary-content" : "md:w-[500px] w-[95vw]"
+	} gap-x-2 ${
 		quoteMode ? "bg-secondary-focus" : "bg-primary-focus hover:bg-primary"
 	} rounded-md p-2 transition-all ${
 		thread[0]
@@ -97,7 +99,7 @@
 		<div class="neet-attachments">
 			{#if (neet.attachment?.images?.length ?? 0) > 0}
 				<div
-					class={`imgs grid ${
+					class={`imgs place-items-center grid ${
 						(neet.attachment?.images?.length ?? 0) > 1 ? "grid-cols-2" : "grid-cols-1"
 					} gap-1`}
 				>
@@ -105,7 +107,7 @@
 						<img
 							on:click={() => openImageDrawer(neet.attachment?.images ?? [], i)}
 							src={imgUrl}
-							class="rounded cursor-zoom-in"
+							class="rounded cursor-zoom-in max-h-[512px] w-auto"
 							alt="🖼"
 						/>
 					{/each}
@@ -168,6 +170,16 @@
 		grid-template-rows: auto;
 		grid-template-columns: 45px 1fr;
 	}
+	/* @media (max-width: 768px) {
+		.neet {
+			grid-template-areas:
+				"neet-header neet-header"
+				"neet-body neet-body"
+				"neet-attachments neet-attachments"
+				"neet-stats neet-stats";
+		}
+	} */
+
 	.neet-pp {
 		grid-area: neet-pp;
 	}

@@ -25,11 +25,11 @@
 	});
 </script>
 
-<div bind:this={feedDiv} class="nittosPreviewContainer flex flex-col gap-y-2">
+<div bind:this={feedDiv} class="nittosPreviewContainer flex flex-col gap-y-2 md:mx-0 mx-2">
 	{#each previewDatas as nittos}
 		{#if !IsEmptyString(nittos.username)}
 			<div
-				class="grid grid-cols-10 bg-neutral-focus p-2 rounded-lg hover:bg-neutral transition-all"
+				class="grid gap-x-2 grid-cols-10 bg-neutral-focus p-2 rounded-lg hover:bg-neutral transition-all"
 			>
 				<div class="col-span-2 flex justify-center items-center">
 					<img src={nittos.avatarUrl} alt="" class="w-fit h-fit rounded-full" />

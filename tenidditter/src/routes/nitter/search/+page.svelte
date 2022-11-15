@@ -57,7 +57,7 @@
 </script>
 
 <main class="grid place-items-center mt-5">
-	<div class="w-[500px] flex flex-col items-center">
+	<div class="sm:w-[500px] flex flex-col items-center">
 		<form on:submit|preventDefault={SearchWrap} class="w-full flex flex-col items-center">
 			<div class="form-control bg-neutral w-full">
 				<div class="input-group w-full">

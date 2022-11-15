@@ -38,7 +38,7 @@
 </script>
 
 <main class="grid place-items-center mt-5">
-	<h1 class="text-3xl font-bold">
+	<h1 class="text-3xl font-bold flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
 		<i class="fa-solid fa-list" /> Manage Your
 		<span
 			class="from-primary to-secondary bg-gradient-to-br bg-clip-text text-clip text-transparent"
@@ -50,7 +50,7 @@
 		>
 	</h1>
 	{#if $AuthStore?.Lists && $AuthStore.Lists.length > 0}
-		<div class="w-[400px] flex flex-col gap-y-3 mt-4">
+		<div class="sm:w-[400px] w-[375px] flex flex-col gap-y-3 mt-4">
 			{#each $AuthStore.Lists as list, i}
 				<div
 					in:fade={{ delay: 100 * i }}
