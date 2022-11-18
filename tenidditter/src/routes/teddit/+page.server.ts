@@ -11,9 +11,11 @@ export const load: import("./$types").PageServerLoad = async ({
 	url
 }): Promise<FeedResult> => {
 	const eToken = cookies.get("JwtToken");
+	// if user authenticated then fetch his feed
 	if (!eToken || IsEmptyString(eToken) || url.searchParams.get("type") === "home_feed")
 		return fetchHomePage(fetch);
 
+	// otherwise fetch the global teddit home posts
 	const userFeed = await fetchUserFeed(eToken);
 	if (!userFeed.success || !userFeed.data) return fetchHomePage(fetch);
 

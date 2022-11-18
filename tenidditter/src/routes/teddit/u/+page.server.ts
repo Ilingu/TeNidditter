@@ -4,6 +4,7 @@ import type { Actions } from "./$types";
 
 export const prerender = false;
 
+// action that query a user page in teddit to see if the user exists
 export const actions: Actions = {
 	default: async ({ request }): Promise<boolean> => {
 		const form = await request.formData();

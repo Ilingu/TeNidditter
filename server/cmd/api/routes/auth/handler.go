@@ -20,8 +20,6 @@ type RegisterPayload struct {
 }
 
 func AuthHandler(g *echo.Group) {
-	console.Log("AuthHandler Registered ✅", console.Info)
-
 	g.POST("/", func(c echo.Context) error {
 		res := routes.EchoWrapper{Context: c}
 
@@ -29,6 +27,7 @@ func AuthHandler(g *echo.Group) {
 		if err := c.Bind(userInfo); err != nil || userInfo == nil {
 			return res.HandleResp(http.StatusBadRequest, "invalid json payload")
 		}
+		userInfo.Username = utils.FormatUsername(userInfo.Username)
 
 		account, err := db.GetAccount(userInfo.Username)
 
@@ -36,6 +35,21 @@ func AuthHandler(g *echo.Group) {
 			return register(res, userInfo.Username, userInfo.Password)
 		}
 		return login(res, account, userInfo.Password)
+	})
+
+	g.DELETE("/", func(c echo.Context) error {
+		res := routes.EchoWrapper{Context: c}
+
+		token, err := GetTokenFromQuery(c)
+		if err != nil {
+			return res.HandleResp(http.StatusUnauthorized, err.Error())
+		}
+
+		user := db.AccountModel{AccountId: token.ID, Username: token.Username}
+		if ok := db.DeleteAccount(&user); !ok {
+			return res.HandleResp(http.StatusInternalServerError, err.Error())
+		}
+		return logout(c)
 	})
 
 	g.GET("/available", func(c echo.Context) error {
@@ -55,11 +69,6 @@ func AuthHandler(g *echo.Group) {
 		return res.HandleResp(200, false)
 	})
 
-	g.DELETE("/erase", func(c echo.Context) error {
-		res := routes.EchoWrapper{Context: c}
-		return res.HandleResp(http.StatusNotImplemented, "Not Implemented Yet")
-	})
-
 	g.GET("/userChanged", func(c echo.Context) error {
 		res := routes.EchoWrapper{Context: c}
 
@@ -73,32 +82,100 @@ func AuthHandler(g *echo.Group) {
 		return nil
 	})
 
-	g.DELETE("/logout", func(c echo.Context) error {
+	g.DELETE("/logout", logout)
+
+	g.PUT("/reset-password", func(c echo.Context) error {
 		res := routes.EchoWrapper{Context: c}
 
-		// Close all ws connection related to this user
-		if token, err := GetTokenFromQuery(c); err == nil {
-			if wsConns, err := ws.GetWsConn(ws.GenerateUserKey(token.ID, token.Username)); err == nil {
-				for _, conn := range wsConns {
-					websocket.Message.Send(conn.WsConn, "LOGOUT") // logout user of all others client
-					conn.CloseConn()                              // closing ws conn on server
-				}
-			}
+		type ResetPasswordPayload struct {
+			Username     string `json:"username"`
+			NewPassword  string `json:"NewPassword"`
+			RecoveryCode string `json:"RecoveryCode"`
 		}
 
-		res.Response().Header().Set("Clear-Site-Data", `"cache", "cookies", "storage", "executionContexts"`)
-		res.Response().Header().Set("Access-Control-Expose-Headers", "Clear-Site-Data")
-		return res.HandleResp(205)
+		// Format datas
+		resetInfo := new(ResetPasswordPayload)
+		if err := c.Bind(resetInfo); err != nil || resetInfo == nil {
+			return res.HandleResp(http.StatusBadRequest, "invalid json payload")
+		}
+		resetInfo.Username = utils.FormatUsername(resetInfo.Username)
+		resetInfo.RecoveryCode = utils.TrimString(utils.RemoveSpecialChars(resetInfo.RecoveryCode))
+
+		// Check datas
+		if utils.IsEmptyString(resetInfo.Username) || len(resetInfo.Username) < 3 || len(resetInfo.Username) > 15 {
+			return res.HandleResp(http.StatusBadRequest, "username not valid")
+		}
+		if !utils.IsStrongPassword(resetInfo.NewPassword) {
+			return res.HandleResp(http.StatusBadRequest, "password not strong enough")
+		}
+		if utils.IsEmptyString(resetInfo.RecoveryCode) || len(resetInfo.RecoveryCode) != 8 {
+			return res.HandleResp(http.StatusBadRequest, "invalid token")
+		}
+
+		// get associated user
+		user, err := db.GetAccountByUsername(resetInfo.Username)
+		if err != nil {
+			return res.HandleResp(http.StatusNotFound, "this user is not in out database")
+		}
+
+		// check if authorized
+		if validCode := user.HasRecoveryCode(resetInfo.RecoveryCode); !validCode {
+			return res.HandleResp(http.StatusForbidden, "invalid token")
+		}
+
+		// consume code first, to prevent duplications
+		if err := user.UseRecoveryCode(resetInfo.RecoveryCode); err != nil {
+			return res.HandleResp(http.StatusInternalServerError, "cannot use this code")
+		}
+
+		// then change the user password
+		if err := user.UpdatePassword(resetInfo.NewPassword); err != nil {
+			// if failed revert the code by readding it
+			user.AddRecoveryCode(resetInfo.RecoveryCode) // if this also fail, then f*ck it, it's just a side project
+			return res.HandleResp(http.StatusInternalServerError, "couldn't update password")
+		}
+		return res.HandleResp(http.StatusOK)
 	})
+
+	console.Log("AuthHandler Registered ✅", console.Info)
 }
 
 func register(res routes.EchoWrapper, username, password string) error {
+	if utils.IsEmptyString(username) || len(username) < 3 || len(username) > 15 {
+		return res.HandleResp(http.StatusBadRequest, "username not valid")
+	}
+	if !utils.IsStrongPassword(password) {
+		return res.HandleResp(http.StatusBadRequest, "password not strong enough")
+	}
+
 	account, err := db.CreateAccount(username, password)
 	if err != nil {
 		return res.HandleResp(http.StatusInternalServerError, err.Error())
 	}
 
-	return res.HandleResp(http.StatusCreated, *account)
+	if recoveryCodes, err := utils.DecryptAES(account.RecoveryCodes); err == nil {
+		res.Response().Header().Set("RecoveryCodes", recoveryCodes)
+	}
+
+	return res.HandleResp(http.StatusCreated)
+}
+
+func logout(c echo.Context) error {
+	res := routes.EchoWrapper{Context: c}
+
+	// Close all ws connection related to this user
+	if token, err := GetTokenFromQuery(c); err == nil {
+		if wsConns, err := ws.GetWsConn(ws.GenerateUserKey(token.ID, token.Username)); err == nil {
+			for _, conn := range wsConns {
+				websocket.Message.Send(conn.WsConn, "LOGOUT") // logout user of all others client
+				conn.CloseConn()                              // closing ws conn on server
+			}
+		}
+	}
+
+	res.Response().Header().Set("Clear-Site-Data", `"cache", "cookies", "storage", "executionContexts"`)
+	res.Response().Header().Set("Access-Control-Expose-Headers", "Clear-Site-Data")
+	return res.HandleResp(http.StatusResetContent)
 }
 
 func login(res routes.EchoWrapper, account *db.AccountModel, password string) error {

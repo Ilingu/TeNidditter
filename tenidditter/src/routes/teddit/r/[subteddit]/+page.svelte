@@ -6,11 +6,12 @@
 	import api from "$lib/api";
 	import { MakeBearerToken, pushAlert } from "$lib/utils";
 
-	export let data: import("./$types").PageData;
+	export let data: import("./$types").PageData; // ssr
 
-	let isSub = false;
+	let isSub = false; // whether the user is subscribe to this subreddit or not
 	$: if ($AuthStore.loggedIn) isSub = !!$AuthStore.Subs?.teddit?.includes($page.params.subteddit);
 
+	// is user sub it'll unsubscribe him and vise-versa
 	const TriggerSub = async () => {
 		const copySub = isSub;
 		isSub = !isSub; // so that the user don't wait 2s

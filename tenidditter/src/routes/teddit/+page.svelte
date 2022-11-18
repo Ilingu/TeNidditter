@@ -8,10 +8,10 @@
 	import { FeedTypeEnum } from "$lib/types/enums";
 	import { afterUpdate, onMount } from "svelte";
 
-	export let data: import("./$types").PageServerData;
+	export let data: import("./$types").PageServerData; // data from server: SSR
 
-	let FeedDisplayType = FeedTypeEnum.Hot;
-	let loading = false;
+	let FeedDisplayType = FeedTypeEnum.Hot; // Feed state
+	let loading = false; // loading state
 
 	let minusFifthPostId = data.data?.at(-5)?.id ?? "";
 	$: minusFifthPostId = data.data?.at(-5)?.id ?? "";
@@ -19,7 +19,7 @@
 	let lastPostId = data.data?.at(-1)?.id ?? "";
 	$: lastPostId = data.data?.at(-1)?.id ?? "";
 
-	let InfiniteScrollObserver: IntersectionObserver;
+	let InfiniteScrollObserver: IntersectionObserver; // post observer
 	onMount(() => {
 		if (data.type === "home_feed") {
 			InfiniteScrollObserver = new IntersectionObserver(ObserverHandler);
@@ -27,7 +27,7 @@
 		}
 	});
 
-	let execAfterUpdate: Function[] = [];
+	let execAfterUpdate: Function[] = []; // little trick to execute certains function after the rerender of the component tree
 	afterUpdate(() => {
 		execAfterUpdate.forEach((fn) => fn());
 		execAfterUpdate = [];
@@ -61,6 +61,7 @@
 		QueryMorePost();
 	};
 
+	// when user reachs the end of the posts, query more to display
 	const QueryMorePost = async () => {
 		try {
 			InfiniteScrollObserver.unobserve(document.getElementById(minusFifthPostId)!);

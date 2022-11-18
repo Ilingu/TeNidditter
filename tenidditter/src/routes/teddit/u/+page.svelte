@@ -6,7 +6,7 @@
 	import { IsEmptyString } from "$lib/utils";
 
 	let IsUserExist: boolean | null;
-	$: IsUserExist = $page.form;
+	$: IsUserExist = $page.form; // contains the result of the form submit
 
 	let username = "";
 	let loading = false;

@@ -9,14 +9,14 @@
 	import { afterUpdate } from "svelte";
 
 	let IsSubExist: boolean | null;
-	$: IsSubExist = $page.form;
+	$: IsSubExist = $page.form; // contains the result of the form submit
 
 	let Input: HTMLInputElement;
 
-	let subname = "";
-	let loading = false;
+	let subname = ""; // input subname
+	let loading = false; // loading state
 
-	let execAfterUpdate: Function[] = [];
+	let execAfterUpdate: Function[] = []; // little trick to execute certains function after the rerender of the component tree
 	afterUpdate(() => {
 		execAfterUpdate.forEach((fn) => fn());
 		execAfterUpdate = [];
@@ -25,7 +25,7 @@
 	let timeout: NodeJS.Timer;
 	const handleDebounce = () => {
 		clearTimeout(timeout);
-		timeout = setTimeout(FetchDBSubteddit, 500);
+		timeout = setTimeout(FetchDBSubteddit, 500); // if user stopped typing after 500ms, query db
 		if (IsSubExist !== null && !IsEmptyString(subname)) IsSubExist = null;
 	};
 

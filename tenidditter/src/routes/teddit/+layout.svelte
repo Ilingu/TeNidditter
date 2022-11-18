@@ -1,6 +1,6 @@
 <script>
 	import Link from "$lib/components/design/Link.svelte";
-	import "highlight.js/styles/atom-one-dark.css";
+	import "highlight.js/styles/atom-one-dark.css"; // theme for the codeblocks
 </script>
 
 <div class="md:hidden dropdown w-screen mt-2">

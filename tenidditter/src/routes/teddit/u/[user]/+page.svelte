@@ -3,7 +3,7 @@
 	import Feeds from "$lib/components/pages/teddit/Feeds.svelte";
 	import { FormatNumbers } from "$lib/utils";
 
-	export let data: import("./$types").PageData;
+	export let data: import("./$types").PageData; // server data, ssr
 </script>
 
 <main

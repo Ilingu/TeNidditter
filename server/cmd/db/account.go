@@ -14,12 +14,8 @@ type UserInfoAcceptedArg interface {
 	uint | string
 }
 
+// Create a account, it returns a INCOMPLETE AccountModel based on the inputs: it only contains username, hashedPassword, and recoveryCodes. If you want the full Account created you will have to call `GetAccount`
 func CreateAccount(username string, password string) (*AccountModel, error) {
-	db := ps.DBManager.Connect()
-	if db == nil {
-		return nil, ps.ErrDbNotFound
-	}
-
 	username = utils.FormatUsername(username)
 	if utils.IsEmptyString(username) || len(username) < 3 || len(username) > 15 {
 		return nil, errors.New("invalid username")
@@ -28,30 +24,52 @@ func CreateAccount(username string, password string) (*AccountModel, error) {
 		return nil, errors.New("password too weak")
 	}
 
+	db := ps.DBManager.Connect()
+	if db == nil {
+		return nil, ps.ErrDbNotFound
+	}
+
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 12)
 	if err != nil {
 		return nil, ErrRegister
 	}
 
-	_, err = db.Exec("INSERT INTO Account (username, password) VALUES (?, ?);", username, hashedPassword)
+	recoveryCodes, err := generateRecoveryCodes()
 	if err != nil {
 		return nil, ErrRegister
 	}
 
-	return nil, nil
+	hashedCodes, err := encryptRecoveryCodes(*recoveryCodes)
+	if err != nil {
+		return nil, ErrRegister
+	}
+
+	_, err = db.Exec("INSERT INTO Account (username, password, recovery_codes) VALUES (?, ?, ?);", username, hashedPassword, hashedCodes)
+	if err != nil {
+		return nil, ErrRegister
+	}
+
+	return &AccountModel{Username: username, Password: hashedPassword, RecoveryCodes: hashedCodes}, nil
 }
 
-func DeleteAccount(u *AccountModel) error {
+func DeleteAccount(u *AccountModel) bool {
 	db := ps.DBManager.Connect()
 	if db == nil {
-		return ps.ErrDbNotFound
+		return false
 	}
 
-	_, err := db.Exec("DELETE FROM Account WHERE account_id=?;", u.AccountId)
-	if err != nil {
-		return errors.New("cannot delete account")
+	_, errTeship := db.Exec("DELETE FROM Teship WHERE follower_id=?;", u.AccountId)
+	_, errTwiship := db.Exec("DELETE FROM Twiship WHERE follower_id=?;", u.AccountId)
+	_, errLists := db.Exec("DELETE FROM NitterLists WHERE account_id=?;", u.AccountId)
+	_, errResetTokens := db.Exec("DELETE FROM ResetPasswordTokens WHERE account_id=?;", u.AccountId)
+	for _, err := range []error{errTeship, errTwiship, errLists, errResetTokens} {
+		if err != nil {
+			return false // if one of the above query failed don't delete the account so that the user can always login
+		}
 	}
-	return nil
+
+	_, errAccount := db.Exec("DELETE FROM Account WHERE account_id=?;", u.AccountId)
+	return errAccount == nil
 }
 
 func GetAllAccounts(onlySubbedOne bool) ([]AccountModel, error) {
@@ -74,7 +92,7 @@ func GetAllAccounts(onlySubbedOne bool) ([]AccountModel, error) {
 	var users []AccountModel
 	for rows.Next() {
 		var user AccountModel
-		if err := rows.Scan(&user.AccountId, &user.Username, &user.Password, &user.CreatedAt); err != nil {
+		if err := rows.Scan(&user.AccountId, &user.Username, &user.Password, &user.RecoveryCodes, &user.CreatedAt); err != nil {
 			return nil, err
 		}
 		users = append(users, user)
@@ -105,7 +123,7 @@ func GetAccountByID(ID uint) (*AccountModel, error) {
 
 	var user AccountModel
 
-	err := db.QueryRow("SELECT * FROM Account WHERE account_id=?", ID).Scan(&user.AccountId, &user.Username, &user.Password, &user.CreatedAt)
+	err := db.QueryRow("SELECT * FROM Account WHERE account_id=?", ID).Scan(&user.AccountId, &user.Username, &user.Password, &user.RecoveryCodes, &user.CreatedAt)
 	if err != nil || user.AccountId == 0 || user.AccountId != ID {
 		return nil, errors.New("cannot fetch user")
 	}
@@ -125,7 +143,7 @@ func GetAccountByUsername(username string) (*AccountModel, error) {
 
 	var user AccountModel
 
-	err := db.QueryRow("SELECT * FROM Account WHERE username=?", username).Scan(&user.AccountId, &user.Username, &user.Password, &user.CreatedAt)
+	err := db.QueryRow("SELECT * FROM Account WHERE username=?", username).Scan(&user.AccountId, &user.Username, &user.Password, &user.RecoveryCodes, &user.CreatedAt)
 	if err != nil || user.AccountId == 0 || user.Username != username {
 		return nil, errors.New("cannot fetch user")
 	}

@@ -4,9 +4,82 @@
 		<meta charset="UTF-8" />
 		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Error</title>
+		<link rel="manifest" crossorigin="use-credentials" href="%sveltekit.assets%/manifest.json" />
+		<link rel="icon" href="%sveltekit.assets%/favicon.ico" />
+		<link rel="apple-touch-icon" sizes="192x192" href="%sveltekit.assets%/icons/IconTNDT192.webp" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="theme-color" content="#dca54c" />
+		<meta name="msapplication-navbutton-color" content="#dca54c" />
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+		<meta name="description" content="🔒 TeNidditter - Secure Nitter and Teddit Feed Generator" />
+		<meta name="author" content="Ilingu" />
+		<meta name="application-name" content="TeNidditter" />
+		<meta name="keywords" content="TeNidditter, Feed Generator" />
+		<meta name="robots" content="noindex,nofollow,noodp" />
+		<meta name="googlebot" content="noindex,nofollow" />
+		<title>Fatal Error</title>
+
+		<style>
+			* {
+				font-family: monospace;
+				box-sizing: border-box;
+				margin: 0;
+				padding: 0;
+			}
+			body {
+				min-height: 100vh;
+				display: flex;
+				flex-direction: column;
+				justify-content: center;
+				align-items: center;
+				background: #09090b;
+				color: #fff;
+			}
+			body > h1 {
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				flex-wrap: wrap;
+				color: #ff6f6f;
+				font-size: 3rem;
+				text-align: center;
+			}
+			body > h1 > img {
+				width: 128px;
+			}
+			body > p {
+				line-height: 3rem;
+			}
+			a {
+				color: #ff4500;
+			}
+
+			@media (max-width: 768px) {
+				body > h1 {
+					font-size: 2rem;
+				}
+			}
+			@media (max-width: 500px) {
+				body > h1 {
+					font-size: 1.5rem;
+				}
+				body > h2 {
+					font-size: 1.25rem;
+				}
+				body > p {
+					text-align: center;
+				}
+			}
+		</style>
 	</head>
 	<body>
-		Opps! Something went really wrong
+		<h1><img src="/Assets/Img/error.gif" alt="error" /> Opps! Something went really wrong</h1>
+		<h2>Couldn't render this page...</h2>
+		<p>
+			Please Contact me by opening a issue
+			<a href="https://github.com/Ilingu/TeNidditter/issues/new">in this website repo</a> or
+			<a href="/">go back</a>
+		</p>
 	</body>
 </html>

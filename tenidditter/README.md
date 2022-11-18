@@ -1,8 +1,11 @@
 # [TweNitter & TeReddit]::PWA 📲
 
-[REMAINING]: redo for twitter
-[https://doppio.sh/] -> OG Image API
-+Breadcrumbs
+[REMAINING]:
+
+- +Breadcrumbs
+- +delete account
+- +test+comments
+- +reset psw
 
 # What I learn form this project
 

@@ -11,6 +11,7 @@
 	import { AutoLogin } from "$lib/services/auth";
 
 	afterNavigate((n) => {
+		// Change Theme for each new routes
 		const path = n.to?.url.pathname;
 		if (!path) return;
 
@@ -26,8 +27,8 @@
 
 	let ScrollAnimationObserver: IntersectionObserver;
 	onMount(async () => {
-		await InitWasm();
-		AutoLogin();
+		await InitWasm(); // inject wasm into dom
+		AutoLogin(); // check the login state
 
 		ScrollAnimationObserver = new IntersectionObserver(ScrollAnimation, {
 			threshold: innerWidth > 1280 ? 1.0 : undefined

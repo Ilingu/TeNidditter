@@ -1,8 +1,9 @@
 package utils
 
 import (
-	"crypto/sha256"
+	crRand "crypto/rand"
 	"fmt"
+	"math/big"
 	"math/rand"
 	"net/url"
 	"strings"
@@ -14,12 +15,6 @@ import (
 	"github.com/nbutton23/zxcvbn-go"
 	htmlpkg "golang.org/x/net/html"
 )
-
-func Hash(str string) string {
-	ByteHash := sha256.Sum256([]byte(str))
-	HashedStr := fmt.Sprintf("%x", ByteHash[:])
-	return HashedStr
-}
 
 func IsEmptyString(str any) bool {
 	realStr, isStr := str.(string)
@@ -107,4 +102,23 @@ func ContainsScript(rawHtml string) (found bool) {
 // A faster but less precise ContainsScript function: it will only look for the keyword "script" in the html, so if there is this word in a text or an attribute ect... this will return true even though there is no actual "script" tag
 func ContainsScriptFast(rawHtml string) bool {
 	return strings.Contains(rawHtml, "script")
+}
+
+func GenerateRandomChars(length uint) (string, error) {
+	allCharSet := strings.Split("abcdedfghijklmnopqrst"+"ABCDEFGHIJKLMNOPQRSTUVWXYZ"+"0123456789", "")
+
+	chars := []string{}
+	for charId := uint(0); charId < length; charId++ {
+		indexBig, err := crRand.Int(crRand.Reader, big.NewInt(int64(len(allCharSet))))
+		if err != nil {
+			return "", err
+		}
+
+		index, err := BigIntToInt(indexBig, 8) // bigInt must fit into int8
+		if err != nil {
+			return "", err
+		}
+		chars = append(chars, allCharSet[index])
+	}
+	return strings.Join(chars, ""), nil
 }

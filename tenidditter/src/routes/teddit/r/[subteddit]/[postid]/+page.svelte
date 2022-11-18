@@ -8,7 +8,9 @@
 
 	export let data: import("./$types").PageData;
 
-	setContext("COMMEMTS_CTX", data.comments);
+	setContext("COMMEMTS_CTX", data.comments); // Context because comments will be used to render recursive childrens (with undefined depth, so props thrilling can hit hard)
+
+	// convert the post number of ups to readable and exploitable number
 	const PostUps = (): number => {
 		const ups = data.metadata.post_ups;
 		if (ups.endsWith("k")) {
@@ -19,6 +21,7 @@
 		return parseInt(ups);
 	};
 
+	// generates an custom og image for this post
 	const OGImageUrl = `${$page.url.origin}/api/og-image?title=${encodeURIComponent(
 		data.metadata.post_title
 	)}&author=${encodeURIComponent(data.metadata.post_author)}&subreddit=${encodeURIComponent(

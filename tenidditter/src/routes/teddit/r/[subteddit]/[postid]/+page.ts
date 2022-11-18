@@ -6,6 +6,7 @@ import { error } from "@sveltejs/kit";
 
 export const prerender = false;
 
+// fetch post's comment by types
 const acceptedSort: Tuple<string, 6> = ["best", "top", "new", "controversial", "old", "qa"];
 export const load: import("./$types").PageLoad = async ({
 	params,

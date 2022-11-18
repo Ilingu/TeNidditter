@@ -170,15 +170,6 @@
 		grid-template-rows: auto;
 		grid-template-columns: 45px 1fr;
 	}
-	/* @media (max-width: 768px) {
-		.neet {
-			grid-template-areas:
-				"neet-header neet-header"
-				"neet-body neet-body"
-				"neet-attachments neet-attachments"
-				"neet-stats neet-stats";
-		}
-	} */
 
 	.neet-pp {
 		grid-area: neet-pp;

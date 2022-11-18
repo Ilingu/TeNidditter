@@ -27,6 +27,20 @@ func (u *AccountModel) PasswordMatch(passwordInput string) bool {
 	err := bcrypt.CompareHashAndPassword(u.Password, []byte(passwordInput))
 	return err == nil
 }
+func (u AccountModel) UpdatePassword(newPassword string) error {
+	db := ps.DBManager.Connect()
+	if db == nil {
+		return ps.ErrDbNotFound
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), 12)
+	if err != nil {
+		return errors.New("couldn't hash new password")
+	}
+
+	_, err = db.Exec("UPDATE Account SET password=? WHERE account_id=?;", hashedPassword, u.AccountId)
+	return err
+}
 
 func (user AccountModel) GetTedditSubs() ([]string, error) {
 	q := "SELECT subname FROM Teship INNER JOIN Subteddits ON Subteddits.subteddit_id = Teship.subteddit_id WHERE follower_id=?"
@@ -292,6 +306,93 @@ func (user AccountModel) GetNitterLists() ([]NitterListModel, error) {
 	}
 
 	return lists, nil
+}
+
+/* RecoveryCodes */
+
+func (user AccountModel) DecryptRecoveryCodes() (*[]string, error) {
+	if utils.IsEmptyString(user.RecoveryCodes) {
+		return nil, errors.New("no recovery codes")
+	}
+
+	blobCodes, err := utils.DecryptAES(user.RecoveryCodes)
+	if err != nil {
+		return nil, errors.New("couldn't decrypt codes")
+	}
+
+	var recoveryCodes []string
+	if err := json.Unmarshal([]byte(blobCodes), &recoveryCodes); err != nil {
+		return nil, errors.New("couldn't convert codes to slice")
+	}
+	if len(recoveryCodes) <= 0 {
+		return nil, errors.New("no recovery codes left")
+	}
+
+	return &recoveryCodes, nil
+}
+
+func (user AccountModel) AddRecoveryCode(RecoveryCode string) error {
+	db := ps.DBManager.Connect()
+	if db == nil {
+		return ps.ErrDbNotFound
+	}
+
+	recoveryCodes, err := user.DecryptRecoveryCodes()
+	if err != nil {
+		return err
+	}
+
+	(*recoveryCodes) = append((*recoveryCodes), RecoveryCode)
+	hashedCodes, err := encryptRecoveryCodes(*recoveryCodes)
+	if err != nil {
+		return errors.New("couldn't encrypt new codes")
+	}
+	_, err = db.Exec("UPDATE Account SET recovery_codes=? WHERE account_id=?;", hashedCodes, user.AccountId)
+	return err
+}
+
+func (user AccountModel) UseRecoveryCode(RecoveryCode string) error {
+	db := ps.DBManager.Connect()
+	if db == nil {
+		return ps.ErrDbNotFound
+	}
+
+	recoveryCodes, err := user.DecryptRecoveryCodes()
+	if err != nil {
+		return err
+	}
+
+	updatedRecoveryCodes := *recoveryCodes
+	for i, code := range *recoveryCodes {
+		if utils.Hash(code) == utils.Hash(RecoveryCode) {
+			updatedRecoveryCodes = append(updatedRecoveryCodes[:i], updatedRecoveryCodes[i+1:]...)
+			break
+		}
+	}
+
+	hashedCodes, err := encryptRecoveryCodes(updatedRecoveryCodes)
+	if err != nil {
+		return errors.New("couldn't encrypt new codes")
+	}
+
+	_, err = db.Exec("UPDATE Account SET recovery_codes=? WHERE account_id=?;", hashedCodes, user.AccountId)
+	return err
+}
+
+func (user AccountModel) HasRecoveryCode(RecoveryCode string) bool {
+	recoveryCodes, err := user.DecryptRecoveryCodes()
+	if err != nil {
+		return false
+	}
+
+	isValid := false
+	for _, code := range *recoveryCodes {
+		if utils.Hash(code) == utils.Hash(RecoveryCode) {
+			isValid = true
+			break
+		}
+	}
+	return isValid
 }
 
 /* Websocket */
