@@ -13,7 +13,7 @@
 			? "two"
 			: $page.url.pathname.includes("/nitter")
 			? "three"
-			: $page.url.pathname === "/auth"
+			: $page.url.pathname.includes("/auth")
 			? "four"
 			: "";
 </script>
@@ -124,7 +124,7 @@
 			<i class="fa-brands fa-twitter" />
 		</button>
 	</Link>
-	<Link href="/auth" className={$page.url.pathname === "/auth" ? "four" : ""}>
+	<Link href="/auth" className={$page.url.pathname.includes("/auth") ? "four" : ""}>
 		<button class="text-primary">
 			<i class="fa-solid fa-user" />
 		</button>

@@ -92,7 +92,7 @@ func GetAllAccounts(onlySubbedOne bool) ([]AccountModel, error) {
 	var users []AccountModel
 	for rows.Next() {
 		var user AccountModel
-		if err := rows.Scan(&user.AccountId, &user.Username, &user.Password, &user.RecoveryCodes, &user.CreatedAt); err != nil {
+		if err := rows.Scan(&user.AccountId, &user.Username, &user.Password, &user.CreatedAt, &user.RecoveryCodes); err != nil {
 			return nil, err
 		}
 		users = append(users, user)
@@ -123,7 +123,7 @@ func GetAccountByID(ID uint) (*AccountModel, error) {
 
 	var user AccountModel
 
-	err := db.QueryRow("SELECT * FROM Account WHERE account_id=?", ID).Scan(&user.AccountId, &user.Username, &user.Password, &user.RecoveryCodes, &user.CreatedAt)
+	err := db.QueryRow("SELECT * FROM Account WHERE account_id=?", ID).Scan(&user.AccountId, &user.Username, &user.Password, &user.CreatedAt, &user.RecoveryCodes)
 	if err != nil || user.AccountId == 0 || user.AccountId != ID {
 		return nil, errors.New("cannot fetch user")
 	}
@@ -143,7 +143,7 @@ func GetAccountByUsername(username string) (*AccountModel, error) {
 
 	var user AccountModel
 
-	err := db.QueryRow("SELECT * FROM Account WHERE username=?", username).Scan(&user.AccountId, &user.Username, &user.Password, &user.RecoveryCodes, &user.CreatedAt)
+	err := db.QueryRow("SELECT * FROM Account WHERE username=?", username).Scan(&user.AccountId, &user.Username, &user.Password, &user.CreatedAt, &user.RecoveryCodes)
 	if err != nil || user.AccountId == 0 || user.Username != username {
 		return nil, errors.New("cannot fetch user")
 	}

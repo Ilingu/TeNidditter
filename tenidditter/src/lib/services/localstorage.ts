@@ -33,7 +33,7 @@ export const GetUserSubs = (): FunctionJob<UserSubs> => {
 	const rawSubs = window.localStorage.getItem("subs");
 	if (!rawSubs || IsEmptyString(rawSubs) || !IsValidJSON(rawSubs)) return { success: false };
 
-	const subs: UserSubs = JSON.parse(rawSubs);
+	const subs: UserSubs = JSON.parse(rawSubs) ?? undefined;
 	if (typeof subs !== "object" || !Object.hasOwn(subs, "teddit") || !Object.hasOwn(subs, "nitter"))
 		return { success: false };
 
@@ -44,7 +44,7 @@ export const GetUserLists = (): FunctionJob<UserLists[]> => {
 	const rawList = window.localStorage.getItem("lists");
 	if (!rawList || IsEmptyString(rawList) || !IsValidJSON(rawList)) return { success: false };
 
-	const lists: UserLists[] = JSON.parse(rawList);
+	const lists: UserLists[] = JSON.parse(rawList) ?? undefined;
 	if (typeof lists !== "object" || lists.length <= 0) return { success: false };
 
 	return { success: true, data: lists };

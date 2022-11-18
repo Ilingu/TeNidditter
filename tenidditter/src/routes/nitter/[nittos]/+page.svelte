@@ -69,7 +69,7 @@
 		/>
 	</div>
 	<div
-		class="max-w-[1250px] flex md:flex-row flex-col justify-center gap-y-2 items-center gap-x-10 z-0"
+		class="max-w-[1250px] flex md:flex-row flex-col justify-center gap-y-2 md:items-start items-center gap-x-10 z-0"
 	>
 		<div
 			class="userInfo w-80 h-fit bg-neutral rounded-lg p-3 flex flex-col gap-y-4 md:sticky top-20"

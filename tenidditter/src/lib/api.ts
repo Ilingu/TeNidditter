@@ -32,6 +32,7 @@ interface APIResShape<T = never> {
 	success: boolean;
 	code: number;
 	data: T;
+	error: string;
 }
 
 /* API Client */
@@ -66,12 +67,12 @@ export default class api {
 		});
 	}
 
-	static async update<T extends PutRoutes>(
+	static async put<T extends PutRoutes>(
 		uri: T,
-		{ body, headers, params, query }: PutParams
-	): Promise<ApiClientResp<PutReturns>> {
+		{ body, headers, params, query }: PutParams<T>
+	): Promise<ApiClientResp<PutReturns<T>>> {
 		uri = BuildURI<T>(uri, { params, query });
-		return await callApi<PutReturns>({
+		return await callApi<PutReturns<T>>({
 			uri,
 			method: "PUT",
 			body,
@@ -119,11 +120,10 @@ export const callApi = async <T = never>(
 			headers: { "Content-Type": "application/json", ...(headers || {}) },
 			credentials: credentials ? "include" : undefined
 		});
-		if (!resp.ok) return { success: false, status: resp.status, error: "Request Failed" };
 		if (resp.status === 204) return { success: true, status: resp.status };
 
-		const { success, data: apiRes }: APIResShape<T> = await resp.json();
-		if (!success) return { success: false, status: resp.status, error: "apiRes" };
+		const { success, data: apiRes, error }: APIResShape<T> = await resp.json();
+		if (!resp.ok || !success) return { success: false, status: resp.status, error };
 
 		return { success: true, data: apiRes, status: resp.status, headers: resp?.headers };
 	} catch (err) {

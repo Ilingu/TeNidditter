@@ -4,7 +4,7 @@ create table Account (
 
   username VARCHAR(255) NOT NULL UNIQUE
   password CHAR(128) NOT NULL CHECK (LENGTH(password) >= 8)
-  recovery_codes VARCHAR(148) NOT NULL UNIQUE CHECK (LENGTH(password) == 148)
+  recovery_codes VARCHAR(108)
 
   created_at DATETIME NOT NULL DEFAULT GETDATE()
 
@@ -12,7 +12,9 @@ create table Account (
 );
 CREATE INDEX username_index ON Account(username);
 ALTER TABLE Account
-ADD recovery_codes VARCHAR(148) NOT NULL UNIQUE CHECK (LENGTH(recovery_codes) = 148);
+DROP recovery_codes;
+ALTER TABLE Account
+ADD recovery_codes VARCHAR(108);
 
 
 -- @block

@@ -159,13 +159,15 @@ export interface PostParams<T> {
 }
 
 /* PUT */
-export type PutRoutes = never;
-export type PutReturns = never;
-export interface PutParams {
+export type PutRoutes = "/auth/reset-password";
+export type PutReturns<T> = T extends "/auth/reset-password" ? null : never;
+export interface PutParams<T> {
 	query?: never;
 	headers?: never;
 	params?: never;
-	body?: never;
+	body?: T extends "/auth/reset-password"
+		? { username: string; NewPassword: string; RecoveryCode: string }
+		: never;
 }
 
 /* DELETE */
@@ -174,7 +176,8 @@ export type DeleteRoutes =
 	| "/tedinitter/nitter/unsub/%s"
 	| "/tedinitter/nitter/list/%s"
 	| "/tedinitter/nitter/list/%s/removeNeet/%s"
-	| "/auth/logout";
+	| "/auth/logout"
+	| "/auth/";
 export type DeleteReturns<T> = T extends "/tedinitter/teddit/unsub/%s"
 	? null
 	: T extends "/tedinitter/nitter/unsub/%s"
@@ -185,7 +188,11 @@ export type DeleteReturns<T> = T extends "/tedinitter/teddit/unsub/%s"
 	? null
 	: never;
 export interface DeleteParams<T> {
-	query?: T extends "/auth/logout" ? { token?: string } : never;
+	query?: T extends "/auth/logout"
+		? { token?: string }
+		: T extends "/auth/"
+		? { token?: string }
+		: never;
 	headers?: T extends "/tedinitter/teddit/unsub/%s"
 		? { Authorization: string }
 		: T extends "/tedinitter/nitter/unsub/%s"
@@ -205,5 +212,5 @@ export interface DeleteParams<T> {
 		? [listId: string, neetId: string]
 		: never;
 	body?: never;
-	credentials?: T extends "/auth/logout" ? true : never;
+	credentials?: T extends "/auth/logout" ? true : T extends "/auth/" ? true : never;
 }

@@ -92,3 +92,9 @@ export const MakeBearerToken = (JwtToken: string) => ({ Authorization: "Bearer "
 export const EscapeHTML = (str: string): string => new Option(str).innerHTML;
 
 export const removeDuplicates = <T = never>(ary: T[]) => [...new Set<T>(ary)];
+
+/**
+ * Copy Text To User Clipbord
+ * @param {string} text
+ */
+export const copyToClipboard = (text: string) => navigator.clipboard.writeText(text);

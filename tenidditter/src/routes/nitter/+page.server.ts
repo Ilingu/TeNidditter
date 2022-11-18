@@ -1,7 +1,7 @@
 import api from "$lib/api";
 import type { NeetComment } from "$lib/types/interfaces";
 import { IsEmptyString, MakeBearerToken } from "$lib/utils";
-import { error, redirect } from "@sveltejs/kit";
+import { redirect } from "@sveltejs/kit";
 
 export const prerender = false;
 
@@ -15,7 +15,7 @@ export const load: import("./$types").PageServerLoad = async ({
 		headers: MakeBearerToken(eToken)
 	});
 	if (!success || typeof comments !== "object" || comments.length <= 0)
-		throw error(404, "feed not found");
+		throw redirect(307, `/nitter/search`);
 
 	return { comments };
 };

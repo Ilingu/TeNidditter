@@ -6,8 +6,8 @@ type AccountModel struct {
 	AccountId     uint      `json:"account_id"`
 	Username      string    `json:"username"` // to index
 	Password      []byte    `json:"-"`
-	RecoveryCodes string    `json:"recovery_codes"`
 	CreatedAt     time.Time `json:"created_at"`
+	RecoveryCodes string    `json:"recovery_codes"`
 }
 type UsersInfo struct {
 	AccountModel         // extends account model

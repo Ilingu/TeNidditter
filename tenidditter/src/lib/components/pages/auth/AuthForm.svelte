@@ -1,17 +1,18 @@
 <script lang="ts">
 	import AuthStore from "$lib/stores/auth";
 	import api from "$lib/api";
-	import { FormatUsername, IsEmptyString, IsValidJSON, pushAlert } from "$lib/utils";
+	import {
+		copyToClipboard,
+		FormatUsername,
+		IsEmptyString,
+		IsValidJSON,
+		pushAlert
+	} from "$lib/utils";
 	import { GetZxcvbn, ScoreToColor, ScoreToText } from "$lib/zxcvbn";
-	import { onMount } from "svelte";
 	import { LogOut, SignIn } from "$lib/services/auth";
 	import type { NitterLists } from "$lib/types/interfaces";
-
-	/* TYPES */
-	interface PswReport {
-		score: { text: string; number: number; color: string };
-		crackTime: string;
-	}
+	import type { PswReport } from "$lib/types/zxcvbn";
+	import Link from "$lib/components/design/Link.svelte";
 
 	/* VAR */
 	let Username = "",
@@ -24,20 +25,13 @@
 
 	let loading = false;
 
+	let showRecoveryCodesModal: HTMLLabelElement;
+	let hideRecoveryCodesModal: HTMLLabelElement;
+	let recoverySaved = false;
+
 	AuthStore.subscribe((value) => value.loggedIn && (Username = value.user?.username || ""));
 
-	/* App Start */
-	onMount(() => {
-		document.querySelectorAll("input").forEach((inp) => {
-			inp.addEventListener("focusin", () => PlacehoverAnimate(inp, "add"));
-			inp.addEventListener("focusout", () => {
-				if (inp.value.trim().length >= 1) return;
-				PlacehoverAnimate(inp, "rem");
-			});
-		});
-	});
-
-	/* INPUTS */
+	/* auth */
 	const Authenticate = async () => {
 		// Username check
 		const username = FormatUsername(Username.trim());
@@ -45,7 +39,7 @@
 		if (nameLen < 3 || nameLen > 15)
 			return (UsernameError = true) && pushAlert("Username invalid!", "warning");
 
-		// Checks Password
+		// Check Password
 		const zxcvbn = await GetZxcvbn();
 		const passwordStrenght = zxcvbn(Password);
 		if (passwordStrenght.score < 3) return pushAlert("Password is too weak! Like you", "warning");
@@ -71,11 +65,29 @@
 			}
 		});
 
-		if (!AuthSuccess) pushAlert("Failed to auth", "error");
-		else if (AuthMethod === "signup")
-			pushAlert("Successfully registered, you can now login", "success", 6000);
-		else if (!IsEmptyString(JwtToken)) AfterLogin(JwtToken as string, headers);
-		else pushAlert("Invalid login", "error");
+		if (!AuthSuccess) return pushAlert("Failed to auth", "error");
+
+		if (AuthMethod === "signup") return AfterRegister(headers);
+		if (AuthMethod === "login" && !IsEmptyString(JwtToken))
+			return AfterLogin(JwtToken as string, headers);
+
+		pushAlert("Invalid login", "error");
+	};
+
+	const AfterRegister = async (headers?: Headers) => {
+		const codesHeader = headers?.get("RecoveryCodes") ?? "";
+
+		if (codesHeader && !IsEmptyString(codesHeader) && IsValidJSON(codesHeader))
+			recoveryCodes = JSON.parse(codesHeader);
+		if (recoveryCodes.length > 0) showRecoveryCodesModal?.click();
+
+		pushAlert("Successfully registered, you can now login", "success", 6000);
+
+		loading = true;
+		AuthMethod = "login";
+
+		await Authenticate();
+		loading = false;
 
 		Reset();
 	};
@@ -96,16 +108,20 @@
 		if (nitterListsHeader && !IsEmptyString(nitterListsHeader) && IsValidJSON(nitterListsHeader))
 			nitterLists = JSON.parse(nitterListsHeader);
 
-		const subs = { teddit: tedditSubs, nitter: JSON.parse(nitterSubsHeader) };
-		await SignIn(JwtToken, subs, JSON.parse(nitterListsHeader)); // validate user jwt
+		const subs = { teddit: tedditSubs, nitter: nitterSubs };
+		await SignIn(JwtToken, subs, nitterLists); // validate user jwt
+
+		Reset();
 		if (!$AuthStore.loggedIn) return pushAlert("Invalid login", "error");
 
 		pushAlert("Successfully logged in!", "success");
 	};
 
+	/* inputs */
 	const Reset = () => {
 		Username = "";
 		Password = "";
+		UsernameError = false;
 	};
 
 	let debounce: NodeJS.Timeout;
@@ -126,15 +142,19 @@
 		}, 500);
 	};
 
-	/* ANIMATION */
-	const PlacehoverAnimate = (inp: HTMLInputElement, mode: "add" | "rem") => {
-		const label = inp.parentElement?.parentElement?.firstChild as HTMLElement;
-		const hasAnimate = label?.classList.contains("animate");
+	/* recoveryCodes */
+	let recoveryCodes: string[] = [];
+	const DownloadRecoveryCodes = () => {
+		if (recoveryCodes.length <= 0) return;
+		const codes = recoveryCodes.join("\n");
+		const textBlob = new Blob([codes], { type: "text/plain" });
+		const fileUrl = URL.createObjectURL(textBlob);
 
-		if (mode === "add" && hasAnimate) return;
-		if (mode === "rem" && !hasAnimate) return;
-
-		label?.classList.toggle("animate");
+		var a = document.createElement("a");
+		a.href = fileUrl;
+		a.download = "TeNiditter_Recovery_Codes.txt";
+		a.click();
+		recoverySaved = true;
 	};
 </script>
 
@@ -189,6 +209,10 @@
 				/>
 			</label>
 
+			<p class="absolute -top-5 text-sm right-0 hover:underline">
+				<Link href="/auth/reset-password">Forgot Password?</Link>
+			</p>
+
 			<!-- Password Strenght Report -->
 			{#if PswStrenghtReport}
 				<div class="text-sm text-white text-center mt-2 -mb-7">
@@ -233,18 +257,68 @@
 			</div>
 		{/if}
 	</form>
+
+	<!-- The button to open modal -->
+	<label for="recoveryCodeModal" class="hidden" bind:this={showRecoveryCodesModal} />
 </div>
 
-<style scoped>
-	input[disabled] {
-		opacity: 0.5;
-	}
+<!-- recovery codes Modal -->
+<input type="checkbox" id="recoveryCodeModal" class="modal-toggle" />
+<div class="modal ">
+	<div
+		class="modal-box bg-neutral-focus flex flex-col items-center text-center w-[37.5%] max-w-[100vw]"
+	>
+		<h3 class="font-bold text-2xl">Don't forget to save your recovery codes!</h3>
+		<p class="py-4 text-lg">
+			If you loose your password you can use these codes to recover your account by changing of
+			password. <br />
+			<span class="text-error font-bold"
+				>If you loose them too, consider your account lost forever.</span
+			>
+			<br />
+			<span class="text-info">
+				<i class="fa-solid fa-info" /> Please Note that this is the only chance to download them, they
+				won't be display another time!
+			</span>
+		</p>
 
-	.placehover {
-		transition: all 0.5s;
-	}
+		<div class="bg-base-100 w-3/4 grid grid-cols-2 gap-y-3 rounded-md p-5">
+			{#each recoveryCodes as code}
+				<p class="text-white font-bold text-xl select-all">{code}</p>
+			{/each}
+		</div>
 
-	:global(.placehover.animate) {
-		translate: 0 -40px;
-	}
-</style>
+		<div class="flex gap-x-3 mt-2">
+			<button class="btn btn-accent gap-x-2" on:click={DownloadRecoveryCodes}
+				><i class="fa-solid fa-download icon" /> Download</button
+			>
+			<a
+				class="btn btn-accent gap-x-2"
+				href={`/api/recovery-code/print?codes=${encodeURIComponent(JSON.stringify(recoveryCodes))}`}
+				target="_blank"
+				on:click={() => (recoverySaved = true)}
+				rel="noopener noreferrer"><i class="fa-solid fa-print icon" /> Print</a
+			>
+			<button
+				class="btn btn-accent gap-x-2"
+				on:click={() => {
+					copyToClipboard(recoveryCodes.join("\n"));
+					recoverySaved = true;
+					pushAlert("Recovery Codes Copied", "info", 1600);
+				}}><i class="fa-solid fa-copy icon" /> Copy</button
+			>
+		</div>
+		<div class="modal-action">
+			<button
+				disabled={!recoverySaved}
+				class="btn btn-success"
+				on:click={() => {
+					recoverySaved = false;
+					recoveryCodes = [];
+					hideRecoveryCodesModal?.click();
+				}}>💯 All good!</button
+			>
+			<label for="recoveryCodeModal" class="hidden" bind:this={hideRecoveryCodesModal} />
+		</div>
+	</div>
+</div>

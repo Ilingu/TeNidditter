@@ -39,10 +39,8 @@
 		const { success, data: searchResult } = await api.get("/nitter/search", {
 			query: { q: query, type: activeTab, limit }
 		});
-		if (!success || typeof searchResult !== "object") {
-			activeTab = activeTab === "tweets" ? "users" : "tweets";
+		if (!success || typeof searchResult !== "object")
 			return pushAlert("Nitter returned nothing", "error", 4000);
-		}
 
 		dataType = activeTab;
 		data = { searchResult };

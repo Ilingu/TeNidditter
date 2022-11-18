@@ -108,7 +108,7 @@ func AuthHandler(g *echo.Group) {
 		if !utils.IsStrongPassword(resetInfo.NewPassword) {
 			return res.HandleResp(http.StatusBadRequest, "password not strong enough")
 		}
-		if utils.IsEmptyString(resetInfo.RecoveryCode) || len(resetInfo.RecoveryCode) != 8 {
+		if utils.IsEmptyString(resetInfo.RecoveryCode) || len(resetInfo.RecoveryCode) != db.RECOVERY_CODE_LENGTH {
 			return res.HandleResp(http.StatusBadRequest, "invalid token")
 		}
 
@@ -154,9 +154,9 @@ func register(res routes.EchoWrapper, username, password string) error {
 	}
 
 	if recoveryCodes, err := utils.DecryptAES(account.RecoveryCodes); err == nil {
+		res.Response().Header().Set("Access-Control-Expose-Headers", "RecoveryCodes")
 		res.Response().Header().Set("RecoveryCodes", recoveryCodes)
 	}
-
 	return res.HandleResp(http.StatusCreated)
 }
 
