@@ -89,7 +89,7 @@
 					tabindex="0"
 					class="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52"
 				>
-					<li><Link href="/auth"><i class="fa-solid fa-gear" /> Settings</Link></li>
+					<li><Link href="/auth/settings"><i class="fa-solid fa-gear" /> Settings</Link></li>
 					<li>
 						<button on:click={() => LogOut(true, $AuthStore.JwtToken)}
 							><i class="fa-solid fa-right-from-bracket icon" /> Logout</button

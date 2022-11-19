@@ -5,7 +5,7 @@ export const pushRoute = (url: string) => {
 	if (!isValidUrl(url)) return;
 
 	dispatchRouting();
-	naviguate(url, { noscroll: true });
+	naviguate(url);
 };
 
 // Faster than beforeNavigation

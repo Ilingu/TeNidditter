@@ -61,8 +61,7 @@ func DeleteAccount(u *AccountModel) bool {
 	_, errTeship := db.Exec("DELETE FROM Teship WHERE follower_id=?;", u.AccountId)
 	_, errTwiship := db.Exec("DELETE FROM Twiship WHERE follower_id=?;", u.AccountId)
 	_, errLists := db.Exec("DELETE FROM NitterLists WHERE account_id=?;", u.AccountId)
-	_, errResetTokens := db.Exec("DELETE FROM ResetPasswordTokens WHERE account_id=?;", u.AccountId)
-	for _, err := range []error{errTeship, errTwiship, errLists, errResetTokens} {
+	for _, err := range []error{errTeship, errTwiship, errLists} {
 		if err != nil {
 			return false // if one of the above query failed don't delete the account so that the user can always login
 		}

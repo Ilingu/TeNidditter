@@ -14,27 +14,39 @@ import (
 	"golang.org/x/net/websocket"
 )
 
-type RegisterPayload struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
-
 func AuthHandler(g *echo.Group) {
 	g.POST("/", func(c echo.Context) error {
 		res := routes.EchoWrapper{Context: c}
 
-		userInfo := new(RegisterPayload)
+		type AuthPayload struct {
+			Username string `json:"username"`
+			Password string `json:"password"`
+			Method   string `json:"method"`
+		}
+
+		userInfo := new(AuthPayload)
 		if err := c.Bind(userInfo); err != nil || userInfo == nil {
 			return res.HandleResp(http.StatusBadRequest, "invalid json payload")
 		}
 		userInfo.Username = utils.FormatUsername(userInfo.Username)
 
 		account, err := db.GetAccount(userInfo.Username)
+		userExist := err == nil && account != nil
 
-		if err != nil || account == nil {
+		switch userInfo.Method {
+		case "login":
+			if !userExist {
+				return res.HandleResp(http.StatusForbidden, "this user does not exist, please register")
+			}
+			return login(res, account, userInfo.Password)
+		case "register":
+			if userExist {
+				return res.HandleResp(http.StatusBadRequest, "this user already exist, please login")
+			}
 			return register(res, userInfo.Username, userInfo.Password)
+		default:
+			return res.HandleResp(http.StatusBadRequest, "sign method not allowed")
 		}
-		return login(res, account, userInfo.Password)
 	})
 
 	g.DELETE("/", func(c echo.Context) error {
@@ -47,7 +59,7 @@ func AuthHandler(g *echo.Group) {
 
 		user := db.AccountModel{AccountId: token.ID, Username: token.Username}
 		if ok := db.DeleteAccount(&user); !ok {
-			return res.HandleResp(http.StatusInternalServerError, err.Error())
+			return res.HandleResp(http.StatusInternalServerError, "Failed to delete your account")
 		}
 		return logout(c)
 	})

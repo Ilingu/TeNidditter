@@ -2,13 +2,13 @@
 	import api from "$lib/api";
 	import { page } from "$app/stores";
 	import Feeds from "$lib/components/pages/nitter/Feeds.svelte";
-	import { FormatNumbers, isValidUrl, MakeBearerToken, pushAlert } from "$lib/utils";
+	import { FormatNumbers, isValidUrl } from "$lib/utils";
 	import AuthStore from "$lib/stores/auth";
 
 	export let data: import("./$types").PageData;
 
-	let isSub = $AuthStore.Subs?.nitter?.includes($page.params.nittos);
-	$: isSub = $AuthStore.Subs?.nitter?.includes($page.params.nittos);
+	let isSub = $AuthStore.Subs?.nitter?.includes($page.params.nittos) ?? false;
+	$: isSub = $AuthStore.Subs?.nitter?.includes($page.params.nittos) ?? false;
 
 	type MoveEvent = MouseEvent & { currentTarget: EventTarget & HTMLImageElement };
 	const AnimateBanner = (ev: MoveEvent) => {
@@ -18,27 +18,15 @@
 	};
 
 	const TriggerSub = async () => {
-		if (isSub) {
-			isSub = false;
-			const { success } = await api.delete("/tedinitter/nitter/unsub/%s", {
-				params: [$page.params.nittos],
-				headers: MakeBearerToken($AuthStore.JwtToken ?? "")
-			});
-			if (!success) {
-				isSub = true;
-				pushAlert("couldn't unsubscribe you", "error");
-			}
-		} else {
-			isSub = true;
-			const { success } = await api.post("/tedinitter/nitter/sub/%s", {
-				params: [$page.params.nittos],
-				headers: MakeBearerToken($AuthStore.JwtToken ?? "")
-			});
-			if (!success) {
-				isSub = false;
-				pushAlert("couldn't subscribe you", "error");
-			}
-		}
+		const copySub = isSub;
+		isSub = !isSub; // so that the user don't wait 2s
+
+		const { success } = await $AuthStore?.user.action?.toggleNitterSubs(
+			$page.params.nittos,
+			copySub,
+			$AuthStore.JwtToken ?? ""
+		);
+		if (!success) isSub = copySub;
 	};
 
 	let lastLimit = 3;

@@ -149,7 +149,7 @@ export interface PostParams<T> {
 		? [listId: string]
 		: never;
 	body?: T extends "/auth/"
-		? { username: string; password: string }
+		? { username: string; password: string; method: "login" | "register" }
 		: T extends "/tedinitter/nitter/list"
 		? { listname: string }
 		: T extends "/tedinitter/nitter/list/%s/saveNeet"
@@ -159,11 +159,15 @@ export interface PostParams<T> {
 }
 
 /* PUT */
-export type PutRoutes = "/auth/reset-password";
-export type PutReturns<T> = T extends "/auth/reset-password" ? null : never;
+export type PutRoutes = "/auth/reset-password" | "/tedinitter/regererate-recovery-codes";
+export type PutReturns<T> = T extends "/auth/reset-password"
+	? null
+	: T extends "/tedinitter/regererate-recovery-codes"
+	? string[]
+	: never;
 export interface PutParams<T> {
 	query?: never;
-	headers?: never;
+	headers?: T extends "/tedinitter/regererate-recovery-codes" ? { Authorization: string } : never;
 	params?: never;
 	body?: T extends "/auth/reset-password"
 		? { username: string; NewPassword: string; RecoveryCode: string }
@@ -191,7 +195,7 @@ export interface DeleteParams<T> {
 	query?: T extends "/auth/logout"
 		? { token?: string }
 		: T extends "/auth/"
-		? { token?: string }
+		? { token: string }
 		: never;
 	headers?: T extends "/tedinitter/teddit/unsub/%s"
 		? { Authorization: string }

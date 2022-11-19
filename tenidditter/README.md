@@ -2,10 +2,8 @@
 
 [REMAINING]:
 
-- +Breadcrumbs
-- +delete account
 - +test+comments
-- +reset psw
+- +code structure on (front/back)end: utils, types (front)
 
 # What I learn form this project
 

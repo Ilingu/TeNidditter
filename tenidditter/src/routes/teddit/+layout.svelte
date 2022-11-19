@@ -1,5 +1,6 @@
 <script>
 	import Link from "$lib/components/design/Link.svelte";
+	import { page } from "$app/stores";
 	import "highlight.js/styles/atom-one-dark.css"; // theme for the codeblocks
 </script>
 
@@ -38,4 +39,28 @@
 		</li>
 	</ul>
 </div>
+{#if $page.params.subteddit}
+	<div class="text-sm breadcrumbs ml-2">
+		<ul>
+			<li><Link href="/teddit">Feed</Link></li>
+			<li><Link href={`/teddit/r/${$page.params.subteddit}`}>{$page.params.subteddit}</Link></li>
+			{#if $page.params.postid}
+				<li>
+					<Link href={`/teddit/r/${$page.params.subteddit}/${$page.params.postid}`}
+						>{$page.params.postid}</Link
+					>
+				</li>
+			{/if}
+		</ul>
+	</div>
+{/if}
+{#if $page.params.user}
+	<div class="text-sm breadcrumbs ml-2">
+		<ul>
+			<li><Link href="/teddit">Feed</Link></li>
+			<li><Link href={`/teddit/u/${$page.params.user}`}>{$page.params.user}</Link></li>
+		</ul>
+	</div>
+{/if}
+
 <slot />

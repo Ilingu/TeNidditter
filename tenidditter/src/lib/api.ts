@@ -120,7 +120,7 @@ export const callApi = async <T = never>(
 			headers: { "Content-Type": "application/json", ...(headers || {}) },
 			credentials: credentials ? "include" : undefined
 		});
-		if (resp.status === 204) return { success: true, status: resp.status };
+		if (resp.status === 204 || resp.status === 205) return { success: true, status: resp.status };
 
 		const { success, data: apiRes, error }: APIResShape<T> = await resp.json();
 		if (!resp.ok || !success) return { success: false, status: resp.status, error };

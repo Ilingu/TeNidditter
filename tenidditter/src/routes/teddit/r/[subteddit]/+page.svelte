@@ -3,8 +3,6 @@
 	import { page } from "$app/stores";
 	import AuthStore from "$lib/stores/auth";
 	import { styles } from "$lib/services/style";
-	import api from "$lib/api";
-	import { MakeBearerToken, pushAlert } from "$lib/utils";
 
 	export let data: import("./$types").PageData; // ssr
 
@@ -16,25 +14,13 @@
 		const copySub = isSub;
 		isSub = !isSub; // so that the user don't wait 2s
 
-		if (copySub) {
-			const { success } = await api.delete("/tedinitter/teddit/unsub/%s", {
-				params: [$page.params.subteddit],
-				headers: MakeBearerToken($AuthStore.JwtToken || "")
-			});
-			if (!success) {
-				pushAlert("Couldn't unsubscribe you, try again", "error");
-				isSub = copySub;
-			}
-		} else {
-			const { success } = await api.post("/tedinitter/teddit/sub/%s", {
-				params: [$page.params.subteddit],
-				headers: MakeBearerToken($AuthStore.JwtToken || "")
-			});
-			if (!success) {
-				pushAlert("Couldn't subscribe you, try again", "error");
-				isSub = copySub;
-			}
-		}
+		const { success } = await $AuthStore?.user.action?.toggleTedditSubs(
+			$page.params.subteddit,
+			copySub,
+			$AuthStore.JwtToken || ""
+		);
+
+		if (!success) isSub = copySub;
 	};
 </script>
 

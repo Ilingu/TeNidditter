@@ -351,6 +351,30 @@ func (user AccountModel) AddRecoveryCode(RecoveryCode string) error {
 	return err
 }
 
+func (user AccountModel) RegenerateRecoveryCode() (*[]string, error) {
+	db := ps.DBManager.Connect()
+	if db == nil {
+		return nil, ps.ErrDbNotFound
+	}
+
+	newRecoveryCodes, err := generateRecoveryCodes()
+	if err != nil {
+		return nil, errors.New("cannot regenerate codes")
+	}
+
+	hashedCodes, err := encryptRecoveryCodes(*newRecoveryCodes)
+	if err != nil {
+		return nil, errors.New("cannot encrypt codes")
+	}
+
+	_, err = db.Exec("UPDATE Account SET recovery_codes=? WHERE account_id=?;", hashedCodes, user.AccountId)
+	if err != nil {
+		return nil, err
+	}
+
+	return newRecoveryCodes, nil
+}
+
 func (user AccountModel) UseRecoveryCode(RecoveryCode string) error {
 	db := ps.DBManager.Connect()
 	if db == nil {

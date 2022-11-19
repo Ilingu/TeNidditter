@@ -27,6 +27,7 @@ func TedinitterUserHandler(t *echo.Group) {
 	}
 	t.Use(middleware.JWTWithConfig(config)) // restricted routes
 
+	/* USER */
 	t.GET("/userInfo", func(c echo.Context) error {
 		res := routes.EchoWrapper{Context: c}
 
@@ -38,9 +39,24 @@ func TedinitterUserHandler(t *echo.Group) {
 		res.SetAuthCache()
 		return res.HandleResp(http.StatusOK, token)
 	})
+	t.PUT("/regererate-recovery-codes", func(c echo.Context) error {
+		res := routes.EchoWrapper{Context: c}
+
+		token, err := jwt.DecodeToken(jwt.RetrieveToken(&c))
+		if err != nil {
+			return res.HandleResp(http.StatusUnauthorized, err.Error())
+		}
+		user := db.AccountModel{AccountId: token.ID, Username: token.Username}
+
+		newRecoveryCodes, err := user.RegenerateRecoveryCode()
+		if err != nil {
+			return res.HandleResp(http.StatusInternalServerError, err.Error())
+		}
+
+		return res.HandleResp(http.StatusOK, newRecoveryCodes)
+	})
 
 	/* TEDDIT */
-
 	t.POST("/teddit/sub/:name", func(c echo.Context) error {
 		return handleSubUnsub(c, "teddit", "sub")
 	})
