@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { page } from "$app/stores";
 	import { setContext } from "svelte";
-	import Comments from "$lib/components/pages/teddit/comments/Comments.svelte";
+	import Comments from "$lib/client/components/pages/teddit/comments/Comments.svelte";
 	import { humanElapsedTime } from "$lib/utils";
-	import Link from "$lib/components/design/Link.svelte";
-	import Feeds from "$lib/components/pages/teddit/Feeds.svelte";
+	import Link from "$lib/client/components/design/Link.svelte";
+	import Feeds from "$lib/client/components/pages/teddit/Feeds.svelte";
 
 	export let data: import("./$types").PageData;
 

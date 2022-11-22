@@ -1,5 +1,5 @@
 <script>
-	import Link from "$lib/components/design/Link.svelte";
+	import Link from "$lib/client/components/design/Link.svelte";
 	import { page } from "$app/stores";
 	import "highlight.js/styles/atom-one-dark.css"; // theme for the codeblocks
 </script>

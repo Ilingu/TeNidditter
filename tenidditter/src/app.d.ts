@@ -22,3 +22,23 @@ declare class Go {
 declare function EncryptAES(key: string, textToEnc: string): string;
 declare function DecryptAES(key: string, textToDec: string): string;
 declare function Hash(toHash: string): string;
+
+interface CustomEventMap {
+	alertEvent: CustomEvent<AlertShape>;
+}
+declare global {
+	interface Document {
+		addEventListener<K extends keyof CustomEventMap>(
+			type: K,
+			listener: (this: Document, ev: CustomEventMap[K]) => void
+		): void;
+	}
+	// interface Window {
+	// 	opera: any;
+	// 	appVersion: () => "Web" | "PWA";
+	// }
+	// interface Navigator {
+	// 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	// 	userAgentData: any;
+	// }
+}

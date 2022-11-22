@@ -1,7 +1,7 @@
 <script lang="ts">
 	import api from "$lib/api";
-	import Link from "$lib/components/design/Link.svelte";
-	import AuthStore from "$lib/stores/auth";
+	import Link from "$lib/client/components/design/Link.svelte";
+	import AuthStore from "$lib/client/stores/auth";
 	import { IsEmptyString, MakeBearerToken, pushAlert, TrimSpecialChars } from "$lib/utils";
 	import { fade } from "svelte/transition";
 

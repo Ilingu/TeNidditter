@@ -1,6 +1,6 @@
 <script lang="ts">
-	import ProfilePicture from "$lib/components/layout/ProfilePicture.svelte";
-	import Feeds from "$lib/components/pages/teddit/Feeds.svelte";
+	import ProfilePicture from "$lib/client/components/layout/ProfilePicture.svelte";
+	import Feeds from "$lib/client/components/pages/teddit/Feeds.svelte";
 	import { FormatNumbers } from "$lib/utils";
 
 	export let data: import("./$types").PageData; // server data, ssr

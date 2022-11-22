@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Feeds from "$lib/components/pages/nitter/Feeds.svelte";
+	import Feeds from "$lib/client/components/pages/nitter/Feeds.svelte";
 	import { page } from "$app/stores";
 	import api from "$lib/api";
 

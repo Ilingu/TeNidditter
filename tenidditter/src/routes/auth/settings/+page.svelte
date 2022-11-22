@@ -1,8 +1,8 @@
 <script lang="ts">
-	import Link from "$lib/components/design/Link.svelte";
-	import ProfilePicture from "$lib/components/layout/ProfilePicture.svelte";
-	import RecoveryModal from "$lib/components/pages/auth/RecoveryModal.svelte";
-	import AuthStore from "$lib/stores/auth";
+	import Link from "$lib/client/components/design/Link.svelte";
+	import ProfilePicture from "$lib/client/components/layout/ProfilePicture.svelte";
+	import RecoveryModal from "$lib/client/components/pages/auth/RecoveryModal.svelte";
+	import AuthStore from "$lib/client/stores/auth";
 	import { pushAlert } from "$lib/utils";
 
 	let showRecoveryCodesModal = false;

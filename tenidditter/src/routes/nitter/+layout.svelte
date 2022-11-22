@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from "$app/stores";
-	import Link from "$lib/components/design/Link.svelte";
+	import Link from "$lib/client/components/design/Link.svelte";
 </script>
 
 {#if $page.params.nittos}

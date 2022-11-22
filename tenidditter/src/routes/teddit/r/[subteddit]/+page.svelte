@@ -1,7 +1,7 @@
 <script lang="ts">
-	import Feeds from "$lib/components/pages/teddit/Feeds.svelte";
+	import Feeds from "$lib/client/components/pages/teddit/Feeds.svelte";
 	import { page } from "$app/stores";
-	import AuthStore from "$lib/stores/auth";
+	import AuthStore from "$lib/client/stores/auth";
 	import { styles } from "$lib/services/style";
 
 	export let data: import("./$types").PageData; // ssr

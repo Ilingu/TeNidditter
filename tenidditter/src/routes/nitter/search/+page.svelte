@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { page } from "$app/stores";
 	import api from "$lib/api";
-	import Loader from "$lib/components/design/Loader.svelte";
-	import Feeds from "$lib/components/pages/nitter/Feeds.svelte";
-	import NittosPreview from "$lib/components/pages/nitter/NittosPreview.svelte";
+	import Loader from "$lib/client/components/design/Loader.svelte";
+	import Feeds from "$lib/client/components/pages/nitter/Feeds.svelte";
+	import NittosPreview from "$lib/client/components/pages/nitter/NittosPreview.svelte";
 	import { IsEmptyString, pushAlert, TrimSpecialChars } from "$lib/utils";
 	import { onMount } from "svelte";
 

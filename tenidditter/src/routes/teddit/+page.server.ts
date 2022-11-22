@@ -1,5 +1,5 @@
 import api from "$lib/api";
-import { QueryHomePost } from "$lib/services/teddit";
+import { QueryHomePost } from "$lib/server/services/teddit";
 import { FeedTypeEnum } from "$lib/types/enums";
 import type { FeedResult } from "$lib/types/interfaces";
 import { IsEmptyString, MakeBearerToken } from "$lib/utils";

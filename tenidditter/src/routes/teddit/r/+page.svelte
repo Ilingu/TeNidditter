@@ -2,8 +2,8 @@
 	import { enhance } from "$app/forms";
 	import { page } from "$app/stores";
 	import api from "$lib/api";
-	import Link from "$lib/components/design/Link.svelte";
-	import Loader from "$lib/components/design/Loader.svelte";
+	import Link from "$lib/client/components/design/Link.svelte";
+	import Loader from "$lib/client/components/design/Loader.svelte";
 	import type { DBSubtedditsShape } from "$lib/types/interfaces";
 	import { FormatUsername, IsEmptyString } from "$lib/utils";
 	import { afterUpdate } from "svelte";

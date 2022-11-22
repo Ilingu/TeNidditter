@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { enhance } from "$app/forms";
 	import { page } from "$app/stores";
-	import Link from "$lib/components/design/Link.svelte";
-	import Loader from "$lib/components/design/Loader.svelte";
+	import Link from "$lib/client/components/design/Link.svelte";
+	import Loader from "$lib/client/components/design/Loader.svelte";
 	import { IsEmptyString } from "$lib/utils";
 
 	let IsUserExist: boolean | null;

@@ -1,9 +1,9 @@
 <script lang="ts">
 	import api from "$lib/api";
 	import { page } from "$app/stores";
-	import Feeds from "$lib/components/pages/nitter/Feeds.svelte";
+	import Feeds from "$lib/client/components/pages/nitter/Feeds.svelte";
 	import { FormatNumbers, isValidUrl } from "$lib/utils";
-	import AuthStore from "$lib/stores/auth";
+	import AuthStore from "$lib/client/stores/auth";
 
 	export let data: import("./$types").PageData;
 
