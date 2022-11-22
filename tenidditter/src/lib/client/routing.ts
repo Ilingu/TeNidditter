@@ -1,5 +1,5 @@
 import { goto as naviguate } from "$app/navigation";
-import { isValidUrl } from "$lib/utils";
+import { isValidUrl } from "$lib/shared/utils";
 
 export const pushRoute = (url: string) => {
 	if (!isValidUrl(url)) return;

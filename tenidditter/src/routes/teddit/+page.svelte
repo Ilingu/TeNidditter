@@ -4,8 +4,8 @@
 	import Link from "$lib/client/components/design/Link.svelte";
 	import Tabs from "$lib/client/components/design/Tabs.svelte";
 	import Feeds from "$lib/client/components/pages/teddit/Feeds.svelte";
-	import { QueryHomePost } from "$lib/services/teddit";
-	import { FeedTypeEnum } from "$lib/types/enums";
+	import { QueryHomePost } from "$lib/shared/services/teddit";
+	import { FeedTypeEnum } from "$lib/shared/types/teddit";
 	import { afterUpdate, onMount } from "svelte";
 
 	export let data: import("./$types").PageServerData; // data from server: SSR

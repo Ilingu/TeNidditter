@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import { InitWasm } from "$lib/services/wasm/wasm";
 
 	import AlertProvider from "$lib/client/components/layout/AlertProvider.svelte";
 	import Navbar from "$lib/client/components/layout/Navbar.svelte";
 
 	import "../style/app.css";
-	import { changeAppTheme } from "$lib/utils";
 	import { afterNavigate } from "$app/navigation";
-	import { AutoLogin } from "$lib/services/auth";
+	import { changeAppTheme } from "$lib/client/ClientUtils";
+	import { InitWasm } from "$lib/client/services/wasm/wasm";
+	import { AutoLogin } from "$lib/client/services/auth";
 
 	afterNavigate((n) => {
 		// Change Theme for each new routes

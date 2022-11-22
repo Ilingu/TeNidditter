@@ -1,6 +1,6 @@
-import api from "$lib/api";
-import type { NeetComment } from "$lib/types/interfaces";
-import { IsEmptyString, MakeBearerToken } from "$lib/utils";
+import api from "$lib/shared/api";
+import type { NeetComment } from "$lib/shared/types/nitter";
+import { IsEmptyString, MakeBearerToken } from "$lib/shared/utils";
 import { error, redirect } from "@sveltejs/kit";
 
 type ReturnType = { savedNeets: NeetComment[] | null };

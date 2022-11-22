@@ -1,7 +1,8 @@
 import { error } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
 import satori from "satori";
-import { FormatNumbers, humanElapsedTime, IsEmptyString } from "$lib/utils";
+import { IsEmptyString } from "$lib/shared/utils";
+import { FormatNumbers, humanElapsedTime } from "$lib/client/ClientUtils";
 
 interface ReactNode {
 	type: keyof HTMLElementTagNameMap;

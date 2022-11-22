@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Feeds from "$lib/client/components/pages/nitter/Feeds.svelte";
 	import { page } from "$app/stores";
-	import api from "$lib/api";
+	import api from "$lib/shared/api";
 
 	export let data: import("./$types").PageData;
 

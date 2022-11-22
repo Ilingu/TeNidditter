@@ -1,6 +1,6 @@
-import api from "$lib/api";
-import type { NeetComment, Nittos } from "$lib/types/interfaces";
-import { IsEmptyString } from "$lib/utils";
+import api from "$lib/shared/api";
+import type { NeetComment, Nittos } from "$lib/shared/types/nitter";
+import { IsEmptyString } from "$lib/shared/utils";
 import { error } from "@sveltejs/kit";
 
 export const prerender = false;

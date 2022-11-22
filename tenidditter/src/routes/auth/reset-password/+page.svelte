@@ -1,8 +1,9 @@
 <script lang="ts">
-	import { FormatUsername, IsEmptyString, pushAlert } from "$lib/utils";
-	import { GetZxcvbn, ScoreToColor, ScoreToText } from "$lib/zxcvbn";
-	import type { PswReport } from "$lib/types/zxcvbn";
-	import api from "$lib/api";
+	import { pushAlert } from "$lib/client/ClientUtils";
+	import type { PswReport } from "$lib/client/types/zxcvbn";
+	import { GetZxcvbn, ScoreToColor, ScoreToText } from "$lib/client/zxcvbn";
+	import api from "$lib/shared/api";
+	import { FormatUsername, IsEmptyString } from "$lib/shared/utils";
 
 	/* VAR */
 	let Username = "",
@@ -21,6 +22,7 @@
 		debounce = setTimeout(async () => {
 			if (NewPassword.trim().length <= 0) return (PswStrenghtReport = null);
 			const zxcvbn = await GetZxcvbn();
+
 			const { score, crack_times_display } = zxcvbn(NewPassword);
 			PswStrenghtReport = {
 				crackTime: crack_times_display.online_throttling_100_per_hour.toString(),

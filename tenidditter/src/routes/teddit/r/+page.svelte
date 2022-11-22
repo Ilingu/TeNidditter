@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { enhance } from "$app/forms";
 	import { page } from "$app/stores";
-	import api from "$lib/api";
 	import Link from "$lib/client/components/design/Link.svelte";
 	import Loader from "$lib/client/components/design/Loader.svelte";
-	import type { DBSubtedditsShape } from "$lib/types/interfaces";
-	import { FormatUsername, IsEmptyString } from "$lib/utils";
+	import type { DBSubtedditsShape } from "$lib/client/types/teddit";
+	import api from "$lib/shared/api";
+	import { FormatUsername, IsEmptyString } from "$lib/shared/utils";
 	import { afterUpdate } from "svelte";
 
 	let IsSubExist: boolean | null;

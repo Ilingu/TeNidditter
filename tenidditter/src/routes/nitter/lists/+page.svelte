@@ -1,8 +1,9 @@
 <script lang="ts">
-	import api from "$lib/api";
+	import { pushAlert } from "$lib/client/ClientUtils";
 	import Link from "$lib/client/components/design/Link.svelte";
 	import AuthStore from "$lib/client/stores/auth";
-	import { IsEmptyString, MakeBearerToken, pushAlert, TrimSpecialChars } from "$lib/utils";
+	import api from "$lib/shared/api";
+	import { IsEmptyString, MakeBearerToken, TrimSpecialChars } from "$lib/shared/utils";
 	import { fade } from "svelte/transition";
 
 	let CloseModalBtn: HTMLLabelElement;

@@ -1,4 +1,4 @@
-import { IsEmptyString } from "$lib/utils";
+import { IsEmptyString } from "$lib/shared/utils";
 import { redirect } from "@sveltejs/kit";
 
 export const prerender = false;

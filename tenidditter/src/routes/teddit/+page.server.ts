@@ -1,8 +1,8 @@
-import api from "$lib/api";
-import { QueryHomePost } from "$lib/server/services/teddit";
-import { FeedTypeEnum } from "$lib/types/enums";
-import type { FeedResult } from "$lib/types/interfaces";
-import { IsEmptyString, MakeBearerToken } from "$lib/utils";
+import type { FeedResult } from "$lib/server/types/teddit";
+import api from "$lib/shared/api";
+import { QueryHomePost } from "$lib/shared/services/teddit";
+import { FeedTypeEnum } from "$lib/shared/types/teddit";
+import { IsEmptyString, MakeBearerToken } from "$lib/shared/utils";
 import { error } from "@sveltejs/kit";
 
 export const load: import("./$types").PageServerLoad = async ({

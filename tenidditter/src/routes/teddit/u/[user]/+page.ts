@@ -1,6 +1,6 @@
-import api from "$lib/api";
-import type { TedditUserShape } from "$lib/types/interfaces";
-import { IsEmptyString } from "$lib/utils";
+import api from "$lib/shared/api";
+import type { TedditUserShape } from "$lib/shared/types/teddit";
+import { IsEmptyString } from "$lib/shared/utils";
 import { error } from "@sveltejs/kit";
 
 export const prerender = false;

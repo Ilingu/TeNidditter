@@ -3,7 +3,7 @@
 	import { page } from "$app/stores";
 	import Link from "$lib/client/components/design/Link.svelte";
 	import Loader from "$lib/client/components/design/Loader.svelte";
-	import { IsEmptyString } from "$lib/utils";
+	import { IsEmptyString } from "$lib/shared/utils";
 
 	let IsUserExist: boolean | null;
 	$: IsUserExist = $page.form; // contains the result of the form submit

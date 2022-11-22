@@ -1,7 +1,7 @@
 <script lang="ts">
+	import { FormatNumbers } from "$lib/client/ClientUtils";
 	import ProfilePicture from "$lib/client/components/layout/ProfilePicture.svelte";
 	import Feeds from "$lib/client/components/pages/teddit/Feeds.svelte";
-	import { FormatNumbers } from "$lib/utils";
 
 	export let data: import("./$types").PageData; // server data, ssr
 </script>

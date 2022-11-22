@@ -1,7 +1,7 @@
-import api from "$lib/api";
-import type { TedditPostInfo } from "$lib/types/interfaces";
-import type { Tuple } from "$lib/types/types";
-import { IsEmptyString } from "$lib/utils";
+import api from "$lib/shared/api";
+import type { Tuple } from "$lib/shared/types/globals";
+import type { TedditPostInfo } from "$lib/shared/types/teddit";
+import { IsEmptyString } from "$lib/shared/utils";
 import { error } from "@sveltejs/kit";
 
 export const prerender = false;

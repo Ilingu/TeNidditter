@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { page } from "$app/stores";
-	import api from "$lib/api";
+	import { pushAlert } from "$lib/client/ClientUtils";
 	import Loader from "$lib/client/components/design/Loader.svelte";
 	import Feeds from "$lib/client/components/pages/nitter/Feeds.svelte";
 	import NittosPreview from "$lib/client/components/pages/nitter/NittosPreview.svelte";
-	import { IsEmptyString, pushAlert, TrimSpecialChars } from "$lib/utils";
+	import api from "$lib/shared/api";
+	import { IsEmptyString, TrimSpecialChars } from "$lib/shared/utils";
 	import { onMount } from "svelte";
 
 	let dataType = ($page.url.searchParams.get("type") as "tweets" | "users") ?? "tweets";

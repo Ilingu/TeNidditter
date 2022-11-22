@@ -1,6 +1,6 @@
-import api from "$lib/api";
-import type { NeetInfo } from "$lib/types/interfaces";
-import { IsEmptyString, TrimNonDigitsChars } from "$lib/utils";
+import type { NeetInfo } from "$lib/server/types/nitter";
+import api from "$lib/shared/api";
+import { IsEmptyString, TrimNonDigitsChars } from "$lib/shared/utils";
 import { error } from "@sveltejs/kit";
 
 export const prerender = false;

@@ -1,4 +1,4 @@
-import { IsEmptyString, IsValidJSON } from "$lib/utils";
+import { IsEmptyString, IsValidJSON } from "$lib/shared/utils";
 import type { RequestHandler } from "@sveltejs/kit";
 
 export const GET: RequestHandler = async ({ url }) => {

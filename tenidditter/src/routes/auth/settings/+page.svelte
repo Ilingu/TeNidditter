@@ -1,9 +1,9 @@
 <script lang="ts">
+	import { pushAlert } from "$lib/client/ClientUtils";
 	import Link from "$lib/client/components/design/Link.svelte";
 	import ProfilePicture from "$lib/client/components/layout/ProfilePicture.svelte";
 	import RecoveryModal from "$lib/client/components/pages/auth/RecoveryModal.svelte";
 	import AuthStore from "$lib/client/stores/auth";
-	import { pushAlert } from "$lib/utils";
 
 	let showRecoveryCodesModal = false;
 	const setShowRecoveryCodesModal = (newVal: boolean) => {
