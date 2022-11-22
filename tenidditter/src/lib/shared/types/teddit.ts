@@ -8,22 +8,34 @@ export enum FeedTypeEnum {
 export type FeedType = "user_feed" | "home_feed";
 export type FeedHomeType = "hot" | "new" | "top" | "rising" | "controversial";
 
+/**
+ * API object returned for a teddit post
+ */
 export interface TedditPostInfo {
-	metadata: TedditPostMetadata;
+	post_datas: TedditPostMetadata;
 	comments: (TedditCommmentShape & { id: number; parentId: number })[][];
 }
 
 export interface TedditPostMetadata {
 	post_author: string;
 	post_title: string;
+	/**
+	 * in **second timestamp** (1s = 1000ms)
+	 */
 	post_created: number;
 	post_ups: string;
 	post_nb_comments: number;
+	/**
+	 * raw unparsed html without script tag
+	 */
 	body_html: string;
 }
 
 export interface TedditUserShape {
 	username: string;
+	/**
+	 * @deprecated - teddit block icon's request (**CORS**)
+	 */
 	icon_img: string;
 	created: number;
 	verified: boolean;
@@ -68,17 +80,35 @@ export interface TedditPost {
 	title: string;
 	author: string;
 	created: number;
+	/**
+	 * @alias `pinned`
+	 */
 	stickied: boolean; // pinned by reddit
 
 	ups: number;
 	num_comments: number;
 
+	/**
+	 * if @property `url` is a external (outside of reddit.com) link, so this is set to `false`
+	 */
 	is_self_link: boolean;
 	is_video: boolean;
 
+	/**
+	 * part of the body of the post
+	 */
 	selftext_html?: string; // if no media/img, display
+	/**
+	 * part of the body of the post
+	 */
 	media?: Media;
+	/**
+	 * part of the body of the post
+	 */
 	images?: TedditImages;
+	/**
+	 * part of the body of the post
+	 */
 	duration?: number;
 
 	url: string;
@@ -126,6 +156,9 @@ interface Media {
 
 interface RedditVideo {
 	bitrate_kbps: number;
+	/**
+	 * actual video url to put into `src`
+	 */
 	fallback_url: string;
 	height: number;
 	width: number;

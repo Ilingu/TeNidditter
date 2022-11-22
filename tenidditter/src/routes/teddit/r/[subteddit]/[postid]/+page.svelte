@@ -12,7 +12,7 @@
 
 	// convert the post number of ups to readable and exploitable number
 	const PostUps = (): number => {
-		const ups = data.metadata.post_ups;
+		const ups = data.post_datas.post_ups;
 		if (ups.endsWith("k")) {
 			const [num] = ups.split("k");
 			const safeNum = Math.round(parseFloat(num));
@@ -23,12 +23,12 @@
 
 	// generates an custom og image for this post
 	const OGImageUrl = `${$page.url.origin}/api/og-image?title=${encodeURIComponent(
-		data.metadata.post_title
-	)}&author=${encodeURIComponent(data.metadata.post_author)}&subreddit=${encodeURIComponent(
+		data.post_datas.post_title
+	)}&author=${encodeURIComponent(data.post_datas.post_author)}&subreddit=${encodeURIComponent(
 		$page.params.subteddit
-	)}&ups=${PostUps()}&created=${data.metadata.post_created}`;
-	const OGDesc = `Submitted ${humanElapsedTime(data.metadata.post_created * 1000, Date.now())} by ${
-		data.metadata.post_author
+	)}&ups=${PostUps()}&created=${data.post_datas.post_created}`;
+	const OGDesc = `Submitted ${humanElapsedTime(data.post_datas.post_created * 1000, Date.now())} by ${
+		data.post_datas.post_author
 	} on r/${$page.params.subteddit}`;
 </script>
 
@@ -36,13 +36,13 @@
 	<!-- Twitter Card -->
 	<meta name="twitter:card" content="summary" />
 	<meta name="twitter:url" content={$page.url.origin} />
-	<meta name="twitter:title" content={data.metadata.post_title} />
+	<meta name="twitter:title" content={data.post_datas.post_title} />
 	<meta name="twitter:description" content={OGDesc} />
 	<meta name="twitter:image" content={OGImageUrl} />
-	<meta name="twitter:creator" content={"u/" + data.metadata.post_author} />
+	<meta name="twitter:creator" content={"u/" + data.post_datas.post_author} />
 	<!-- OG Card -->
 	<meta property="og:type" content="website" />
-	<meta property="og:title" content={data.metadata.post_title} />
+	<meta property="og:title" content={data.post_datas.post_title} />
 	<meta property="og:description" content={OGDesc} />
 	<meta property="og:site_name" content="TeNidditter" />
 	<meta property="og:url" content={$page.url.origin} />
@@ -55,13 +55,13 @@
 			rawPosts={[
 				{
 					id: $page.params.postid,
-					title: data.metadata.post_title,
-					author: data.metadata.post_author,
-					created: data.metadata.post_created,
-					body_html: data.metadata.body_html,
+					title: data.post_datas.post_title,
+					author: data.post_datas.post_author,
+					created: data.post_datas.post_created,
+					body_html: data.post_datas.body_html,
 
 					ups: PostUps(),
-					num_comments: data.metadata.post_nb_comments,
+					num_comments: data.post_datas.post_nb_comments,
 
 					subreddit: $page.params.subteddit,
 

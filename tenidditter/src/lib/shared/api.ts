@@ -36,7 +36,19 @@ interface APIResShape<T = never> {
 }
 
 /* API Client */
+
+/**
+ * @classdesc Tweniditter backend API client library (fully typed)
+ * @class
+ */
 export default class api {
+	/**
+	 * all the `GET` endpoints
+	 * @static
+	 * @param {T} uri
+	 * @param {GetParams<T>} additionals arguments of this route
+	 * @returns {Promise<ApiClientResp<GetReturns<T, U>>>} the api response datas
+	 */
 	static async get<T extends GetRoutes, U>(
 		uri: T,
 		{ query, headers, params }: GetParams<T>,
@@ -53,6 +65,13 @@ export default class api {
 		);
 	}
 
+	/**
+	 * all the `POST` endpoints
+	 * @static
+	 * @param {T} uri
+	 * @param {GetParams<T>} additionals arguments of this route
+	 * @returns {Promise<ApiClientResp<PostReturns<T>>>} the api response datas
+	 */
 	static async post<T extends PostRoutes>(
 		uri: T,
 		{ body, headers, params, query, credentials }: PostParams<T>
@@ -67,6 +86,13 @@ export default class api {
 		});
 	}
 
+	/**
+	 * all the `PUT` endpoints
+	 * @static
+	 * @param {T} uri
+	 * @param {GetParams<T>} additionals arguments of this route
+	 * @returns {Promise<ApiClientResp<PutParams<T>>>} the api response datas
+	 */
 	static async put<T extends PutRoutes>(
 		uri: T,
 		{ body, headers, params, query }: PutParams<T>
@@ -80,6 +106,13 @@ export default class api {
 		});
 	}
 
+	/**
+	 * all the `DELETE` endpoints
+	 * @static
+	 * @param {T} uri
+	 * @param {GetParams<T>} additionals arguments of this route
+	 * @returns {Promise<ApiClientResp<DeleteParams<T>>>} the api response datas
+	 */
 	static async delete<T extends DeleteRoutes>(
 		uri: T,
 		{ body, headers, params, query, credentials }: DeleteParams<T>
@@ -101,6 +134,11 @@ interface ApiClientResp<T = never> extends FunctionJob<T> {
 	status?: number;
 }
 
+/**
+ * under the hood function to call and handle the API repsonses (not typed)
+ * @param {QueryParams} { uri, method, body, headers, credentials }
+ * @returns {Promise<ApiClientResp<T>>} the api response datas (not typed)
+ */
 export const callApi = async <T = never>(
 	{ uri, method, body, headers, credentials }: QueryParams,
 	customFetch?: typeof fetch
@@ -131,6 +169,11 @@ export const callApi = async <T = never>(
 	}
 };
 
+/**
+ * It build the API route's URI from the given args
+ * @param {T} uri
+ * @returns {T} the constructed URI
+ */
 const BuildURI = <T extends string>(
 	uri: T,
 	{ params, query }: { params?: string[]; query?: object }
