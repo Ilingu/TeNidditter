@@ -3,10 +3,13 @@ package nitter_routes
 import (
 	"net/http"
 	"strconv"
+	"sync"
 	"teniditter-server/cmd/api/routes"
+	"teniditter-server/cmd/api/sse"
 	"teniditter-server/cmd/global/console"
 	"teniditter-server/cmd/global/utils"
 	"teniditter-server/cmd/services/nitter"
+	"time"
 
 	"github.com/labstack/echo/v4"
 )
@@ -31,6 +34,10 @@ func NitterHandler(n *echo.Group) {
 			tweets, err := nitter.SearchTweetsScrap(QuerySearch, queryLimit)
 			if err != nil {
 				return res.HandleResp(http.StatusNotFound, err.Error())
+			}
+
+			if clientIp, err := routes.GetIP(c.Request(), true); err == nil {
+				go StreamExternalLinks(clientIp, tweets)
 			}
 
 			res.SetPublicCache(15 * 60) // 15min
@@ -87,6 +94,10 @@ func NitterHandler(n *echo.Group) {
 			return res.HandleResp(http.StatusNotFound, "no tweets returned for this user")
 		}
 
+		if clientIp, err := routes.GetIP(c.Request(), true); err == nil {
+			go StreamExternalLinks(clientIp, tweets)
+		}
+
 		res.SetPublicCache(15 * 60) // 15min
 		return res.HandleResp(http.StatusOK, tweets)
 	})
@@ -109,9 +120,69 @@ func NitterHandler(n *echo.Group) {
 			return res.HandleResp(http.StatusNotFound, "no comments returned for this neet")
 		}
 
+		if clientIp, err := routes.GetIP(c.Request(), true); err == nil {
+			go StreamExternalLinks(clientIp, [][]nitter.NeetComment{comments.MainThread})
+			go StreamExternalLinks(clientIp, comments.Reply)
+		}
+
 		res.SetPublicCache(30 * 60) // 30min
 		return res.HandleResp(http.StatusOK, comments)
 	})
 
+	n.GET("/stream-in-external-links", echo.WrapHandler(http.HandlerFunc(sse.SSEHandler)))
 	console.Log("NitterHandler Registered", console.Info)
+}
+
+// This will compute the external links datas (meta tags in html response)
+//
+// And then streams it back to the client thanks to [Server-Side Events] (only if client and server already/or will have a SSE conn initialized (10s max))
+//
+// [Server-Side Events]: https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events
+func StreamExternalLinks(reqIp string, tweets [][]nitter.NeetComment) {
+	client, exist := sse.GetClient(reqIp)
+	if !exist {
+		waitClientToConnect := make(chan bool)
+		go sse.ListenToNewConn(func(ip string) {
+			if ip == reqIp {
+				client, exist = sse.GetClient(reqIp)
+				waitClientToConnect <- exist
+			}
+		})
+
+		timeout := time.After(10 * time.Second)
+		select {
+		case good := <-waitClientToConnect:
+			if !good {
+				return
+			}
+		case <-timeout:
+			return
+		}
+	}
+
+	var wgTweets sync.WaitGroup
+	wgTweets.Add(len(tweets))
+	for _, t := range tweets {
+		go func(thread []nitter.NeetComment) {
+			defer wgTweets.Done()
+
+			var wgThread sync.WaitGroup
+			wgThread.Add(len(thread))
+			for _, n := range thread {
+				go func(neet nitter.NeetComment) {
+					defer wgThread.Done()
+
+					if metatagsDatas, err := nitter.GetExternalLinksMetatags(neet.ExternalLink); err == nil {
+						metatagsDatas["neetId"] = neet.Id
+						client.Events <- metatagsDatas
+					}
+				}(n)
+			}
+
+			wgThread.Wait()
+		}(t)
+	}
+
+	wgTweets.Wait()
+	client.Done <- true
 }

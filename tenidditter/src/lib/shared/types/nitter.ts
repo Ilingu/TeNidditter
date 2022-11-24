@@ -15,6 +15,9 @@ export interface NeetBasicComment {
 }
 export interface Attachments {
 	images?: string[];
+	/**
+	 * Hls video urls
+	 */
 	videos?: string[];
 }
 export interface NeetCommentStats {

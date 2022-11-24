@@ -201,7 +201,7 @@ func extractNeetDatas(s *goquery.Selection) NeetComment {
 		}
 	}
 
-	// Potential Link Card
+	// Potential Link Card (external link)
 	linkCard, _ := s.Find(selector + "> .card > a.card-container").First().Attr("href")
 
 	commentData := NeetBasicComment{id, content, creator, int(createdAt), stats, attachments, linkCard, retweetedBy, pinned}

@@ -2,11 +2,16 @@ package nitter
 
 import (
 	"errors"
+	"io"
+	"net/http"
 	"net/url"
 	"strings"
+	"teniditter-server/cmd/global/utils"
 	"teniditter-server/cmd/services"
+	"teniditter-server/cmd/services/html"
 
 	"github.com/PuerkitoBio/goquery"
+	htmlPkg "golang.org/x/net/html"
 )
 
 // This function is error-less so check by yourself if the returned value are nil.
@@ -82,4 +87,46 @@ func deleteDuplicatesNeets(neets *[][]NeetComment) {
 			}
 		}
 	}
+}
+
+func GetExternalLinksMetatags(externalUrl string) (map[string]string, error) {
+	if !utils.IsValidURL(externalUrl) {
+		return nil, errors.New("not valid external url")
+	}
+
+	resp, err := http.Get(externalUrl)
+	if err != nil || resp.StatusCode != 200 {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	htmlBuf, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	htmlPage := string(htmlBuf)
+
+	MetatagsDatas := map[string]string{}
+	html.FindElements(htmlPage, "title", func(elem *htmlPkg.Node) (stop bool) {
+		MetatagsDatas["title"] = elem.FirstChild.Data
+		return true
+	})
+
+	acceptedMetatags := []string{"description", "og:image"}
+	html.FindElements(htmlPage, "meta", func(elem *htmlPkg.Node) (stop bool) {
+		attr := map[string]string{}
+		for _, arg := range elem.Attr {
+			attr[arg.Key] = arg.Val
+		}
+
+		for _, metatag := range acceptedMetatags {
+			if attr["name"] == metatag || attr["property"] == metatag {
+				MetatagsDatas[metatag] = attr["content"]
+			}
+		}
+
+		return false
+	})
+
+	return MetatagsDatas, nil
 }
