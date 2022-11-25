@@ -1,9 +1,19 @@
 import type { FunctionJob } from "$lib/shared/types/globals";
 
 let wasmBinary: WebAssembly.Instance;
+
+/**
+ * Whether the wasm module has already been initialised or not
+ * @var
+ */
 export let WasmInitiate = false;
 
 const WASM_URL = "/wasm/wasmbin.wasm";
+
+/**
+ * Initialise Wasm binary and inject exported function into DOM
+ * @returns {Promise<FunctionJob>} if the operation succeed
+ */
 export const InitWasm = async (): Promise<FunctionJob> => {
 	try {
 		const go = new Go();

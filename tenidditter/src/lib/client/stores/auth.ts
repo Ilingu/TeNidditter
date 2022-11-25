@@ -30,15 +30,33 @@ export const defaultAuthStore: AuthStoreShape = {
 		}
 	}
 };
+
+/**
+ * Global App Auth store, contains all datas about the currently logged in user
+ * @constant
+ */
 const AuthStore = writable<AuthStoreShape>(defaultAuthStore);
-export const GetUserSession = (): Promise<AuthStoreShape> =>
-	new Promise((res) => {
+
+/**
+ * Get an AuthStore data snapshot
+ * @returns {Promise<AuthStoreShape>} auth datas
+ */
+export const GetUserSession = (): Promise<AuthStoreShape> => {
+	return new Promise((res) => {
 		const UnSub = AuthStore.subscribe((value) => {
 			UnSub();
 			res(value);
 		});
 	});
+};
 
+/**
+ * Overwrite the store to instanciate a new user session & sync with localstorage; **only if the session is valid** (no invalid jwtTk (wrong shape or expired) nor invalid inputs)
+ * @param {User} user - `User` object
+ * @param {string} JwtToken - user's jwtToken
+ * @param {UserSubs} Subs - user's subs
+ * @param {NitterLists[]} Lists = user's lists
+ */
 export const SetUserSession = (
 	user: User,
 	JwtToken: string,
@@ -69,10 +87,18 @@ export const SetUserSession = (
 	ListenToUserChange(JwtToken);
 };
 
+/**
+ * update the store's `subs` field with the input data and sync localstorage
+ * @param {UserSubs} Subs - new user's subs
+ */
 export const UpdateUserSubs = (Subs: UserSubs) => {
 	localStorage.setItem("subs", JSON.stringify(Subs));
 	AuthStore.update((s) => ({ ...s, Subs }));
 };
+/**
+ * update the store's `lists` field with the input data and sync localstorage
+ * @param {NitterLists[]} Lists - new user's subs
+ */
 export const UpdateUserList = (Lists: NitterLists[]) => {
 	localStorage.setItem("lists", JSON.stringify(Lists));
 	AuthStore.update((s) => ({ ...s, Lists }));

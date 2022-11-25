@@ -2,7 +2,7 @@ import { error } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
 import satori from "satori";
 import { IsEmptyString } from "$lib/shared/utils";
-import { FormatNumbers, humanElapsedTime } from "$lib/client/ClientUtils";
+import { FormatNumbers, FormatElapsedTime } from "$lib/client/ClientUtils";
 
 interface ReactNode {
 	type: keyof HTMLElementTagNameMap;
@@ -53,7 +53,7 @@ export const GET: RequestHandler = async ({ url, fetch }) => {
 							{
 								type: "span",
 								props: {
-									children: humanElapsedTime(created * 1000, Date.now()),
+									children: FormatElapsedTime(created * 1000, Date.now()),
 									style: { color: "#1DA1F2", marginLeft: "10px", marginRight: "10px" }
 								}
 							},

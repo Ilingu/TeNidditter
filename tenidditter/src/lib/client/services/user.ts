@@ -4,6 +4,10 @@ import { MakeBearerToken } from "$lib/shared/utils";
 import { pushAlert } from "../ClientUtils";
 import { LogOut } from "./auth";
 
+/**
+ * [user action]: Wrapper function that deletes the currently logged in user
+ * @param {string} JwtToken - token that identifies the user
+ */
 export const DeleteUserAccount = async (JwtToken: string) => {
 	pushAlert("Deleting your account...", "info", 1500);
 
@@ -17,6 +21,10 @@ export const DeleteUserAccount = async (JwtToken: string) => {
 	LogOut();
 };
 
+/**
+ * [user action]: Wrapper function that **regenerates** all the user's recovery codes (it **overwrites** the old one), the new codes should be displayed to the user
+ * @param {string} JwtToken - token that identifies the user
+ */
 export const RegenerateUserRecoveryCodes = async (
 	JwtToken: string
 ): Promise<FunctionJob<string[]>> => {
@@ -29,6 +37,13 @@ export const RegenerateUserRecoveryCodes = async (
 	return { success: true, data: newCodes };
 };
 
+/**
+ * [user action]: Wrapper function that handle the user's teddit subs, if already sub to `subreddit` it'll unsub him and vice versa
+ * @param {string} subteddit - the subreddit name
+ * @param {boolean} isSub - is the user already subscribed to this subreddit?
+ * @param {string} JwtToken - token that identifies the user
+ * @returns {Promise<FunctionJob>} return the success (or not) of the operation
+ */
 export const ToggleTedditSubs = async (
 	subteddit: string,
 	isSub: boolean,
@@ -51,6 +66,13 @@ export const ToggleTedditSubs = async (
 	return { success };
 };
 
+/**
+ * [user action]: Wrapper function that handle the user's nittos subs, if already sub to `nittos` it'll unsub him and vice versa
+ * @param {string} nittos - the nittos name
+ * @param {boolean} isSub - is the user already subscribed to this nittos?
+ * @param {string} JwtToken - token that identifies the user
+ * @returns {Promise<FunctionJob>} return the success (or not) of the operation
+ */
 export const ToggleNitterSubs = async (
 	nittos: string,
 	isSub: boolean,

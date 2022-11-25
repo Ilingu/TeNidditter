@@ -4,7 +4,7 @@
 	import type { openImgArgs } from "$lib/client/types/zoomImg";
 	import type { NeetComment } from "$lib/shared/types/nitter";
 	import { IsEmptyString, TrimNonDigitsChars } from "$lib/shared/utils";
-	import { FormatNumbers, humanElapsedTime } from "$lib/client/ClientUtils";
+	import { FormatNumbers, FormatElapsedTime } from "$lib/client/ClientUtils";
 
 	export let neet: NeetComment;
 	export let quoteMode = false;
@@ -78,7 +78,7 @@
 				class="tooltip tooltip-secondary"
 				data-tip={new Date(neet.createdAt * 1000).toLocaleString()}
 			>
-				{humanElapsedTime(neet.createdAt * 1000, Date.now())}
+				{FormatElapsedTime(neet.createdAt * 1000, Date.now())}
 			</div>
 		</div>
 	</header>

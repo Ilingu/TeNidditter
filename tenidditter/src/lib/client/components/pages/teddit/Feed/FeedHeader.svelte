@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { humanElapsedTime } from "$lib/client/ClientUtils";
+	import { FormatElapsedTime } from "$lib/client/ClientUtils";
 	import Link from "$lib/client/components/design/Link.svelte";
 	import { IsEmptyString } from "$lib/shared/utils";
 
@@ -17,4 +17,4 @@
 	<Link href={`/teddit/u/${author}`}><p class="text-gray-300 hover:underline">u/{author}</p></Link>
 	<span class="mx-1">•</span>
 {/if}
-<p class="text-gray-400">{humanElapsedTime(created * 1000, Date.now())}</p>
+<p class="text-gray-400">{FormatElapsedTime(created * 1000, Date.now())}</p>

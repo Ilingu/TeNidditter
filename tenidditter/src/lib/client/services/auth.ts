@@ -17,6 +17,14 @@ import { HandleWsConn, NewWsConn } from "../ws";
 import type { FunctionJob } from "$lib/shared/types/globals";
 
 /* AUTH FUNC */
+
+/**
+ * It attempt to authenticate the user given its username & password, Wrapper function handling UI/UX, datas checking and after auth succeed
+ * @param {string} Username
+ * @param {string} Password
+ * @param {"login" | "register"} AuthMethod - `"login" | "register"`
+ * @param {(codes: string[]) => void | undefined} recoveryCodeCb - if method is "register" this callback will be called to give to the UI layer the user's recovery codes
+ */
 export const Authenticate = async (
 	Username: string,
 	Password: string,
@@ -64,6 +72,11 @@ export const Authenticate = async (
 	pushAlert("Invalid login", "error");
 };
 
+/**
+ * To call after `Authenticate`, it handle the displays of user recovery codes
+ * @param {Headers | undefined} headers
+ * @param {(codes: string[]) => void | undefined} recoveryCodeCb - this callback will be called to give to the UI layer the user's recovery codes
+ */
 const AfterRegister = async (headers?: Headers, recoveryCodeCb?: (codes: string[]) => void) => {
 	const codesHeader = headers?.get("RecoveryCodes") ?? "";
 
@@ -73,6 +86,11 @@ const AfterRegister = async (headers?: Headers, recoveryCodeCb?: (codes: string[
 	pushAlert("Successfully registered, you can now login", "success", 6000);
 };
 
+/**
+ * To call after `Authenticate`, it extract the user lists&subs from the headers and initiate a new user session
+ * @param {string} JwtToken
+ * @param {Headers | undefined} headers -
+ */
 const AfterLogin = async (JwtToken: string, headers?: Headers) => {
 	const tedditSubsHeader = headers?.get("TedditSubs") ?? "",
 		nitterSubsHeader = headers?.get("NitterSubs") ?? "",
@@ -95,6 +113,12 @@ const AfterLogin = async (JwtToken: string, headers?: Headers) => {
 	pushAlert("Successfully logged in!", "success");
 };
 
+/**
+ * initiate a new user session for the 1st time by checking the validity of the jwtToken and fetching the user jwtToken JSON datas (`User`)
+ * @param {string} JwtToken
+ * @param {UserSubs} Subs
+ * @param {NitterLists[]} Lists
+ */
 export const FirstLogin = async (JwtToken: string, Subs: UserSubs, Lists: NitterLists[]) => {
 	// check if jwt still valid
 	const { success, data: user } = await GetUserInfo(JwtToken);
@@ -103,6 +127,11 @@ export const FirstLogin = async (JwtToken: string, Subs: UserSubs, Lists: Nitter
 	SetUserSession(user, JwtToken, Subs, Lists);
 };
 
+/**
+ * initiate a new user session who's already logged in, session will be created with the cached user datas in localstorage.
+ *
+ * It then check the validity of the jwtToken in the background
+ */
 export const AutoLogin = async () => {
 	const { success: fetchJwt, data: JwtToken } = await GetJWT();
 	if (!fetchJwt || !JwtToken) return LogOut();
@@ -119,6 +148,11 @@ export const AutoLogin = async () => {
 	if (!validJwt) return LogOut();
 };
 
+/**
+ * Logout the user (only in client), reset all stored datas
+ * @param serverLogout - if set to `true` please provide a jwtToken to logout all the others clients, `DEFAULT=false`
+ * @param {string} JwtToken
+ */
 export const LogOut = async (serverLogout = false, JwtToken?: string) => {
 	window.localStorage.clear();
 	AuthStore.set(defaultAuthStore);
@@ -162,6 +196,11 @@ export const ListenToUserChange = async (JwtToken: string) => {
 	HandleWsConn(socket, { onMessage: DispatchSessionChange });
 };
 
+/**
+ * Fetch JwtToken associated datas (user datas)
+ * @param {string} JwtToken
+ * @returns {Promise<FunctionJob<User>>} user datas
+ */
 export const GetUserInfo = async (JwtToken: string): Promise<FunctionJob<User>> => {
 	const { success: LoginSuccess, data: user } = await api.get("/tedinitter/userInfo", {
 		headers: MakeBearerToken(JwtToken)

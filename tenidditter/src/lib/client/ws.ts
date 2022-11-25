@@ -7,6 +7,11 @@ type Args = {
 	onError?: () => void;
 	onClose?: () => void;
 };
+/**
+ * It created and connects to an websocket endpoint (if you want my thought: I should rewrite this to make a class client with typed routes like sse, but I'm too lazy)
+ * @param {string} wsEndpoint
+ * @returns {Promise<FunctionJob<WebSocket>>} the websocket connection (`window.WebSocket`)
+ */
 export const NewWsConn = async (wsEndpoint: string): Promise<FunctionJob<WebSocket>> => {
 	if (!window.WebSocket) return { success: false };
 	if (!isValidUrl(wsEndpoint)) return { success: false };
@@ -31,6 +36,11 @@ export const NewWsConn = async (wsEndpoint: string): Promise<FunctionJob<WebSock
 	});
 };
 
+/**
+ * It handle the several message sent by the server and act according to it
+ * @param {WebSocket} socket
+ * @param {Args} events_listeners
+ */
 export const HandleWsConn = (socket: WebSocket, { onMessage, onClose, onError }: Args) => {
 	if (socket.readyState !== socket.OPEN) return;
 

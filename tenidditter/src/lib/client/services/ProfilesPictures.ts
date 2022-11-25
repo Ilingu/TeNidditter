@@ -100,6 +100,11 @@ const PPs = [
 	"Mary Walton"
 ];
 
+/**
+ * it generate the url of a random [boringavatars](https://boringavatars.com) profile picture
+ * @param size - size of the squared profile picture, **in pixels**, `DEFAULT=120`
+ * @returns {Promise<FunctionJob>} the url of the profile picture
+ */
 export const GenerateRandomPPUrl = (size = 120): string =>
 	`https://source.boringavatars.com/beam/${size}/${encodeURI(
 		PPs[Math.round(Math.random() * (PPs.length - 1))]

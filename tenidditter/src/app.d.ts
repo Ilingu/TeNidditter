@@ -19,9 +19,31 @@ declare class Go {
 	importObject: WebAssembly.Imports | undefined;
 }
 
+/**
+ * Simple AES Encryption algorythm
+ * @param {string} key - 32 bytes key
+ * @param {string} textToEnc - text to encrypt
+ * @returns {string} the encrypted text
+ */
 declare function EncryptAES(key: string, textToEnc: string): string;
+/**
+ * Simple AES Decryption algorythm
+ * @param {string} key - 32 bytes key used for encryption
+ * @param {string} textToDec - previously encrypted string
+ * @returns {string} the original/decrypted string
+ */
 declare function DecryptAES(key: string, textToDec: string): string;
+/**
+ * Simple sha256 hash function
+ * @param {string} toHash - (if you've  multiple value, concatenate them into one string)
+ * @returns {string} the hash string of the input string
+ */
 declare function Hash(toHash: string): string;
+/**
+ * It generate a string of "length" random characters, ideal to generate ids,uuids,codes...
+ * @param {number} length
+ * @returns {string} the posts (if afterId set it's only the post after the poist with the id=afterId)
+ */
 declare function RandomChars(length: number): string;
 
 interface CustomEventMap {

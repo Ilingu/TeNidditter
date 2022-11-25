@@ -4,7 +4,7 @@
 	import Comments from "$lib/client/components/pages/teddit/comments/Comments.svelte";
 	import Link from "$lib/client/components/design/Link.svelte";
 	import Feeds from "$lib/client/components/pages/teddit/Feeds.svelte";
-	import { humanElapsedTime } from "$lib/client/ClientUtils";
+	import { FormatElapsedTime } from "$lib/client/ClientUtils";
 
 	export let data: import("./$types").PageData;
 
@@ -27,9 +27,10 @@
 	)}&author=${encodeURIComponent(data.post_datas.post_author)}&subreddit=${encodeURIComponent(
 		$page.params.subteddit
 	)}&ups=${PostUps()}&created=${data.post_datas.post_created}`;
-	const OGDesc = `Submitted ${humanElapsedTime(data.post_datas.post_created * 1000, Date.now())} by ${
-		data.post_datas.post_author
-	} on r/${$page.params.subteddit}`;
+	const OGDesc = `Submitted ${FormatElapsedTime(
+		data.post_datas.post_created * 1000,
+		Date.now()
+	)} by ${data.post_datas.post_author} on r/${$page.params.subteddit}`;
 </script>
 
 <svelte:head>

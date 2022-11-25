@@ -1,9 +1,13 @@
-// export const QueryUserPost = () => void;
-
 import type { FeedResult } from "$lib/server/types/teddit";
 import api from "../api";
 import type { FeedHomeType, FeedTypeEnum } from "../types/teddit";
 
+/**
+ * It fetchs from api teddit home page posts of the specified type
+ * @param {FeedTypeEnum} type
+ * @param {string | undefined} afterId
+ * @returns {Promise<FeedResult>} the posts (if afterId set it's only the post after the poist with the id=afterId)
+ */
 export const QueryHomePost = async (
 	type: FeedTypeEnum,
 	afterId?: string,

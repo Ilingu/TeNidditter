@@ -23,6 +23,7 @@
 	export let queryMoreCb = () => {};
 	export let onNeetRemovedFromList = (_neetId: string) => {};
 
+	/* externalLinks streams */
 	let client: SSEClient<"/nitter/stream-in-external-links">;
 	onMount(async () => {
 		client = new SSEClient("/nitter/stream-in-external-links");
@@ -56,6 +57,7 @@
 		);
 	};
 
+	/* feed init-> videos processing, link tag cutsomization, neet observer (to querMore)... */
 	let feedDiv: HTMLDivElement;
 	const initFeed = async () => {
 		if (!feedDiv) return;
@@ -121,6 +123,8 @@
 			vid.addEventListener("canplay", function () {});
 		}
 	};
+
+	/* user nitter lists */
 
 	let neetIdToAdd = "";
 	const setNeetIdToAdd = (neetId: string) => {
