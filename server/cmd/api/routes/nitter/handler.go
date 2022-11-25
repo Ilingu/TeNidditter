@@ -149,7 +149,7 @@ func StreamExternalLinks(reqIp string, tweets [][]nitter.NeetComment) {
 			}
 		})
 
-		timeout := time.After(10 * time.Second)
+		timeout := time.After(20 * time.Second)
 		select {
 		case good := <-waitClientToConnect:
 			if !good {
@@ -160,29 +160,41 @@ func StreamExternalLinks(reqIp string, tweets [][]nitter.NeetComment) {
 		}
 	}
 
-	var wgTweets sync.WaitGroup
-	wgTweets.Add(len(tweets))
-	for _, t := range tweets {
-		go func(thread []nitter.NeetComment) {
-			defer wgTweets.Done()
-
-			var wgThread sync.WaitGroup
-			wgThread.Add(len(thread))
-			for _, n := range thread {
-				go func(neet nitter.NeetComment) {
-					defer wgThread.Done()
-
-					if metatagsDatas, err := nitter.GetExternalLinksMetatags(neet.ExternalLink); err == nil {
-						metatagsDatas["neetId"] = neet.Id
-						client.Events <- metatagsDatas
-					}
-				}(n)
-			}
-
-			wgThread.Wait()
-		}(t)
+	var totalLength uint64
+	for i := 0; i < len(tweets); i++ {
+		totalLength += uint64(len(tweets[i]))
 	}
 
-	wgTweets.Wait()
-	client.Done <- true
+	allExternalLinks := []*nitter.NeetBasicComment{}
+	for _, t := range tweets {
+		for _, n := range t {
+			if !utils.IsEmptyString(n.ExternalLink) {
+				allExternalLinks = append(allExternalLinks, &n.NeetBasicComment)
+			}
+			if n.Quote != nil && !utils.IsEmptyString(n.Quote.ExternalLink) {
+				allExternalLinks = append(allExternalLinks, n.Quote)
+			}
+		}
+	}
+
+	if len(allExternalLinks) < 1 {
+		client.Close <- true
+		return
+	}
+	client.MinOpsNumber <- uint64(len(allExternalLinks))
+
+	var wg sync.WaitGroup
+	wg.Add(len(allExternalLinks))
+	for _, n := range allExternalLinks {
+		go func(neet *nitter.NeetBasicComment) {
+			defer wg.Done()
+			if metatagsDatas, err := nitter.GetExternalLinksMetatags(neet.ExternalLink); err == nil {
+				metatagsDatas["neetId"] = neet.Id
+				client.Events <- metatagsDatas
+			}
+		}(n)
+	}
+
+	wg.Wait()
+	client.Close <- true
 }

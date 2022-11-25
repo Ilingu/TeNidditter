@@ -1,6 +1,6 @@
 <script lang="ts">
 	import AuthStore from "$lib/client/stores/auth";
-	import { afterUpdate } from "svelte";
+	import { afterUpdate, onDestroy, onMount } from "svelte";
 	import Neet from "./Neet.svelte";
 	import type Hls from "hls.js";
 	import PictureZoom from "./PictureZoom.svelte";
@@ -16,10 +16,45 @@
 		TrimNonDigitsChars
 	} from "$lib/shared/utils";
 	import { pushAlert } from "$lib/client/ClientUtils";
+	import SSEClient from "$lib/client/sse";
+	import type { ExternalLinksDatas } from "$lib/client/types/nitter";
 
 	export let neets: NeetComment[][];
 	export let queryMoreCb = () => {};
 	export let onNeetRemovedFromList = (_neetId: string) => {};
+
+	let client: SSEClient<"/nitter/stream-in-external-links">;
+	onMount(async () => {
+		client = new SSEClient("/nitter/stream-in-external-links");
+
+		const connected = await client.connect();
+		if (!connected) return;
+
+		client.on("message", (externalLink) => {
+			if (!externalLink) return;
+			externalLinks.push(externalLink);
+		});
+		client.on("close", StreamInExternalLinks);
+	});
+	onDestroy(() => {
+		client && client.close();
+	});
+
+	let externalLinks: ExternalLinksDatas[] = [];
+	const StreamInExternalLinks = () => {
+		if (externalLinks.length <= 0) return;
+		const extLinksNeetId = externalLinks.map(({ neetId }) => neetId);
+		neets = neets.map((thread) =>
+			thread.map((neet) => {
+				if (extLinksNeetId.includes(neet.id)) {
+					const externalLinkData = externalLinks.find(({ neetId }) => neetId === neet.id);
+					if (!externalLinkData) return neet;
+
+					return { ...neet, externalLinkMetatags: externalLinkData };
+				} else return neet;
+			})
+		);
+	};
 
 	let feedDiv: HTMLDivElement;
 	const initFeed = async () => {
@@ -27,6 +62,7 @@
 
 		feedDiv.querySelectorAll(".neet .neet-body a").forEach((a) => {
 			if (a.classList.contains("not")) return;
+			if (a.innerHTML.includes("fa-solid fa-arrow-up-right-from-square icon")) return;
 			const href = a.getAttribute("href");
 
 			if (href?.startsWith("http")) {

@@ -22,6 +22,7 @@ declare class Go {
 declare function EncryptAES(key: string, textToEnc: string): string;
 declare function DecryptAES(key: string, textToDec: string): string;
 declare function Hash(toHash: string): string;
+declare function RandomChars(length: number): string;
 
 interface CustomEventMap {
 	alertEvent: CustomEvent<AlertShape>;

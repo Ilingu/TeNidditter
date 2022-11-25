@@ -90,11 +90,28 @@
 		>
 			<p class="font-bold">{@html neet.content}</p>
 		</Link>
-		<div>
-			{#if neet.quote}
+		{#if neet?.externalLinkMetatags}
+			<div class="grid gap-x-2 grid-cols-10 bg-neutral-focus p-2 rounded-lg">
+				<div class="col-span-2 flex justify-center items-center">
+					{#if !IsEmptyString(neet.externalLinkMetatags["og:image"])}
+						<img src={neet.externalLinkMetatags["og:image"]} alt="" class="w-fit h-fit rounded" />
+					{/if}
+				</div>
+				<div class="col-span-8">
+					{#if !IsEmptyString(neet.externalLinkMetatags?.title)}
+						<h1>{neet.externalLinkMetatags.title}</h1>
+					{/if}
+					{#if !IsEmptyString(neet.externalLinkMetatags?.description)}
+						<p>{neet.externalLinkMetatags.description}</p>
+					{/if}
+				</div>
+			</div>
+		{/if}
+		{#if neet.quote}
+			<div>
 				<svelte:self neet={neet.quote} quoteMode={true} {setNeetIdToAdd} />
-			{/if}
-		</div>
+			</div>
+		{/if}
 	</div>
 
 	{#if Object.keys(neet.attachment ?? {}).length > 0}

@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"teniditter-server/cmd/api/jwt"
 	"teniditter-server/cmd/api/routes"
+	nitter_routes "teniditter-server/cmd/api/routes/nitter"
 	"teniditter-server/cmd/db"
 	"teniditter-server/cmd/global/console"
 	"teniditter-server/cmd/global/utils"
@@ -299,6 +300,10 @@ func handleGetFeed(c echo.Context, service string) error {
 		if feed, err := user.GetNitterFeed(); err == nil {
 			console.Log("Feed Returned from cache", console.Neutral)
 			res.SetAuthCache(1800) // 30min
+			if clientIp, err := routes.GetIP(c.Request(), true); err == nil {
+				go nitter_routes.StreamExternalLinks(clientIp, *feed)
+			}
+
 			return res.HandleRespBlob(http.StatusOK, feed)
 		}
 
@@ -307,7 +312,12 @@ func handleGetFeed(c echo.Context, service string) error {
 		if err != nil {
 			return res.HandleResp(http.StatusInternalServerError, "failed to retreive and generate this user feed: "+err.Error())
 		}
+
 		res.SetAuthCache(1800) // 30min
+		if clientIp, err := routes.GetIP(c.Request(), true); err == nil {
+			go nitter_routes.StreamExternalLinks(clientIp, *feed)
+		}
+
 		return res.HandleRespBlob(http.StatusOK, feed)
 	default:
 		return res.HandleRespBlob(http.StatusNotAcceptable, "service not found")

@@ -19,5 +19,6 @@ func main() {
 	js.Global().Set("EncryptAES", encryption.EncryptDatas())
 	js.Global().Set("DecryptAES", encryption.DecryptDatas())
 	js.Global().Set("Hash", encryption.Hash())
+	js.Global().Set("RandomChars", RandomChars())
 	<-c
 }

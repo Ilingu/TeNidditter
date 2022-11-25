@@ -1,3 +1,5 @@
+import type { ExternalLinksDatas } from "$lib/client/types/nitter";
+
 export interface NeetComment extends NeetBasicComment {
 	quote?: NeetBasicComment;
 }
@@ -12,6 +14,7 @@ export interface NeetBasicComment {
 	externalLink?: string;
 	retweeted?: string;
 	pinned?: boolean;
+	externalLinkMetatags?: ExternalLinksDatas;
 }
 export interface Attachments {
 	images?: string[];
