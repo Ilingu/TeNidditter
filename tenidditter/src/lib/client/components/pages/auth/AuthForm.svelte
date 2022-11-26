@@ -53,6 +53,7 @@
 			if (Password.trim().length <= 0) return (PswStrenghtReport = null);
 			const zxcvbn = await GetZxcvbn();
 			const { score, crack_times_display } = zxcvbn(Password);
+			console.log(zxcvbn(Password));
 			PswStrenghtReport = {
 				crackTime: crack_times_display.online_throttling_100_per_hour.toString(),
 				score: {
