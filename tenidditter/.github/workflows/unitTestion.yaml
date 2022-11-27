@@ -1,0 +1,25 @@
+name: Vitest Tests
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: ["main"]
+
+jobs:
+  testing-run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 7.5.0
+
+      - name: Install NPM Dependencies
+        run: npm ci # Installing dependencies
+
+      - name: Vitest Test
+        run: npm run test

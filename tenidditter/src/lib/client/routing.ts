@@ -1,11 +1,7 @@
-import { goto as naviguate } from "$app/navigation";
-import { isValidUrl } from "$lib/shared/utils";
-
-export const pushRoute = (url: string) => {
-	if (!isValidUrl(url)) return;
-
+export const pushRoute = async (uri: string) => {
+	const naviguate = (await import("$app/navigation")).goto;
 	dispatchRouting();
-	naviguate(url);
+	naviguate(uri);
 };
 
 /**

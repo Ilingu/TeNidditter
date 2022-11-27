@@ -7,7 +7,7 @@ import type { Themes } from "./types/themes";
  */
 export const isMobile = (): boolean =>
 	typeof navigator !== "undefined" &&
-	/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Windows Phone/i.test(
+	/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Windows Phone|Mobile|SamsungBrowser|MiuiBrowser/i.test(
 		navigator.userAgent
 	);
 
@@ -69,10 +69,10 @@ export const FormatElapsedTime = (dateA: number, dateB: number): string => {
 	if (toHour < 24) return `${Math.round(toHour)}h ago`;
 
 	const toDays = toHour / 24;
-	if (toDays < 30) return `${Math.round(toDays)}d ago`;
+	if (toDays < 30.4375) return `${Math.round(toDays)}d ago`;
 
 	const toMonths = toDays / 30.4375; // 1m = 30d or 31d or 28d or 29d --> 30.4375d is the avg
-	if (toMonths < 12) return `${Math.round(toMonths)}m ago`;
+	if (toDays < 365.25) return `${Math.round(toMonths)}m ago`;
 
 	const toYears = toDays / 365.25; // 1/4y has 365, so in avg 1y=365.25d (or 12m but it'll be less precise to use "toMonth" here)
 	return `${Math.round(toYears)}y ago`;

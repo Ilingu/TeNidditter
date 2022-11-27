@@ -1,4 +1,4 @@
-import { expect, test, describe } from "vitest";
+import { expect, test, describe, beforeAll } from "vitest";
 import {
 	EscapeHTML,
 	FormatUsername,
@@ -18,6 +18,10 @@ interface TestCase<I, E> {
 }
 
 describe.concurrent("Testing shared utils", () => {
+	beforeAll(() => {
+		expect(process.env.TEST).toBe("true");
+	});
+
 	test.concurrent("IsEmptyString", () => {
 		const tests: TestCase<Parameters<typeof IsEmptyString>[0], ReturnType<typeof IsEmptyString>>[] =
 			[

@@ -1,4 +1,4 @@
-import { expect, test, describe, expectTypeOf } from "vitest";
+import { expect, test, describe, expectTypeOf, beforeAll } from "vitest";
 import { GetZxcvbn, ScoreToColor, ScoreToText } from "../zxcvbn";
 import type { ZXCVBNResult } from "zxcvbn";
 
@@ -8,6 +8,10 @@ interface TestCase<I, E> {
 }
 
 describe.concurrent("Testing client zxcvbn lib", () => {
+	beforeAll(() => {
+		expect(process.env.TEST).toBe("true");
+	});
+
 	test.concurrent("GetZxcvbn", async () => {
 		const zxcvbn = await GetZxcvbn();
 		expectTypeOf(zxcvbn).toBeFunction();
