@@ -1,6 +1,7 @@
 package tedinitter_routes
 
 import (
+	"math"
 	"net/http"
 	"os"
 	"strconv"
@@ -261,7 +262,9 @@ func TedinitterUserHandler(t *echo.Group) {
 func getListId(c echo.Context) (listId uint, ok bool) {
 	if listidParams := c.Param("id"); !utils.IsEmptyString(listidParams) {
 		if notCheckedListId, err := strconv.ParseUint(listidParams, 10, 64); err == nil {
-			listId = uint(notCheckedListId)
+			if notCheckedListId > 0 && notCheckedListId <= math.MaxUint {
+				listId = uint(notCheckedListId)
+			}
 		} else {
 			return 0, false
 		}
