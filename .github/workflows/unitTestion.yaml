@@ -16,14 +16,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - uses: pnpm/action-setup@v2
         with:
-          version: 7.5.0
+          version: 7
 
       - name: Install NPM Dependencies
-        run: npm ci # Installing dependencies
+        run: pnpm install # Installing dependencies
 
       - name: Vitest Test
-        run: npm run test
+        run: pnpm test
