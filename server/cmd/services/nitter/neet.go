@@ -9,6 +9,7 @@ import (
 	"sync"
 	"teniditter-server/cmd/global/console"
 	"teniditter-server/cmd/global/utils"
+	utils_enc "teniditter-server/cmd/global/utils/encryption"
 	"teniditter-server/cmd/redis"
 	"teniditter-server/cmd/redis/rediskeys"
 	"teniditter-server/cmd/services"
@@ -33,7 +34,7 @@ func GetNeetContext(nittos, neetId string) (*NeetComment, error) {
 }
 
 func GetNeetComments(nittos, neetId string, limit int) (*NeetInfo, error) {
-	redisKey := rediskeys.NewKey(rediskeys.NITTER_NEET_COMMENTS, utils.GenerateKeyFromArgs(nittos, neetId, limit))
+	redisKey := rediskeys.NewKey(rediskeys.NITTER_NEET_COMMENTS, utils_enc.GenerateHashFromArgs(nittos, neetId, limit))
 	if neetInfo, err := redis.Get[NeetInfo](redisKey); err == nil {
 		console.Log("Neet Returned from cache", console.Neutral)
 		return &neetInfo, nil // Returned from cache

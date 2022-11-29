@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"teniditter-server/cmd/global/utils"
+	utils_enc "teniditter-server/cmd/global/utils/encryption"
 )
 
 func encryptRecoveryCodes(recoveryCodes []string) (string, error) {
@@ -12,7 +13,7 @@ func encryptRecoveryCodes(recoveryCodes []string) (string, error) {
 		return "", errors.New("couldn't marshal codes")
 	}
 
-	hashedCodes, err := utils.EncryptAES(string(blobCodes))
+	hashedCodes, err := utils_enc.EncryptAES(string(blobCodes))
 	if err != nil {
 		return "", errors.New("couldn't encrypt codes")
 	}

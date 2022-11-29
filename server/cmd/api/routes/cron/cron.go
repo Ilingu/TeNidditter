@@ -9,6 +9,7 @@ import (
 	"teniditter-server/cmd/api/routes"
 	"teniditter-server/cmd/global/console"
 	"teniditter-server/cmd/global/utils"
+	utils_enc "teniditter-server/cmd/global/utils/encryption"
 	"teniditter-server/cmd/services/teddit"
 	teddinitter "teniditter-server/cmd/services/tedinitter"
 
@@ -22,7 +23,7 @@ func CronListener(cr *echo.Group) {
 
 		// Auth
 		srvTrustKey := c.Request().Header.Get("Authorization")
-		if utils.IsEmptyString(srvTrustKey) || utils.Hash(srvTrustKey) != os.Getenv("SERVER_TRUST_KEY") {
+		if utils.IsEmptyString(srvTrustKey) || utils_enc.Hash(srvTrustKey) != os.Getenv("SERVER_TRUST_KEY") {
 			return res.HandleResp(http.StatusUnauthorized, "Cannot Trust this Source")
 		}
 

@@ -9,13 +9,14 @@ import (
 	"net/url"
 	"teniditter-server/cmd/global/console"
 	"teniditter-server/cmd/global/utils"
+	utils_enc "teniditter-server/cmd/global/utils/encryption"
 	"teniditter-server/cmd/redis"
 	"teniditter-server/cmd/redis/rediskeys"
 	"time"
 )
 
 func GetUserInfos(username string) (*map[string]any, error) {
-	redisKey := rediskeys.NewKey(rediskeys.TEDDIT_USER, utils.Hash(username))
+	redisKey := rediskeys.NewKey(rediskeys.TEDDIT_USER, utils_enc.Hash(username))
 
 	if posts, err := redis.Get[map[string]any](redisKey); err == nil {
 		console.Log("Teddit User Info Returned from Cache ⚡", console.Neutral)

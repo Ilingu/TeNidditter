@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"teniditter-server/cmd/global/console"
 	"teniditter-server/cmd/global/utils"
+	utils_enc "teniditter-server/cmd/global/utils/encryption"
 	"teniditter-server/cmd/redis"
 	"teniditter-server/cmd/redis/rediskeys"
 	"teniditter-server/cmd/services/xml"
@@ -53,7 +54,7 @@ func SearchTweetsXML(q string) ([]NeetComment, error) {
 }
 
 func SearchTweetsScrap(q string, limit int) ([][]NeetComment, error) {
-	redisKey := rediskeys.NewKey(rediskeys.NITTER_SEARCH_TWEETS, utils.GenerateKeyFromArgs(q, limit))
+	redisKey := rediskeys.NewKey(rediskeys.NITTER_SEARCH_TWEETS, utils_enc.GenerateHashFromArgs(q, limit))
 	if comments, err := redis.Get[[][]NeetComment](redisKey); err == nil {
 		console.Log("Neets Returned from cache", console.Neutral)
 		return comments, nil // Returned from cache
@@ -72,7 +73,7 @@ func SearchTweetsScrap(q string, limit int) ([][]NeetComment, error) {
 }
 
 func SearchNittos(username string, limit int) (*[]NittosPreview, error) {
-	redisKey := rediskeys.NewKey(rediskeys.NITTER_SEARCH_NITTOS, utils.GenerateKeyFromArgs(username, limit))
+	redisKey := rediskeys.NewKey(rediskeys.NITTER_SEARCH_NITTOS, utils_enc.GenerateHashFromArgs(username, limit))
 	if nittos, err := redis.Get[[]NittosPreview](redisKey); err == nil {
 		console.Log("Nittos Returned from cache", console.Neutral)
 		return &nittos, nil // Returned from cache

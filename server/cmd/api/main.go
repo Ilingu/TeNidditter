@@ -14,6 +14,7 @@ import (
 	teddit_routes "teniditter-server/cmd/api/routes/teddit"
 	tedinitter_routes "teniditter-server/cmd/api/routes/tedinitter"
 	"teniditter-server/cmd/global/console"
+	utils_env "teniditter-server/cmd/global/utils/env"
 	ps "teniditter-server/cmd/planetscale"
 	"teniditter-server/cmd/redis"
 
@@ -22,7 +23,7 @@ import (
 )
 
 func main() {
-	LoadEnv() // load env if not in prod
+	utils_env.LoadEnv() // load env if not in prod
 
 	{
 		go ps.DBManager.NewDB() // Connect to DB in bg

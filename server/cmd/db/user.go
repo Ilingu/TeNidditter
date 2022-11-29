@@ -12,6 +12,7 @@ import (
 	"sync"
 	"teniditter-server/cmd/api/ws"
 	"teniditter-server/cmd/global/utils"
+	utils_enc "teniditter-server/cmd/global/utils/encryption"
 	ps "teniditter-server/cmd/planetscale"
 	"teniditter-server/cmd/redis"
 	"teniditter-server/cmd/redis/rediskeys"
@@ -81,7 +82,7 @@ func (user AccountModel) _getSubs(q string) ([]string, error) {
 }
 
 func (u *AccountModel) GetTedditFeed() (*[]map[string]any, error) {
-	userKey := utils.GenerateKeyFromArgs(u.AccountId, u.Username /* if not enough add: u.CreatedAt.String() */)
+	userKey := utils_enc.GenerateHashFromArgs(u.AccountId, u.Username /* if not enough add: u.CreatedAt.String() */)
 	redisKey := rediskeys.NewKey(rediskeys.TEDDIT_USER_FEED, userKey)
 
 	if subPosts, err := redis.Get[[]map[string]any](redisKey); err == nil {
@@ -90,7 +91,7 @@ func (u *AccountModel) GetTedditFeed() (*[]map[string]any, error) {
 	return nil, errors.New("no sub posts cached for this user")
 }
 func (u *AccountModel) GetNitterFeed() (*[][]nitter.NeetComment, error) {
-	userKey := utils.GenerateKeyFromArgs(u.AccountId, u.Username /* if not enough add: u.CreatedAt.String() */)
+	userKey := utils_enc.GenerateHashFromArgs(u.AccountId, u.Username /* if not enough add: u.CreatedAt.String() */)
 	redisKey := rediskeys.NewKey(rediskeys.NITTER_USER_FEED, userKey)
 
 	if subPosts, err := redis.Get[[][]nitter.NeetComment](redisKey); err == nil {
@@ -133,7 +134,7 @@ func (u *AccountModel) GenerateNitterFeed() (*[][]nitter.NeetComment, error) {
 	}
 	utils.ShuffleSlice(allTweets)
 
-	userKey := utils.GenerateKeyFromArgs(u.AccountId, u.Username /* if not enough add: u.CreatedAt.String() */)
+	userKey := utils_enc.GenerateHashFromArgs(u.AccountId, u.Username /* if not enough add: u.CreatedAt.String() */)
 	redisKey := rediskeys.NewKey(rediskeys.NITTER_USER_FEED, userKey)
 	go redis.Set(redisKey, allTweets, 8*time.Hour) // cache datas
 
@@ -189,7 +190,7 @@ func (u *AccountModel) GenerateTedditFeed() (*[]map[string]any, error) {
 	}
 	utils.ShuffleSlice(allSubPosts)
 
-	userKey := utils.GenerateKeyFromArgs(u.AccountId, u.Username /* if not enough add: u.CreatedAt.String() */)
+	userKey := utils_enc.GenerateHashFromArgs(u.AccountId, u.Username /* if not enough add: u.CreatedAt.String() */)
 	redisKey := rediskeys.NewKey(rediskeys.TEDDIT_USER_FEED, userKey)
 	go redis.Set(redisKey, allSubPosts, 8*time.Hour) // cache datas
 
@@ -315,7 +316,7 @@ func (user AccountModel) DecryptRecoveryCodes() (*[]string, error) {
 		return nil, errors.New("no recovery codes")
 	}
 
-	blobCodes, err := utils.DecryptAES(user.RecoveryCodes)
+	blobCodes, err := utils_enc.DecryptAES(user.RecoveryCodes)
 	if err != nil {
 		return nil, errors.New("couldn't decrypt codes")
 	}
@@ -388,7 +389,7 @@ func (user AccountModel) UseRecoveryCode(RecoveryCode string) error {
 
 	updatedRecoveryCodes := *recoveryCodes
 	for i, code := range *recoveryCodes {
-		if utils.Hash(code) == utils.Hash(RecoveryCode) {
+		if utils_enc.Hash(code) == utils_enc.Hash(RecoveryCode) {
 			updatedRecoveryCodes = append(updatedRecoveryCodes[:i], updatedRecoveryCodes[i+1:]...)
 			break
 		}
@@ -411,7 +412,7 @@ func (user AccountModel) HasRecoveryCode(RecoveryCode string) bool {
 
 	isValid := false
 	for _, code := range *recoveryCodes {
-		if utils.Hash(code) == utils.Hash(RecoveryCode) {
+		if utils_enc.Hash(code) == utils_enc.Hash(RecoveryCode) {
 			isValid = true
 			break
 		}

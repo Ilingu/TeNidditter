@@ -1,4 +1,4 @@
-package utils
+package utils_enc
 
 import (
 	"crypto/aes"
@@ -8,9 +8,15 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"teniditter-server/cmd/global/utils"
 )
 
 var iv []byte = []byte{46, 228, 83, 3, 210, 32, 229, 147, 187, 208, 189, 57, 152, 31, 7, 237}
+
+func GenerateHashFromArgs(args ...any) string {
+	concatenatedArgs := fmt.Sprint(args...)
+	return Hash(concatenatedArgs)
+}
 
 func Hash(str string) string {
 	ByteHash := sha256.Sum256([]byte(str))
@@ -20,7 +26,7 @@ func Hash(str string) string {
 
 // Encrypt method is to encrypt or hide any classified text
 func EncryptAES(textToEnc string) (string, error) {
-	if IsEmptyString(os.Getenv("ENCRYPTION_KEY")) {
+	if utils.IsEmptyString(os.Getenv("ENCRYPTION_KEY")) {
 		return "", errors.New("no enc key")
 	}
 
@@ -39,7 +45,7 @@ func EncryptAES(textToEnc string) (string, error) {
 
 // Decrypt method is to extract back the encrypted text
 func DecryptAES(textToDec string) (string, error) {
-	if IsEmptyString(os.Getenv("ENCRYPTION_KEY")) {
+	if utils.IsEmptyString(os.Getenv("ENCRYPTION_KEY")) {
 		return "", errors.New("no enc key")
 	}
 

@@ -63,7 +63,7 @@ describe.concurrent("Testing shared utils", () => {
 		"Sleep",
 		async () => {
 			const tests: TestCase<Parameters<typeof Sleep>[0], number>[] = [
-				{ input: 10, excepted: 2 },
+				{ input: 10, excepted: 5 },
 				{ input: 100, excepted: 10 },
 				{ input: 1000, excepted: 10 }
 				// { input: 10_000, excepted: 10 }

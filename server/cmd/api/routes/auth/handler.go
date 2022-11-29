@@ -8,6 +8,7 @@ import (
 	"teniditter-server/cmd/db"
 	"teniditter-server/cmd/global/console"
 	"teniditter-server/cmd/global/utils"
+	utils_enc "teniditter-server/cmd/global/utils/encryption"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -165,7 +166,7 @@ func register(res routes.EchoWrapper, username, password string) error {
 		return res.HandleResp(http.StatusInternalServerError, err.Error())
 	}
 
-	if recoveryCodes, err := utils.DecryptAES(account.RecoveryCodes); err == nil {
+	if recoveryCodes, err := utils_enc.DecryptAES(account.RecoveryCodes); err == nil {
 		res.Response().Header().Set("Access-Control-Expose-Headers", "RecoveryCodes")
 		res.Response().Header().Set("RecoveryCodes", recoveryCodes)
 	}

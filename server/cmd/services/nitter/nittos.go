@@ -9,6 +9,7 @@ import (
 	"strings"
 	"teniditter-server/cmd/global/console"
 	"teniditter-server/cmd/global/utils"
+	utils_enc "teniditter-server/cmd/global/utils/encryption"
 	ps "teniditter-server/cmd/planetscale"
 	"teniditter-server/cmd/redis"
 	"teniditter-server/cmd/redis/rediskeys"
@@ -80,7 +81,7 @@ func NittosMetadata(username string) (*Nittos, error) {
 }
 
 func NittosTweetsScrap(username string, limit int) ([][]NeetComment, error) {
-	redisKey := rediskeys.NewKey(rediskeys.NITTER_NITTOS_TWEETS, utils.GenerateKeyFromArgs(username, limit))
+	redisKey := rediskeys.NewKey(rediskeys.NITTER_NITTOS_TWEETS, utils_enc.GenerateHashFromArgs(username, limit))
 	if comments, err := redis.Get[[][]NeetComment](redisKey); err == nil {
 		console.Log("Neets Returned from cache", console.Neutral)
 		return comments, nil // Returned from cache
