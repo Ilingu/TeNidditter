@@ -124,5 +124,5 @@ func enableCors(e *echo.Echo) {
 	X-XSS-Protection: 0
 	*/
 
-	console.Log("Cors Middleware Up and Running", console.Info)
+	console.Log("Cors Middleware Up and Running")
 }

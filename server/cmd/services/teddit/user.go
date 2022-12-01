@@ -19,7 +19,7 @@ func GetUserInfos(username string) (*map[string]any, error) {
 	redisKey := rediskeys.NewKey(rediskeys.TEDDIT_USER, utils_enc.Hash(username))
 
 	if posts, err := redis.Get[map[string]any](redisKey); err == nil {
-		console.Log("Teddit User Info Returned from Cache ⚡", console.Neutral)
+		console.Neutral("Teddit User Info Returned from Cache ⚡")
 		return &posts, nil
 	}
 

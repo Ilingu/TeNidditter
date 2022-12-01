@@ -27,7 +27,7 @@ func CronListener(cr *echo.Group) {
 			return res.HandleResp(http.StatusUnauthorized, "Cannot Trust this Source")
 		}
 
-		console.Log("Receive New Cron Update", console.Info)
+		console.Log("Receive New Cron Update")
 		go func() {
 			// Refetch all ressource:
 			for _, FeedType := range []string{"hot", "new", "top", "rising", "controversial"} {

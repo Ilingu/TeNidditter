@@ -83,7 +83,7 @@ func NittosMetadata(username string) (*Nittos, error) {
 func NittosTweetsScrap(username string, limit int) ([][]NeetComment, error) {
 	redisKey := rediskeys.NewKey(rediskeys.NITTER_NITTOS_TWEETS, utils_enc.GenerateHashFromArgs(username, limit))
 	if comments, err := redis.Get[[][]NeetComment](redisKey); err == nil {
-		console.Log("Neets Returned from cache", console.Neutral)
+		console.Neutral("Neets Returned from cache")
 		return comments, nil // Returned from cache
 	}
 

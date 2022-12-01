@@ -6,12 +6,13 @@ import (
 	"os"
 	"teniditter-server/cmd/global/utils"
 	utils_enc "teniditter-server/cmd/global/utils/encryption"
+	utils_env "teniditter-server/cmd/global/utils/env"
 	"testing"
 )
 
 func init() {
 	os.Setenv("TEST", "1")
-	// utils_env.LoadEnv()
+	utils_env.LoadEnv()
 }
 
 type TestCase[T any, E any] struct {
@@ -42,6 +43,7 @@ func TestIsEmptyString(t *testing.T) {
 		}
 	}
 }
+
 func TestIsSafeString(t *testing.T) {
 	testCases := []TestCase[string, bool]{
 		{input: "", expected: true},
@@ -314,12 +316,77 @@ func TestGenerateRandomChars(t *testing.T) {
 	}
 }
 func TestIsStrongPassword(t *testing.T) {
-	testCases := []TestCase[string, bool]{}
+	testCases := []TestCase[string, bool]{
+		{input: "", expected: false},
+		{input: "test", expected: false},
+		{input: "test123", expected: false},
+		{input: "Test123", expected: false},
+		{input: "Typescript golang", expected: true},
+		{input: "os$8@2w%XJ$m8V0MAY0icN#4Yd2tka6L", expected: true},
+		{input: "y687@52W", expected: false},
+		{input: "X71R689E*wtO", expected: true},
+		{input: "X71R689E*wtO", expected: true},
+		{input: "Frighten-Protegee-Spendable4", expected: true},
+		{input: "awoke-expansion-dismay-employed-caliber-kilobyte-puritan-tiptop-prissy-roundness", expected: true},
+	}
 
 	for _, test := range testCases {
 		result := utils.IsStrongPassword(test.input)
 		if result != test.expected {
-			t.Errorf("GenerateRandomChars(%d), expected: %t, got: %t", test.input, test.expected, result)
+			t.Errorf("GenerateRandomChars(%s), expected: %t, got: %t", test.input, test.expected, result)
+		}
+	}
+}
+
+func TestHash(t *testing.T) {
+	testCases := []TestCase[string, string]{
+		{input: "Hello, 世界", expected: "a281e84c7f61393db702630c2a6807e871cd3b6896c9e56e22982d125696575c"},
+		{input: "os$8@2w%XJ$m8V0MAY0icN#4Yd2tka6L", expected: "2d2d8461974ce2af6fcad284ca0fed8afdfe3d47a39ae44c1dd03f13e389bbff"},
+		{input: "awoke-expansion-dismay-employed-caliber-kilobyte-puritan-tiptop-prissy-roundness", expected: "8a59c769904caa323392619a9434ee5cb7ea3f17ce4779c320fcc59d60299ad5"},
+		{input: "Ilingu", expected: "de1f56b27976476486a6ab126d7bc922bdc0d90d743e91a7e7ebbf74a1143129"},
+		{input: "ilingu", expected: "0eb4d2844e98a6d568e0e8a507fc9f976aea10b97a91db4d46f58dfbce33d30c"},
+	}
+
+	for _, test := range testCases {
+		result := utils_enc.Hash(test.input)
+		if result != test.expected {
+			t.Errorf("Hash(%s), expected: %s, got: %s", test.input, test.expected, result)
+		}
+	}
+}
+func TestEncryptAES(t *testing.T) {
+	testCases := []TestCase[string, string]{
+		{input: "Hello, 世界", expected: "OBDDExVO4MsAC31iOg=="},
+		{input: "os$8@2w%XJ$m8V0MAY0icN#4Yd2tka6L", expected: "HwaLRzpQtwrg176aji1hGYNNc7v8kUQSBJJsNPVeTac="},
+		{input: "awoke-expansion-dismay-employed-caliber-kilobyte-puritan-tiptop-prissy-roundness", expected: "EQLAFB9PpVfI/PSE3xQ/ecZpKZb40bsS9dAff78KRCnEQoPZ5dVJyWbfTVbMD2s42Y9it5Edndm8q6wk3jF8Sd+LIEGfTYYKFZX7tSBrIMY="},
+		{input: "Ilingu", expected: "ORnGER0X"},
+		{input: "ilingu", expected: "GRnGER0X"},
+	}
+
+	for _, test := range testCases {
+		result, err := utils_enc.EncryptAES(test.input)
+		if err != nil {
+			t.Errorf("EncryptAES(%s), got an unexpected error", test.input)
+		} else if result != test.expected {
+			t.Errorf("EncryptAES(%s), expected: %s, got: %s", test.input, test.expected, result)
+		}
+	}
+}
+func TestDecryptAES(t *testing.T) {
+	testCases := []TestCase[string, string]{
+		{expected: "Hello, 世界", input: "OBDDExVO4MsAC31iOg=="},
+		{expected: "os$8@2w%XJ$m8V0MAY0icN#4Yd2tka6L", input: "HwaLRzpQtwrg176aji1hGYNNc7v8kUQSBJJsNPVeTac="},
+		{expected: "awoke-expansion-dismay-employed-caliber-kilobyte-puritan-tiptop-prissy-roundness", input: "EQLAFB9PpVfI/PSE3xQ/ecZpKZb40bsS9dAff78KRCnEQoPZ5dVJyWbfTVbMD2s42Y9it5Edndm8q6wk3jF8Sd+LIEGfTYYKFZX7tSBrIMY="},
+		{expected: "Ilingu", input: "ORnGER0X"},
+		{expected: "ilingu", input: "GRnGER0X"},
+	}
+
+	for _, test := range testCases {
+		result, err := utils_enc.DecryptAES(test.input)
+		if err != nil {
+			t.Errorf("DecryptAES(%s), got an unexpected error", test.input)
+		} else if result != test.expected {
+			t.Errorf("DecryptAES(%s), expected: %s, got: %s", test.input, test.expected, result)
 		}
 	}
 }

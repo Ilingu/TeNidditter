@@ -12,12 +12,14 @@ const (
 
 	// bright     = "\x1b[1m"
 	// dim        = "\x1b[2m"
+
 	underscore = "\x1b[4m"
 	// blink      = "\x1b[5m"
 	// reverse    = "\x1b[7m"
 	// hidden     = "\x1b[8m"
 
 	// Foreground Colors
+
 	fgBlack   = "\x1b[30m"
 	fgRed     = "\x1b[31m"
 	fgGreen   = "\x1b[32m"
@@ -38,17 +40,25 @@ const (
 	// bgWhite   = "\x1b[47m"
 
 	// Type
-	Info    MsgType = fgCyan
-	Success MsgType = fgGreen
-	Warning MsgType = fgYellow
-	Error   MsgType = fgRed
-	Neutral MsgType = fgWhite
+
+	INFO    MsgType = fgCyan
+	SUCCESS MsgType = fgGreen
+	WARNING MsgType = fgYellow
+	ERROR   MsgType = fgRed
+	NEUTRAL MsgType = fgWhite
 )
 
-var MsgTypeToString = map[MsgType]string{Info: "Info", Success: "Success", Warning: "Warning", Error: "Error", Neutral: "Neutral"}
+var MsgTypeToString = map[MsgType]string{INFO: "Info", SUCCESS: "Success", WARNING: "Warning", ERROR: "Error", NEUTRAL: "Neutral"}
 
-func Log(msg any, priority MsgType, underline ...bool) {
-	msgType := Neutral
+// It logs a message to the standar output with colors and flags
+//
+// Usage:
+//
+//	LogMsg("couldn't open a connection to db", ERROR)
+//
+// The 3rd argument is facultative, it's whether you want to underline the message output or not
+func LogMsg(msg any, priority MsgType, underline ...bool) {
+	msgType := NEUTRAL
 	if isOkColor(priority) {
 		msgType = priority
 	}
@@ -63,9 +73,54 @@ func Log(msg any, priority MsgType, underline ...bool) {
 	log.Println(LogMessage...)
 }
 
+// Short and Handy Version of LogMsg() to log Info messages
+//
+// Under the hood:
+//
+//	LogMsg(your_msg, INFO, underline...)
+func Log(msg any, underline ...bool) {
+	LogMsg(msg, INFO, underline...)
+}
+
+// Short and Handy Version of LogMsg() to log Neutral messages
+//
+// Under the hood:
+//
+//	LogMsg(your_msg, NEUTRAL, underline...)
+func Neutral(msg any, underline ...bool) {
+	LogMsg(msg, NEUTRAL, underline...)
+}
+
+// Short and Handy Version of LogMsg() to log Success messages
+//
+// Under the hood:
+//
+//	LogMsg(your_msg, SUCCESS, underline...)
+func Success(msg any, underline ...bool) {
+	LogMsg(msg, SUCCESS, underline...)
+}
+
+// Short and Handy Version of LogMsg() to log Warning messages
+//
+// Under the hood:
+//
+//	LogMsg(your_msg, WARNING, underline...)
+func Warn(msg any, underline ...bool) {
+	LogMsg(msg, WARNING, underline...)
+}
+
+// Short and Handy Version of LogMsg() to log Error messages
+//
+// Under the hood:
+//
+//	LogMsg(your_msg, ERROR, underline...)
+func Error(msg any, underline ...bool) {
+	LogMsg(msg, ERROR, underline...)
+}
+
 func isOkColor(priority MsgType) bool {
 	switch priority {
-	case Info, Success, Warning, Error, Neutral:
+	case INFO, SUCCESS, WARNING, ERROR, NEUTRAL:
 		return true
 	default:
 		return false

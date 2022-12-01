@@ -27,17 +27,17 @@ func ConnectRedis() error {
 	var i int
 	for {
 		if i >= 20 {
-			console.Log("Failed to Connect to Redis", console.Error, true)
+			console.Error("Failed to Connect to Redis", true)
 			return errors.New("failed to connect to redis")
 		}
 
 		if conn := openRedis(); conn != nil {
 			redisConn = conn
-			console.Log("Redis Connected Successfully!", console.Success, true)
+			console.Success("Redis Connected Successfully!", true)
 			return nil
 		}
 
-		console.Log("Redis Not Ready Yet, Backing off for 1s...", console.Warning)
+		console.Warn("Redis Not Ready Yet, Backing off for 1s...")
 		time.Sleep(time.Second)
 		i++
 	}
@@ -50,9 +50,9 @@ func DisconnectRedis() error {
 
 	err := redisConn.Close()
 	if err != nil {
-		console.Log("Error Cannot Disconnect Redis", console.Error)
+		console.Error("Error Cannot Disconnect Redis")
 	} else {
-		console.Log("Redis Disconnected successfully", console.Success)
+		console.Success("Redis Disconnected successfully")
 	}
 	return err
 }

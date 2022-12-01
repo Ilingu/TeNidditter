@@ -36,7 +36,7 @@ func GetNeetContext(nittos, neetId string) (*NeetComment, error) {
 func GetNeetComments(nittos, neetId string, limit int) (*NeetInfo, error) {
 	redisKey := rediskeys.NewKey(rediskeys.NITTER_NEET_COMMENTS, utils_enc.GenerateHashFromArgs(nittos, neetId, limit))
 	if neetInfo, err := redis.Get[NeetInfo](redisKey); err == nil {
-		console.Log("Neet Returned from cache", console.Neutral)
+		console.Neutral("Neet Returned from cache")
 		return &neetInfo, nil // Returned from cache
 	}
 

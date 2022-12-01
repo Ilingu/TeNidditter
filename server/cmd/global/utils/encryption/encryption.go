@@ -5,13 +5,12 @@ import (
 	"crypto/cipher"
 	"crypto/sha256"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
 	"teniditter-server/cmd/global/utils"
 )
-
-var iv []byte = []byte{46, 228, 83, 3, 210, 32, 229, 147, 187, 208, 189, 57, 152, 31, 7, 237}
 
 func GenerateHashFromArgs(args ...any) string {
 	concatenatedArgs := fmt.Sprint(args...)
@@ -28,6 +27,11 @@ func Hash(str string) string {
 func EncryptAES(textToEnc string) (string, error) {
 	if utils.IsEmptyString(os.Getenv("ENCRYPTION_KEY")) {
 		return "", errors.New("no enc key")
+	}
+
+	iv, err := getIV()
+	if err != nil {
+		return "", err
 	}
 
 	block, err := aes.NewCipher([]byte(os.Getenv("ENCRYPTION_KEY")))
@@ -49,6 +53,11 @@ func DecryptAES(textToDec string) (string, error) {
 		return "", errors.New("no enc key")
 	}
 
+	iv, err := getIV()
+	if err != nil {
+		return "", err
+	}
+
 	block, err := aes.NewCipher([]byte(os.Getenv("ENCRYPTION_KEY")))
 	if err != nil {
 		return "", err
@@ -64,6 +73,20 @@ func DecryptAES(textToDec string) (string, error) {
 	cfb.XORKeyStream(plainText, cipherText)
 
 	return string(plainText), nil
+}
+
+// Helpers
+func getIV() ([]byte, error) {
+	if utils.IsEmptyString(os.Getenv("IV_KEY")) {
+		return nil, errors.New("no iv key")
+	}
+
+	var iv []byte
+	if err := json.Unmarshal([]byte(os.Getenv("IV_KEY")), &iv); err != nil {
+		return nil, errors.New("no iv key")
+	}
+
+	return iv, nil
 }
 func encode(b []byte) string {
 	return base64.StdEncoding.EncodeToString(b)

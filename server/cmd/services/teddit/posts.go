@@ -27,7 +27,7 @@ func GetHomePosts(FeedType, afterId string, nocache bool) (*map[string]any, erro
 	redisKey := rediskeys.NewKey(rediskeys.TEDDIT_HOME, FeedType+afterId)
 	if !nocache {
 		if posts, err := redis.Get[map[string]any](redisKey); err == nil {
-			console.Log("Posts Returned from cache", console.Neutral)
+			console.Neutral("Posts Returned from cache")
 			return &posts, nil // Returned from cache
 		}
 	}
@@ -74,7 +74,7 @@ func GetPostInfo(subteddit, id, sort string) (TedditPostInfo, error) {
 	// Check If content already cached:
 	redisKey := rediskeys.NewKey(rediskeys.TEDDIT_POST, subteddit+id+sort)
 	if postInfo, err := redis.Get[TedditPostInfo](redisKey); err == nil {
-		console.Log("Posts Returned from cache", console.Neutral)
+		console.Neutral("Posts Returned from cache")
 		return postInfo, nil // Returned from cache
 	}
 

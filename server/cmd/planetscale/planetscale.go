@@ -38,20 +38,20 @@ func connectToDB() *sql.DB {
 	for {
 		connection, err := openDB()
 		if err != nil {
-			console.Log(fmt.Sprintf("Planetscale not yet ready. Attempt n°%02d\n", counts), console.Warning)
+			console.Warn(fmt.Sprintf("Planetscale not yet ready. Attempt n°%02d\n", counts))
 			counts++
 		} else {
-			console.Log("Connected to Planetscale!", console.Success, true)
+			console.Success("Connected to Planetscale!", true)
 			return connection
 		}
 
 		if counts > 10 {
 			log.Println(err)
-			console.Log("Failed to connect to Planetscale", console.Error, true)
+			console.Error("Failed to connect to Planetscale", true)
 			return nil
 		}
 
-		console.Log("Backing off for two seconds", console.Info)
+		console.Log("Backing off for two seconds")
 		time.Sleep(2 * time.Second)
 		continue
 	}
@@ -80,9 +80,9 @@ func (*databaseManager) Disconnect() bool {
 	err := sqlConn.Close()
 	if err == nil {
 		sqlConn = nil
-		console.Log("Planetscale Disconnected", console.Warning)
+		console.Warn("Planetscale Disconnected")
 	} else {
-		console.Log("Failed to disconnect planetscale", console.Error)
+		console.Error("Failed to disconnect planetscale")
 	}
 
 	return err == nil

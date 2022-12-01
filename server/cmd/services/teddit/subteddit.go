@@ -20,7 +20,7 @@ func GetSubredditPosts(subreddit string) (*map[string]any, error) {
 	redisKey := rediskeys.NewKey(rediskeys.SUBREDDIT, subreddit+"_POSTS")
 
 	if posts, err := redis.Get[map[string]any](redisKey); err == nil {
-		console.Log("Subteddit Posts Returned from Cache ⚡", console.Neutral)
+		console.Neutral("Subteddit Posts Returned from Cache ⚡")
 		return &posts, nil
 	}
 
@@ -62,7 +62,7 @@ func GetSubredditMetadatas(subreddit string) (*subredditInfos, error) {
 	redisKey := rediskeys.NewKey(rediskeys.SUBREDDIT, subreddit+"_ABOUT")
 
 	if subDatas, err := redis.Get[subredditInfos](redisKey); err == nil {
-		console.Log("Subteddit Returned from Cache ⚡", console.Neutral)
+		console.Neutral("Subteddit Returned from Cache ⚡")
 		return &subDatas, nil
 	}
 

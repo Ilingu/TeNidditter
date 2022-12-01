@@ -88,7 +88,7 @@ func SSEHandler(w http.ResponseWriter, r *http.Request) {
 			}
 
 			if _, err = fmt.Fprintf(w, "data: %v\n\n", buf.String()); err != nil {
-				console.Log(fmt.Sprintf("Failed to sent SSE to %s", r.RemoteAddr), console.Error)
+				console.Error(fmt.Sprintf("Failed to sent SSE to %s", r.RemoteAddr))
 				atomic.AddUint64(&client.ErrorNumber, 1)
 				sentTracker.Done()
 				continue

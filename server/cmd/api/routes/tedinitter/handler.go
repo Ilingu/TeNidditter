@@ -19,7 +19,7 @@ import (
 
 func TedinitterUserHandler(t *echo.Group) {
 	if len(os.Getenv("JWT_SECRET")) < 15 {
-		console.Log("Couldn't register Tedinitter routes: JWT_SECRET is not secured", console.Error)
+		console.Error("Couldn't register Tedinitter routes: JWT_SECRET is not secured")
 		return
 	}
 
@@ -256,7 +256,7 @@ func TedinitterUserHandler(t *echo.Group) {
 		return res.HandleResp(http.StatusOK)
 	})
 
-	console.Log("TedinitterUserHandler Registered ✅", console.Info)
+	console.Log("TedinitterUserHandler Registered ✅")
 }
 
 func getListId(c echo.Context) (listId uint, ok bool) {
@@ -287,7 +287,7 @@ func handleGetFeed(c echo.Context, service string) error {
 	switch service {
 	case "teddit":
 		if feed, err := user.GetTedditFeed(); err == nil {
-			console.Log("Feed Returned from cache", console.Neutral)
+			console.Neutral("Feed Returned from cache")
 			res.SetAuthCache(1800) // 30min
 			return res.HandleRespBlob(http.StatusOK, feed)
 		}
@@ -301,7 +301,7 @@ func handleGetFeed(c echo.Context, service string) error {
 		return res.HandleRespBlob(http.StatusOK, feed)
 	case "nitter":
 		if feed, err := user.GetNitterFeed(); err == nil {
-			console.Log("Feed Returned from cache", console.Neutral)
+			console.Neutral("Feed Returned from cache")
 			res.SetAuthCache(1800) // 30min
 			if clientIp, err := routes.GetIP(c.Request(), true); err == nil {
 				go nitter_routes.StreamExternalLinks(clientIp, *feed)

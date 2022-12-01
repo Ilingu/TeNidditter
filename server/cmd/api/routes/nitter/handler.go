@@ -130,7 +130,7 @@ func NitterHandler(n *echo.Group) {
 	})
 
 	n.GET("/stream-in-external-links", echo.WrapHandler(http.HandlerFunc(sse.SSEHandler)))
-	console.Log("NitterHandler Registered", console.Info)
+	console.Log("NitterHandler Registered")
 }
 
 // This will compute the external links datas (meta tags in html response)

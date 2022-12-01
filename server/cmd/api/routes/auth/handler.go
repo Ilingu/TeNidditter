@@ -150,7 +150,7 @@ func AuthHandler(g *echo.Group) {
 		return res.HandleResp(http.StatusOK)
 	})
 
-	console.Log("AuthHandler Registered ✅", console.Info)
+	console.Log("AuthHandler Registered ✅")
 }
 
 func register(res routes.EchoWrapper, username, password string) error {
