@@ -6,6 +6,9 @@ import (
 	"strings"
 )
 
+// It'll safely generate a true random string of "length" characters (alphanumerics, no special chars)
+//
+// Can be used to generate id, uuid, recovery_codes, OPT codes...
 func GenerateRandomChars(length uint) (string, error) {
 	allCharSet := strings.Split("abcdedfghijklmnopqrst"+"ABCDEFGHIJKLMNOPQRSTUVWXYZ"+"0123456789", "")
 

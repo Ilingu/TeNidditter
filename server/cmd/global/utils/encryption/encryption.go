@@ -12,11 +12,13 @@ import (
 	"teniditter-server/cmd/global/utils"
 )
 
+// Concatenate the args into a string and then returns the hash of this string
 func GenerateHashFromArgs(args ...any) string {
 	concatenatedArgs := fmt.Sprint(args...)
 	return Hash(concatenatedArgs)
 }
 
+// Simple sha256 hash function
 func Hash(str string) string {
 	ByteHash := sha256.Sum256([]byte(str))
 	HashedStr := fmt.Sprintf("%x", ByteHash[:])
@@ -76,6 +78,8 @@ func DecryptAES(textToDec string) (string, error) {
 }
 
 // Helpers
+
+// get IV from env and Unmarshal it into "[]byte"
 func getIV() ([]byte, error) {
 	if utils.IsEmptyString(os.Getenv("IV_KEY")) {
 		return nil, errors.New("no iv key")
