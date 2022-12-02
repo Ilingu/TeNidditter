@@ -31,7 +31,7 @@ func GetListById(listId uint) (*NitterListModel, error) {
 	var list NitterListModel
 	err := db.QueryRow("SELECT * FROM NitterLists WHERE list_id=?", listId).Scan(&list.ListID, &list.AccountID, &list.ListName)
 	if err != nil {
-		return nil, errors.New("cannot fetch user")
+		return nil, errors.New("cannot fetch list")
 	}
 
 	return &list, nil
@@ -120,5 +120,5 @@ func (list NitterListModel) Delete() bool {
 }
 
 // **NOT IMPLEMENTED**
-func (list NitterListModel) Update() {
-}
+// func (list NitterListModel) Update() {
+// }

@@ -37,6 +37,20 @@ func InsertNewNeet(neet nitter.NeetComment) bool {
 	return err == nil
 }
 
+func DeleteNeet(neetId string) bool {
+	db := ps.DBManager.Connect()
+	if db == nil {
+		return false
+	}
+
+	if len(neetId) != 19 {
+		return false
+	}
+
+	_, err := db.Exec("DELETE FROM Neets WHERE neet_id=?;", neetId)
+	return err == nil
+}
+
 func GetNeetById(neetId string) (*DBNeets, error) {
 	db := ps.DBManager.Connect()
 	if db == nil {

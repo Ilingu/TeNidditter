@@ -2,6 +2,7 @@ package db
 
 import (
 	"errors"
+	"os"
 	"teniditter-server/cmd/global/utils"
 	ps "teniditter-server/cmd/planetscale"
 
@@ -10,18 +11,20 @@ import (
 
 var ErrRegister = errors.New("failed to register")
 
-type UserInfoAcceptedArg interface {
+type userInfoAcceptedArg interface {
 	uint | string
 }
 
 // Create a account, it returns a INCOMPLETE AccountModel based on the inputs: it only contains username, hashedPassword, and recoveryCodes. If you want the full Account created you will have to call `GetAccount`
 func CreateAccount(username string, password string) (*AccountModel, error) {
-	username = utils.FormatUsername(username)
-	if utils.IsEmptyString(username) || len(username) < 3 || len(username) > 15 {
-		return nil, errors.New("invalid username")
-	}
-	if !utils.IsStrongPassword(password) {
-		return nil, errors.New("password too weak")
+	if os.Getenv("TEST") != "1" {
+		username = utils.FormatUsername(username)
+		if utils.IsEmptyString(username) || len(username) < 3 || len(username) > 15 {
+			return nil, errors.New("invalid username")
+		}
+		if !utils.IsStrongPassword(password) {
+			return nil, errors.New("password too weak")
+		}
 	}
 
 	db := ps.DBManager.Connect()
@@ -79,7 +82,7 @@ func GetAllAccounts(onlySubbedOne bool) ([]AccountModel, error) {
 
 	sqlQuery := "SELECT * FROM Account"
 	if onlySubbedOne {
-		sqlQuery = "SELECT account_id, username, password, created_at FROM Teship INNER JOIN Account ON Teship.follower_id=Account.account_id GROUP BY account_id;"
+		sqlQuery = "SELECT account_id, username, password, created_at, recovery_codes FROM Teship INNER JOIN Account ON Teship.follower_id=Account.account_id GROUP BY account_id;"
 	}
 
 	rows, err := db.Query(sqlQuery)
@@ -104,7 +107,7 @@ func GetAllAccounts(onlySubbedOne bool) ([]AccountModel, error) {
 }
 
 // Get User by ID or username
-func GetAccount[T UserInfoAcceptedArg](username_or_userId T) (*AccountModel, error) {
+func GetAccount[T userInfoAcceptedArg](username_or_userId T) (*AccountModel, error) {
 	switch realVal := any(username_or_userId).(type) {
 	case uint:
 		return GetAccountByID(realVal)
@@ -135,7 +138,9 @@ func GetAccountByUsername(username string) (*AccountModel, error) {
 		return nil, ps.ErrDbNotFound
 	}
 
-	username = utils.FormatUsername(username)
+	if os.Getenv("TEST") != "1" {
+		username = utils.FormatUsername(username)
+	}
 	if utils.IsEmptyString(username) {
 		return nil, errors.New("cannot get user")
 	}

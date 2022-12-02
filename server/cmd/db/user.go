@@ -282,6 +282,7 @@ func (user AccountModel) _unsubFromNittos(sub *NittosModel, db *sql.DB) bool {
 }
 
 /* Lists */
+
 func (user AccountModel) GetNitterLists() ([]NitterListModel, error) {
 	db := ps.DBManager.Connect()
 	if db == nil {
