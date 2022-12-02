@@ -8,6 +8,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
+// will perform an HTTP/GET on the url handle potential error and than parse the Body response into a "goquery.Document" type
 func GetHTMLDocument(URL string) (*goquery.Document, error) {
 	if !utils.IsValidURL(URL) {
 		return nil, errors.New("invalid URL")

@@ -32,7 +32,6 @@ func LoadEnv() {
 		envPath = strings.Repeat("../", n) + "local.env"
 	}
 
-	log.Println(envPath)
 	if err = godotenv.Load(envPath); err != nil {
 		log.Fatalf("ABORTED: Cannot Load env file. Err: %s", err)
 	}

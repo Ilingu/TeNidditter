@@ -21,7 +21,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-// FeedType is whether "hot" or "new" or "top" or "rising" or "controversial"
+// FeedType is whether "hot" or "new" or "top" or "rising" or "controversial", afterId is optional (leave "")
 func GetHomePosts(FeedType, afterId string, nocache bool) (*map[string]any, error) {
 	// Check If content already cached:
 	redisKey := rediskeys.NewKey(rediskeys.TEDDIT_HOME, FeedType+afterId)
@@ -179,6 +179,9 @@ func GetPostComments(doc *goquery.Document) [][]TedditCommmentShape {
 }
 
 func RecursiveSearch(elem *goquery.Selection, idIdx int, parentId int) []TedditCommmentShape {
+	if idIdx > len(NodesID)-1 {
+		return []TedditCommmentShape{}
+	}
 	NodesID[idIdx]++
 
 	commentId, _ := elem.Attr("id")
@@ -197,6 +200,10 @@ func RecursiveSearch(elem *goquery.Selection, idIdx int, parentId int) []TedditC
 			CoCreated = t.Unix()
 		}
 	}
+
+	if idIdx > len(NodesID)-1 {
+		return []TedditCommmentShape{}
+	}
 	comment := TedditCommmentShape{NodesID[idIdx], parentId, CoCreated, CoUps, BodyHtml, CoAuthor}
 
 	children := elem.Find(detailsElem + " > .comment")
@@ -206,7 +213,9 @@ func RecursiveSearch(elem *goquery.Selection, idIdx int, parentId int) []TedditC
 
 	var resultChild = []TedditCommmentShape{}
 	children.Each(func(i int, s *goquery.Selection) {
-		resultChild = append(resultChild, RecursiveSearch(s, idIdx, NodesID[idIdx])...)
+		if idIdx <= len(NodesID)-1 {
+			resultChild = append(resultChild, RecursiveSearch(s, idIdx, NodesID[idIdx])...)
+		}
 	})
 
 	return append(resultChild, comment)

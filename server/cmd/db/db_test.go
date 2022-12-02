@@ -75,6 +75,12 @@ func init() {
 	}
 }
 
+// func TestMain(m *testing.M) {
+// 	exitVal := m.Run()
+// 	os.Exit(exitVal)
+// 	defer ps.DBManager.Disconnect()
+// }
+
 // DO NOT RUN TEST INDIVIDUALLY, this test handle all the others tests
 func TestApp(t *testing.T) {
 	defer ps.DBManager.Disconnect()

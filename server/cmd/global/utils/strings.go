@@ -2,6 +2,7 @@ package utils
 
 import (
 	"net/url"
+	"os"
 	"strings"
 	"unicode"
 )
@@ -43,7 +44,10 @@ func FormatString(str string) (formattedStr string) {
 
 // Remove all non alphabetic (except "_") characters from string and apply TrimSpace+ToLower+QueryEscape
 func FormatUsername(str string) string {
-	return SafeString(FormatString(str))
+	if os.Getenv("TEST") != "1" {
+		return SafeString(FormatString(str))
+	}
+	return str
 }
 
 // Remove all non alphanumerics (except "_") characters from string

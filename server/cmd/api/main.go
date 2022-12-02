@@ -1,11 +1,9 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"os"
-	"os/signal"
 	"time"
 
 	auth_routes "teniditter-server/cmd/api/routes/auth"
@@ -25,7 +23,7 @@ import (
 func main() {
 	utils_env.LoadEnv() // load env if not in prod
 
-	{
+	if os.Getenv("TEST") != "1" {
 		go ps.DBManager.NewDB() // Connect to DB in bg
 		defer ps.DBManager.Disconnect()
 
@@ -67,24 +65,19 @@ func main() {
 	// go cron_routes.RegisterCron()
 
 	// Start Server
-	go func() {
-		PORT := fmt.Sprintf(":%s", os.Getenv("PORT"))
-		if err := e.Start(PORT); err != nil && err != http.ErrServerClosed {
-			ps.DBManager.Disconnect()
-			redis.DisconnectRedis()
-			e.Logger.Fatal("shutting down the server")
-		}
-	}()
+	PORT := fmt.Sprintf(":%s", os.Getenv("PORT"))
 
-	// Wait for interrupt signal to gracefully shutdown the server with a timeout of 10 seconds.
-	// Use a buffered channel to avoid missing signals as recommended for signal.Notify
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, os.Interrupt)
-	<-quit
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	if err := e.Shutdown(ctx); err != nil {
-		e.Logger.Fatal(err)
+	if os.Getenv("TEST") == "1" {
+		timeout := time.After(5 * time.Second)
+		go e.Start(PORT)
+
+		<-timeout
+		return
+	}
+
+	if err := e.Start(PORT); err != nil {
+		e.Close()
+		e.Logger.Fatal("failed to start the server", err)
 	}
 }
 

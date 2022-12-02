@@ -138,9 +138,7 @@ func GetAccountByUsername(username string) (*AccountModel, error) {
 		return nil, ps.ErrDbNotFound
 	}
 
-	if os.Getenv("TEST") != "1" {
-		username = utils.FormatUsername(username)
-	}
+	username = utils.FormatUsername(username)
 	if utils.IsEmptyString(username) {
 		return nil, errors.New("cannot get user")
 	}

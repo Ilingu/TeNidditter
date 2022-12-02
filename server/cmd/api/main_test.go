@@ -1,16 +1,16 @@
-package console_test
+package main
 
 import (
 	"io"
 	"log"
 	"os"
 	"strings"
-	"teniditter-server/cmd/global/console"
 	"testing"
 )
 
 func init() {
 	os.Setenv("TEST", "1")
+	os.Setenv("PORT", "3000")
 }
 
 // High order function
@@ -43,20 +43,15 @@ func hijackStdout(toExec func()) string {
 	return output
 }
 
-func TestLogMsg(t *testing.T) {
+func TestServer(t *testing.T) {
 	res := hijackStdout(func() {
-		console.LogMsg("LogMsg test", console.NEUTRAL)
-		console.Success("test Success")
-		console.Log("test Log")
-		console.Warn("test Warn")
-		console.Error("test Error")
-		console.Neutral("test Neutral")
+		main()
 	})
 
-	wantedLog := []string{"[Neutral] \x1b[0m \x1b[37m LogMsg test", "[Success] \x1b[0m \x1b[32m test Success", "[Info] \x1b[0m \x1b[36m test Log", "[Warning] \x1b[0m \x1b[33m test Warn", "[Error] \x1b[0m \x1b[31m test Error", "[Neutral] \x1b[0m \x1b[37m test Neutral"}
+	wantedLog := []string{"Cors Middleware Up and Running", "AuthHandler Registered", "TedinitterUserHandler Registered", "TedditHandler Registered", "NitterHandler Registered", "http server started on"}
 	for _, log := range wantedLog {
 		if !strings.Contains(res, log) {
-			t.Error("missing", log)
+			t.Error("server start failed, missing", log)
 		}
 	}
 }
