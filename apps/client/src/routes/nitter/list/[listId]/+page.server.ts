@@ -3,6 +3,8 @@ import type { NeetComment } from "$lib/shared/types/nitter";
 import { IsEmptyString, MakeBearerToken } from "$lib/shared/utils";
 import { error, redirect } from "@sveltejs/kit";
 
+export const prerender = false;
+
 type ReturnType = { savedNeets: NeetComment[] | null };
 export const load: import("./$types").PageServerLoad = async ({
 	cookies,

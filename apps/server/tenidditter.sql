@@ -41,7 +41,8 @@ create table Teship (
   subteddit_id INT
 );
 CREATE INDEX follower_id_idx ON Teship(follower_id);
-
+ALTER TABLE Teship
+ADD ship_id INT AUTO_INCREMENT PRIMARY KEY;
 
 -- @block
 create table Twiship (
@@ -49,6 +50,8 @@ create table Twiship (
   twittos_id INT
 );
 CREATE INDEX follower_id_idx ON Twiship(follower_id);
+ALTER TABLE Twiship
+ADD ship_id INT AUTO_INCREMENT PRIMARY KEY;
 
 -- @block
 create table NitterLists (
